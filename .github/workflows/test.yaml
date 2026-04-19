@@ -17,8 +17,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: npm build
-        uses: ./.github/actions/npm-build
+      - name: Semantic release
+        id: release
+        uses: ./.github/actions/node-semantic-release
+        with:
+          build-only: true
 
       - name: Type check
         run: npm run typecheck

@@ -19,7 +19,7 @@ Supports blank creation or generation from a template repository.
 ├── .github
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── actions
-│   │   ├── npm-build               # Build npm package
+│   │   ├── node-semantic-release   # Composite action: build, typecheck, semantic-release, encode notes
 │   │   └── workflow-dispatch       # Composite action: triggers workflow_dispatch via gh CLI
 │   └── workflows
 │       ├── create-repository.yaml  # workflow_dispatch trigger for repo creation
@@ -64,20 +64,18 @@ Supports blank creation or generation from a template repository.
 
 ### GitHub Actions (recommended)
 
-Trigger the `workflow_dispatch` workflow from the **Actions** tab in GitHub, or via the GitHub CLI:
+#### Use as an action from another workflow
 
-```bash
-gh workflow run create-repository.yaml \
-  -f name=my-new-repo \
-  -f org=my-org \
-  -f repo-config=config/config.json
-```
+The calling job requires the following `permissions:`:
+
+| Permission | Level  | Reason                             |
+| ---------- | ------ | ---------------------------------- |
+| `contents` | `read` | Check out the action at `uses: ./` |
 
 > [!NOTE]
-> The workflow requires a secret named `GH_PAT_CREATE_REPO` — a Personal Access Token (or future GitHub App installation
-> token) with `repo` and `admin:org` scopes.
-
-#### Use as an action from another workflow
+> All GitHub API operations (creating the repository, applying settings, and branch rulesets) are performed using the
+> `github-token` input — a PAT with `repo` and `admin:org` scopes. No additional `permissions:` entries are needed
+> beyond `contents: read`.
 
 ```yaml
 - name: Create repository
@@ -88,6 +86,7 @@ gh workflow run create-repository.yaml \
     name: my-new-repo
     repo-config: config/config.json   # optional
     visibility: private               # optional — private | internal | public
+    job-summary: true                 # optional — write a job summary (default: true)
 ```
 
 #### Action inputs
@@ -102,6 +101,7 @@ gh workflow run create-repository.yaml \
 | `template-owner`       | No       | Owner of the template repository                                                                                     |
 | `template-repo`        | No       | Name of the template repository                                                                                      |
 | `include-all-branches` | No       | Copy all template branches (default: `false`)                                                                        |
+| `job-summary`          | No       | Write a job summary to the Actions step summary (default: `true`)                                                    |
 
 #### Action outputs
 
@@ -206,13 +206,14 @@ npm install
 | `REPO_NAME`    | Repository name to create (optional fallback)                 |
 | `REPO_CONFIG`  | Path to a JSON override file (alternative to `--repo-config`) |
 
-#### Local development
-
-Copy `env.sample` to `.env` and fill in your values:
-
-```bash
-cp env.sample .env
-```
+> [!NOTE]
+> **Local development**
+>
+> Copy `env.sample` to `.env` and fill in your values:
+>
+> ```bash
+> cp env.sample .env
+> ```
 
 #### Examples
 

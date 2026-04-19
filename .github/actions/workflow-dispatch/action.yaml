@@ -12,10 +12,10 @@ description: Trigger a workflow_dispatch event on a target workflow file.
 
 inputs:
   workflow:
-    description: "Workflow file to dispatch (e.g. publish.yaml)"
+    description: Workflow file to dispatch (e.g. publish.yaml)
     required: true
   tag:
-    description: "Tag associated with the workflow dispatch event"
+    description: Tag associated with the workflow dispatch event.
     required: false
     default: ${{ github.ref }}
   fields:
@@ -24,7 +24,13 @@ inputs:
       Example:
         extra-key=extra-value
     required: false
-    default: ""
+    default: ''
+  ref:
+    description: |
+      Git ref to run the workflow on (e.g. sha, main, or a tag name);
+      defaults to the tag input if not set.
+    required: false
+    default: ''
 
 runs:
   using: composite
@@ -33,7 +39,7 @@ runs:
       shell: bash
       run: |
         field=()
-        field+=(--field tag="$TAG")
+        field+=(--field tag="${{ inputs.tag }}")
 
         # Append any extra fields from the fields input
         while IFS= read -r line; do
@@ -43,13 +49,10 @@ runs:
           field+=(--field "$line")
         done <<< "$FIELDS"
 
-        gh workflow run "$WORKFLOW" \
-          --repo "$REPOSITORY" \
-          --ref "$TAG" \
+        gh workflow run "${{ inputs.workflow }}" \
+          --repo "${{ github.repository }}" \
+          --ref "${{ inputs.ref != '' && inputs.ref || inputs.tag }}" \
           "${field[@]}"
       env:
         GH_TOKEN: ${{ github.token }}
-        WORKFLOW: ${{ inputs.workflow }}
-        REPOSITORY: ${{ github.repository }}
-        TAG: ${{ inputs.tag }}
         FIELDS: ${{ inputs.fields }}

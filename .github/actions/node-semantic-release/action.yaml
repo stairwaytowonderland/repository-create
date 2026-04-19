@@ -1,0 +1,100 @@
+name: Node.js semantic release
+description: >
+  Builds the project with npm, runs semantic-release, and base64-encodes the
+  release notes for safe transport via workflow_dispatch fields.
+
+inputs:
+  github-token:
+    description: GitHub token passed to semantic-release (requires repo + write access).
+    required: false
+    default: ''
+  node-version:
+    description: Node.js version to use.
+    required: false
+    default: '24'
+  build-only:
+    description: Run the build step but skip the release step (for testing).
+    required: false
+    default: 'false'
+  typecheck:
+    description: Run typechecking but skip the release step (for testing).
+    required: false
+    default: 'true'
+
+outputs:
+  new-release-published:
+    description: "'true' if a new release was published."
+    value: ${{ steps.release.outputs.new-release-published }}
+  new-release-version:
+    description: 'Version number of the new release (e.g. 1.2.3).'
+    value: ${{ steps.release.outputs.new-release-version }}
+  new-release-git-tag:
+    description: Git tag of the new release (e.g. v1.2.3).
+    value: ${{ steps.release.outputs.new-release-git-tag }}
+  new-release-notes:
+    description: Release notes (Markdown) of the new release.
+    value: ${{ steps.release.outputs.new-release-notes }}
+  new-release-notes-base64:
+    description: Base64-encoded release notes.
+    value: ${{ steps.encode.outputs.b64 }}
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: npm
+
+    - name: Install dependencies
+      shell: bash
+      run: npm ci
+
+    - name: Build
+      shell: bash
+      run: npm run build
+
+    - name: Type check
+      if: inputs.typecheck == 'true'
+      shell: bash
+      run: npm run typecheck
+
+    - name: Check token
+      if: inputs.build-only != 'true' && inputs.github-token == ''
+      shell: bash
+      run: |
+        echo "::error::github-token input is required to publish a release. Provide a token with repo + write access."
+        exit 1
+
+    - name: Check 'semantic-release-export-data' plugin
+      if: inputs.build-only != 'true'
+      shell: bash
+      run: |
+        if ! node -e "require('semantic-release-export-data')" 2>/dev/null; then
+          echo "::error::semantic-release-export-data is not installed. Add it to package.json and ensure it is listed in your semantic-release plugins (e.g. '.releaserc')."
+          exit 1
+        fi
+
+    - name: Release
+      if: inputs.build-only != 'true'
+      id: release
+      shell: bash
+      run: npx semantic-release
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+
+    - name: Encode release notes
+      if: steps.release.outputs.new-release-published == 'true' && inputs.build-only != 'true'
+      id: encode
+      shell: bash
+      # Encode the new release notes as a base64 string to safely
+      # pass through the workflow dispatch fields.
+      run: printf '%s' "$NOTES" | base64 -w 0 | xargs -I{} echo "b64={}" >> "$GITHUB_OUTPUT"
+      # The release notes from steps.release.outputs.new-release-notes
+      # can contain arbitrary Markdown — newlines, special characters,
+      # quotes — that would break if interpolated directly into the run
+      # command via ${{ }}. Passing it through an environment variable
+      # lets the shell handle it safely as a raw string.
+      env:
+        NOTES: ${{ steps.release.outputs.new-release-notes }}
