@@ -29586,9 +29586,17 @@ async function run() {
   const templateOwner = core.getInput("template-owner");
   const templateRepo = core.getInput("template-repo");
   const includeAllBranches = core.getBooleanInput("include-all-branches");
+  const visibilityInput = core.getInput("visibility");
   const overrides = configInput ? loadConfigFile((0, import_node_path.resolve)(process.env.GITHUB_WORKSPACE ?? ".", configInput)) : {};
   const settings = { ...repoDefaults, ...overrides.settings };
   const rulesets = overrides.rulesets ?? rulesetDefaults;
+  if (visibilityInput) {
+    const allowed = ["private", "internal", "public"];
+    if (!allowed.includes(visibilityInput)) {
+      throw new Error(`Invalid visibility "${visibilityInput}". Must be one of: ${allowed.join(", ")}.`);
+    }
+    settings.visibility = visibilityInput;
+  }
   if (templateOwner || templateRepo) {
     if (!templateOwner || !templateRepo) {
       throw new Error("Both template-owner and template-repo inputs are required when using a template.");
