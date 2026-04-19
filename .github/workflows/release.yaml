@@ -36,7 +36,7 @@ jobs:
 
       - name: Dispatch Publish workflow
         if: steps.release.outputs.new-release-published == 'true'
-        uses: stairwaytowonderland/workflow-dispatch@main
+        uses: stairwaytowonderland/simple-workflow-dispatch@main
         with:
           workflow: publish.yaml
           tag: ${{ steps.release.outputs.new-release-git-tag }}
