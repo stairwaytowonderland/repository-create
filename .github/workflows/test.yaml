@@ -3,6 +3,7 @@ name: Test
 on:
   pull_request:
     paths:
+      - '.github/**'
       - 'src/**'
       - 'package*.json'
       - 'action.yaml'
@@ -19,9 +20,7 @@ jobs:
 
       - name: Semantic release
         id: release
-        uses: ./.github/actions/node-semantic-release
+        uses: stairwaytowonderland/node-semantic-release@main
         with:
           build-only: true
-
-      - name: Type check
-        run: npm run typecheck
+          typecheck: true

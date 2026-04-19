@@ -193,6 +193,19 @@ these values at runtime by passing a JSON config file.
 
 ### CLI Usage
 
+Trigger the `create-repository` workflow from the **Actions** tab in GitHub, or via the GitHub CLI:
+
+```bash
+gh workflow run create-repository.yaml \
+  -f name=my-new-repo \
+  -f org=my-org \
+  -f repo-config=config/config.json
+```
+
+> [!NOTE]
+> The workflow requires a secret named `GH_PAT_CREATE_REPO` — a Personal Access Token (or future GitHub App installation
+> token) with `repo` and `admin:org` scopes.
+
 #### Installation
 
 ```bash

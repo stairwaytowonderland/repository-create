@@ -224,21 +224,6 @@ flowchart TD
 | `BREAKING CHANGE:`             | `feat!: rename --config to --repo-config` | Major        |
 | `chore:`, `docs:`, `ci:`, etc. | `chore: update dependencies`              | No release   |
 
-### Publishing the release
-
-Trigger the `workflow_dispatch` workflow from the **Actions** tab in GitHub, or via the GitHub CLI:
-
-```bash
-gh workflow run create-repository.yaml \
-  -f name=my-new-repo \
-  -f org=my-org \
-  -f repo-config=config/config.json
-```
-
-> [!NOTE]
-> The workflow requires a secret named `GH_PAT_CREATE_REPO` — a Personal Access Token (or future GitHub App installation
-> token) with `repo` and `admin:org` scopes.
-
 ## License and Attribution
 
 This project is licensed under the [MIT License](./LICENSE). By contributing, you agree that your contributions will be
