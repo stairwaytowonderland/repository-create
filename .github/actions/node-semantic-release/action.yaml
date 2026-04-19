@@ -23,10 +23,11 @@ inputs:
 
 outputs:
   new-release-published:
-    description: "'true' if a new release was published."
+    description: |
+      'true' if a new release was published.
     value: ${{ steps.release.outputs.new-release-published }}
   new-release-version:
-    description: 'Version number of the new release (e.g. 1.2.3).'
+    description: Version number of the new release (e.g. 1.2.3).
     value: ${{ steps.release.outputs.new-release-version }}
   new-release-git-tag:
     description: Git tag of the new release (e.g. v1.2.3).
