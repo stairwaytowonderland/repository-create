@@ -1,3 +1,13 @@
+## [1.3.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.2.0...v1.3.0) (2026-04-19)
+
+### ✨ Features
+
+* implement node-semantic-release internal action ([fd0b2b1](https://github.com/stairwaytowonderland/repository-create/commit/fd0b2b1dd952634e76cb75c126834ad0360a9d12))
+
+### 📚 Documentation
+
+* update project structure in README.md ([9bdc166](https://github.com/stairwaytowonderland/repository-create/commit/9bdc166f1b5079b15ec7e766e40bd7ade362319b))
+
 ## [1.2.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.1.0...v1.2.0) (2026-04-19)
 
 ### ✨ Features
