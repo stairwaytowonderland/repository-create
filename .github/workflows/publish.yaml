@@ -40,7 +40,7 @@ jobs:
           fetch-depth: 0
 
       - name: Decode release notes
-        if: ${{ inputs.notes-b64 != '' }}
+        if: inputs.notes-b64 != ''
         run: printf '%s' "$NOTES_B64" | base64 -d > release-notes.md
         env:
           NOTES_B64: ${{ inputs.notes-b64 }}
