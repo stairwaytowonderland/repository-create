@@ -29587,6 +29587,7 @@ async function run() {
   const templateRepo = core.getInput("template-repo");
   const includeAllBranches = core.getBooleanInput("include-all-branches");
   const visibilityInput = core.getInput("visibility");
+  const jobSummary = core.getBooleanInput("job-summary");
   const overrides = configInput ? loadConfigFile((0, import_node_path.resolve)(process.env.GITHUB_WORKSPACE ?? ".", configInput)) : {};
   const settings = { ...repoDefaults, ...overrides.settings };
   const rulesets = overrides.rulesets ?? rulesetDefaults;
@@ -29612,6 +29613,14 @@ async function run() {
   core.setOutput("repo-url", repo.html_url);
   core.setOutput("repo-name", repo.full_name);
   core.setOutput("repo-id", String(repo.id));
+  if (jobSummary) {
+    await core.summary.addHeading("Repository Created").addRaw(`
+**URL:** ${repo.html_url}
+
+`).addRaw(`**Name:** \`${repo.full_name}\`
+
+`).addRaw(`**Triggered by:** @${process.env.GITHUB_ACTOR ?? "unknown"}`).write();
+  }
 }
 run().catch((err) => {
   core.setFailed(err.message);

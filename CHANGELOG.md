@@ -1,3 +1,9 @@
+## [1.2.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.1.0...v1.2.0) (2026-04-19)
+
+### ✨ Features
+
+* job summary in js option ([2d5b55e](https://github.com/stairwaytowonderland/repository-create/commit/2d5b55eb559f0b1f51e6af4ca043999166940ce0))
+
 ## [1.1.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.0.0...v1.1.0) (2026-04-19)
 
 ### ✨ Features
