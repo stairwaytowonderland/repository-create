@@ -57,6 +57,11 @@ inputs:
     required: false
     default: 'false'
 
+  job-summary:
+    description: Write a job summary to the GitHub Actions step summary.
+    required: false
+    default: 'true'
+
 outputs:
   repo-url:
     description: HTML URL of the created repository (e.g. https://github.com/org/repo).

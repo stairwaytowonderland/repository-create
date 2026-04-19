@@ -60,28 +60,58 @@ Supports blank creation or generation from a template repository.
   - `repo` — full repository access
   - `admin:org` — required to create repos in an organization and manage rulesets
 
-## Installation
+## Usage
+
+### GitHub Actions (recommended)
+
+Trigger the `workflow_dispatch` workflow from the **Actions** tab in GitHub, or via the GitHub CLI:
 
 ```bash
-npm install
+gh workflow run create-repository.yaml \
+  -f name=my-new-repo \
+  -f org=my-org \
+  -f repo-config=config/config.json
 ```
 
-## Configuration
+> [!NOTE]
+> The workflow requires a secret named `GH_PAT_CREATE_REPO` — a Personal Access Token (or future GitHub App installation
+> token) with `repo` and `admin:org` scopes.
 
-Copy `env.sample` to `.env` and fill in your values:
+#### Use as an action from another workflow
 
-```bash
-cp env.sample .env
+```yaml
+- name: Create repository
+  uses: stairwaytowonderland/repository-create@main
+  with:
+    github-token: ${{ secrets.GH_PAT_CREATE_REPO }}
+    org: my-org
+    name: my-new-repo
+    repo-config: config/config.json   # optional
+    visibility: private               # optional — private | internal | public
 ```
 
-| Variable       | Description                                                   |
-| -------------- | ------------------------------------------------------------- |
-| `GITHUB_TOKEN` | Personal Access Token (see Prerequisites above)               |
-| `GITHUB_ORG`   | Target GitHub organization                                    |
-| `REPO_NAME`    | Repository name to create (optional fallback)                 |
-| `REPO_CONFIG`  | Path to a JSON override file (alternative to `--repo-config`) |
+#### Action inputs
 
-### Customising defaults
+| Input                  | Required | Description                                                                                                          |
+| ---------------------- | -------- | -------------------------------------------------------------------------------------------------------------------- |
+| `github-token`         | Yes      | Token with `repo` + `admin:org` scopes                                                                               |
+| `org`                  | Yes      | Target GitHub organization                                                                                           |
+| `name`                 | Yes      | Repository name to create                                                                                            |
+| `repo-config`          | No       | Path to JSON override file (relative to workspace root)                                                              |
+| `visibility`           | No       | Repository visibility: `private`, `internal`, or `public`. Overrides `repo-config` if set. `internal` requires GHEC. |
+| `template-owner`       | No       | Owner of the template repository                                                                                     |
+| `template-repo`        | No       | Name of the template repository                                                                                      |
+| `include-all-branches` | No       | Copy all template branches (default: `false`)                                                                        |
+
+#### Action outputs
+
+| Output      | Description                                      |
+| ----------- | ------------------------------------------------ |
+| `repo-url`  | HTML URL of the created repository               |
+| `repo-name` | Full name of the created repository (`org/repo`) |
+| `repo-id`   | Numeric ID of the created repository             |
+
+### Configuration
 
 [`src/repo-defaults.ts`](src/repo-defaults.ts) contains the default
 repository settings and branch ruleset configuration. You can override any of
@@ -161,60 +191,30 @@ these values at runtime by passing a JSON config file.
 }
 ```
 
-## Usage
+### CLI Usage
 
-### GitHub Actions (recommended)
-
-Trigger the `workflow_dispatch` workflow from the **Actions** tab in GitHub, or via the GitHub CLI:
+#### Installation
 
 ```bash
-gh workflow run create-repository.yaml \
-  -f name=my-new-repo \
-  -f org=my-org \
-  -f repo-config=config/config.json
+npm install
 ```
 
-> [!NOTE]
-> The workflow requires a secret named `GH_PAT_CREATE_REPO` — a Personal Access Token (or future GitHub App installation
-> token) with `repo` and `admin:org` scopes.
+| Variable       | Description                                                   |
+| -------------- | ------------------------------------------------------------- |
+| `GITHUB_TOKEN` | Personal Access Token (see Prerequisites above)               |
+| `GITHUB_ORG`   | Target GitHub organization                                    |
+| `REPO_NAME`    | Repository name to create (optional fallback)                 |
+| `REPO_CONFIG`  | Path to a JSON override file (alternative to `--repo-config`) |
 
-#### Use as an action from another workflow
+#### Local development
 
-```yaml
-- name: Create repository
-  uses: stairwaytowonderland/repository-create@main
-  with:
-    github-token: ${{ secrets.GH_PAT_CREATE_REPO }}
-    org: my-org
-    name: my-new-repo
-    repo-config: config/config.json   # optional
-    visibility: private               # optional — private | internal | public
+Copy `env.sample` to `.env` and fill in your values:
+
+```bash
+cp env.sample .env
 ```
 
-#### Action inputs
-
-| Input                  | Required | Description                                                                                                          |
-| ---------------------- | -------- | -------------------------------------------------------------------------------------------------------------------- |
-| `github-token`         | Yes      | Token with `repo` + `admin:org` scopes                                                                               |
-| `org`                  | Yes      | Target GitHub organization                                                                                           |
-| `name`                 | Yes      | Repository name to create                                                                                            |
-| `repo-config`          | No       | Path to JSON override file (relative to workspace root)                                                              |
-| `visibility`           | No       | Repository visibility: `private`, `internal`, or `public`. Overrides `repo-config` if set. `internal` requires GHEC. |
-| `template-owner`       | No       | Owner of the template repository                                                                                     |
-| `template-repo`        | No       | Name of the template repository                                                                                      |
-| `include-all-branches` | No       | Copy all template branches (default: `false`)                                                                        |
-
-#### Action outputs
-
-| Output      | Description                                      |
-| ----------- | ------------------------------------------------ |
-| `repo-url`  | HTML URL of the created repository               |
-| `repo-name` | Full name of the created repository (`org/repo`) |
-| `repo-id`   | Numeric ID of the created repository             |
-
----
-
-### CLI
+#### Examples
 
 ```bash
 # Using environment variables (recommended for npm start)

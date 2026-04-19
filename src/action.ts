@@ -44,6 +44,7 @@ async function run(): Promise<void> {
 	const templateRepo = core.getInput('template-repo');
 	const includeAllBranches = core.getBooleanInput('include-all-branches');
 	const visibilityInput = core.getInput('visibility') as 'private' | 'internal' | 'public' | '';
+	const jobSummary = core.getBooleanInput('job-summary');
 
 	// Resolve config file path relative to the Actions workspace root
 	const overrides = configInput ? loadConfigFile(resolve(process.env.GITHUB_WORKSPACE ?? '.', configInput)) : {};
@@ -82,6 +83,15 @@ async function run(): Promise<void> {
 	core.setOutput('repo-url', repo.html_url);
 	core.setOutput('repo-name', repo.full_name);
 	core.setOutput('repo-id', String(repo.id));
+
+	if (jobSummary) {
+		await core.summary
+			.addHeading('Repository Created')
+			.addRaw(`\n**URL:** ${repo.html_url}\n\n`)
+			.addRaw(`**Name:** \`${repo.full_name}\`\n\n`)
+			.addRaw(`**Triggered by:** @${process.env.GITHUB_ACTOR ?? 'unknown'}`)
+			.write();
+	}
 }
 
 run().catch((err: Error) => {

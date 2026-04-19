@@ -48,6 +48,12 @@ on:
         default: 'public'
         type: string
 
+      job-summary:
+        description: Write a job summary to the GitHub Actions step summary.
+        required: false
+        default: true
+        type: boolean
+
 jobs:
   create:
     name: Create ${{ inputs.org || github.repository_owner }}/${{ inputs.name }}
@@ -80,8 +86,10 @@ jobs:
           template-repo: ${{ inputs.template-repo }}
           include-all-branches: ${{ inputs.include-all-branches }}
           visibility: ${{ inputs.visibility }}
+          job-summary: ${{ inputs.job-summary }}
 
       - name: Summary
+        if: ${{ inputs.job-summary != true }}
         run: |
           echo "## Repository Created" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
