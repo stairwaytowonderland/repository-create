@@ -1,0 +1,68 @@
+name: 'Repository Create'
+description: >
+  Creates a GitHub organization repository with overrideable
+  pre-defined settings and branch rulesets.
+author: stairwaytowonderland
+inputs:
+  github-token:
+    description: >
+      GitHub token with repo and admin:org scopes. Use a Personal Access Token
+      or a GitHub App installation token. Note: the default GITHUB_TOKEN does
+      not have admin:org scope and cannot create organization repositories —
+      supply a token with the required scopes.
+    required: true
+
+  org:
+    description: Target GitHub organization.
+    required: true
+
+  name:
+    description: Repository name to create.
+    required: true
+
+  repo-config:
+    description: >
+      Path to a JSON settings/rulesets override file, relative to the workspace
+      root (GITHUB_WORKSPACE). Omit to use built-in defaults.
+    required: false
+    default: ''
+
+  template-owner:
+    description: >
+      Owner of the template repository. Requires template-repo to also be set.
+      Takes precedence over any template configured in repo-config.
+    required: false
+    default: ''
+
+  template-repo:
+    description: >
+      Name of the template repository. Requires template-owner to also be set.
+      The template repository must have "Template repository" enabled in its
+      settings.
+    required: false
+    default: ''
+
+  include-all-branches:
+    description: >
+      When creating from a template, copy all branches instead of only the
+      default branch.
+    required: false
+    default: 'false'
+
+outputs:
+  repo-url:
+    description: HTML URL of the created repository (e.g. https://github.com/org/repo).
+
+  repo-name:
+    description: Full name of the created repository (e.g. org/repo).
+
+  repo-id:
+    description: Numeric ID of the created repository.
+
+runs:
+  using: node24
+  main: dist/index.cjs
+
+branding:
+  icon: git-branch
+  color: red

@@ -1,0 +1,19 @@
+name: npm build
+description: Setup Node.js, install dependencies, and build the project.
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: '24'
+        cache: npm
+
+    - name: Install dependencies
+      run: npm ci
+      shell: bash
+
+    - name: Build
+      run: npm run build
+      shell: bash

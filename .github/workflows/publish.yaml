@@ -1,0 +1,62 @@
+name: Publish
+
+on:
+  # Fires when a tag matching v* is pushed with personal credentials.
+  push:
+    tags:
+      - 'v*'
+
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v1.2.3)'
+        required: true
+      notes-b64:
+        description: 'Base64-encoded release notes (Markdown)'
+        required: false
+
+jobs:
+  publish:
+    name: Publish GitHub release
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      # Resolve the tag from whichever trigger fired:
+      #   push: tags                        → github.ref_name  (e.g. v1.2.3)
+      #   workflow_dispatch / workflow_call → inputs.tag
+      - name: Setup | Resolve tag
+        id: vars
+        run: echo "tag=${{ inputs.tag || github.ref_name }}" >> "$GITHUB_OUTPUT"
+
+      # Checkout at the input tag so setuptools-scm sees it and stamps the
+      # correct version into the wheel metadata.
+      - name: Setup | Checkout release tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.vars.outputs.tag }}
+          fetch-depth: 0
+
+      - name: Decode release notes
+        if: ${{ inputs.notes-b64 != '' }}
+        run: printf '%s' "$NOTES_B64" | base64 -d > release-notes.md
+        env:
+          NOTES_B64: ${{ inputs.notes-b64 }}
+
+      - name: Create release
+        run: |
+          if [ -f release-notes.md ]; then
+            gh release create "${{ steps.vars.outputs.tag }}" \
+              --repo "${{ github.repository }}" \
+              --title "${{ steps.vars.outputs.tag }}" \
+              --notes-file release-notes.md
+          else
+            gh release create "${{ steps.vars.outputs.tag }}" \
+              --repo "${{ github.repository }}" \
+              --title "${{ steps.vars.outputs.tag }}" \
+              --generate-notes
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

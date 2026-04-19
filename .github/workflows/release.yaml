@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+    # paths:
+    #   - 'src/**'
+    #   - 'package*.json'
+    #   - 'action.yaml'
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: Semantic release
+    runs-on: ubuntu-latest
+
+    permissions:
+      actions: write
+      contents: write
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT_CREATE_REPO }}
+
+      - name: npm build
+        uses: ./.github/actions/npm-build
+
+      - name: Release
+        id: release
+        run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT_CREATE_REPO }}
+
+      - name: Encode release notes
+        if: steps.release.outputs.new-release-published == 'true'
+        id: notes
+        run: printf '%s' "$NOTES" | base64 -w 0 | xargs -I{} echo "b64={}" >> "$GITHUB_OUTPUT"
+        env:
+          NOTES: ${{ steps.release.outputs.new-release-notes }}
+
+      - name: Dispatch Publish workflow
+        if: steps.release.outputs.new-release-published == 'true'
+        uses: ./.github/actions/workflow-dispatch
+        with:
+          workflow: publish.yaml
+          tag: ${{ steps.release.outputs.new-release-git-tag }}
+          fields: |
+            notes-b64=${{ steps.notes.outputs.b64 }}

@@ -1,0 +1,17 @@
+# Ignore build artifacts
+build/
+coverage/
+dist/
+out/
+
+# Ignore dependency directories and lock files
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Ignore specific file types
+**/*.html
+**/*.log
+
+README.md

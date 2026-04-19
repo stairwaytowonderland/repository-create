@@ -1,0 +1,31 @@
+version: 2
+updates:
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      # interval: "monthly"
+      # day: "friday"
+      interval: 'daily'
+    labels:
+      - 'dependencies'
+    groups:
+      github-actions:
+        applies-to: version-updates
+        patterns:
+          - '*'
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      # interval: "monthly"
+      # day: "friday"
+      interval: 'daily'
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
+    labels:
+      - 'dependencies'
+    groups:
+      npm:
+        applies-to: version-updates
+        patterns:
+          - '*'
