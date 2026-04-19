@@ -300,7 +300,7 @@ The template can also be set in a config override file:
 | Prevent force pushes          | enabled       |
 | Bypass actors                 | none          |
 
-## Repository Creation Flow
+## What this action does
 
 ```mermaid
 flowchart TD
@@ -312,7 +312,7 @@ flowchart TD
     E --> F{Template<br>configured?}
 
     F -- "&nbsp;Yes&nbsp;" --> G[POST generate<br>from template repo]
-    G --> H{updateReadme<br>Heading?}
+    G --> H{Update README<br>heading?}
     H -- "&nbsp;Yes&nbsp;" --> I[Retry fetch README<br>Replace H1 heading<br>Commit back]
     H -- "&nbsp;No&nbsp;" --> J
     I --> J[PATCH repo settings<br>apply-settings.js]
@@ -325,3 +325,15 @@ flowchart TD
     L -- "&nbsp;No&nbsp;" --> N
     M --> N([Done ✓])
 ```
+
+1. **Load configuration** — merges built-in defaults with an optional JSON override file (`repo-config`).
+Action inputs (`visibility`, `template-*`, etc.) take precedence over the config file.
+2. **Create the repository** — either generates from a template repository (if `template-owner` and `template-repo` are
+set) or creates a blank repository with `auto_init: true`.
+3. **Update README heading** — if created from a template, replaces the first H1 in the new repository's README with the
+repository name (can be disabled via config).
+4. **Apply settings** — patches the repository with the full settings payload (visibility, merge strategies, branch
+deletion, etc.) in a second-pass API call to cover fields not available at creation time.
+5. **Create branch rulesets** — POSTs each configured ruleset (e.g. `main-branch-protection`) to the repository.
+6. **Write job summary** — outputs a summary with the repository URL, name, and triggering actor (can be disabled with
+`job-summary: false`).
