@@ -27,11 +27,7 @@ Supports blank creation or generation from a template repository.
 │       ├── pre-commit.yaml         # Runs pre-commit hooks on pull requests
 │       ├── publish.yaml            # Creates GitHub release from a tag
 │       └── release.yaml            # Semantic release on push to main
-├── .gitignore
-├── .markdownlint.json
-├── .pre-commit-config.yaml
-├── .prettierignore
-├── .prettierrc
+├── .pre-commit-config.yaml         # Pre-commit configuration
 ├── .releaserc                      # Semantic release configuration
 ├── action.yaml                     # JavaScript action definition
 ├── config
@@ -178,10 +174,9 @@ gh workflow run create-repository.yaml \
   -f repo-config=config/config.json
 ```
 
-The workflow requires a secret named `GH_PAT_CREATE_REPO` — a Personal Access Token (or future GitHub App installation token)
-with `repo` and `admin:org` scopes.
-
-> **Future state:** replace `secrets.GH_PAT_CREATE_REPO` with `actions/create-github-app-token` once the GitHub App is configured.
+> [!NOTE]
+> The workflow requires a secret named `GH_PAT_CREATE_REPO` — a Personal Access Token (or future GitHub App installation
+> token) with `repo` and `admin:org` scopes.
 
 #### Use as an action from another workflow
 
@@ -193,19 +188,21 @@ with `repo` and `admin:org` scopes.
     org: my-org
     name: my-new-repo
     repo-config: config/config.json   # optional
+    visibility: private               # optional — private | internal | public
 ```
 
 #### Action inputs
 
-| Input                  | Required | Description                                             |
-| ---------------------- | -------- | ------------------------------------------------------- |
-| `github-token`         | Yes      | Token with `repo` + `admin:org` scopes                  |
-| `org`                  | Yes      | Target GitHub organization                              |
-| `name`                 | Yes      | Repository name to create                               |
-| `repo-config`          | No       | Path to JSON override file (relative to workspace root) |
-| `template-owner`       | No       | Owner of the template repository                        |
-| `template-repo`        | No       | Name of the template repository                         |
-| `include-all-branches` | No       | Copy all template branches (default: `false`)           |
+| Input                  | Required | Description                                                                                                          |
+| ---------------------- | -------- | -------------------------------------------------------------------------------------------------------------------- |
+| `github-token`         | Yes      | Token with `repo` + `admin:org` scopes                                                                               |
+| `org`                  | Yes      | Target GitHub organization                                                                                           |
+| `name`                 | Yes      | Repository name to create                                                                                            |
+| `repo-config`          | No       | Path to JSON override file (relative to workspace root)                                                              |
+| `visibility`           | No       | Repository visibility: `private`, `internal`, or `public`. Overrides `repo-config` if set. `internal` requires GHEC. |
+| `template-owner`       | No       | Owner of the template repository                                                                                     |
+| `template-repo`        | No       | Name of the template repository                                                                                      |
+| `include-all-branches` | No       | Copy all template branches (default: `false`)                                                                        |
 
 #### Action outputs
 

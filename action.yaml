@@ -42,6 +42,14 @@ inputs:
     required: false
     default: ''
 
+  visibility:
+    description: >
+      Repository visibility. One of: private, internal, public.
+      'internal' requires GitHub Enterprise Cloud (GHEC).
+      Overrides the value in repo-config if set.
+    required: false
+    default: ''
+
   include-all-branches:
     description: >
       When creating from a template, copy all branches instead of only the

@@ -43,12 +43,22 @@ async function run(): Promise<void> {
 	const templateOwner = core.getInput('template-owner');
 	const templateRepo = core.getInput('template-repo');
 	const includeAllBranches = core.getBooleanInput('include-all-branches');
+	const visibilityInput = core.getInput('visibility') as 'private' | 'internal' | 'public' | '';
 
 	// Resolve config file path relative to the Actions workspace root
 	const overrides = configInput ? loadConfigFile(resolve(process.env.GITHUB_WORKSPACE ?? '.', configInput)) : {};
 
 	const settings: RepoSettings = { ...repoDefaults, ...overrides.settings };
 	const rulesets: RulesetConfig[] = overrides.rulesets ?? rulesetDefaults;
+
+	// Action inputs take precedence over config-file settings
+	if (visibilityInput) {
+		const allowed = ['private', 'internal', 'public'];
+		if (!allowed.includes(visibilityInput)) {
+			throw new Error(`Invalid visibility "${visibilityInput}". Must be one of: ${allowed.join(', ')}.`);
+		}
+		settings.visibility = visibilityInput;
+	}
 
 	// Action inputs take precedence over config-file template settings
 	if (templateOwner || templateRepo) {

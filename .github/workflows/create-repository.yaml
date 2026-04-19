@@ -1,7 +1,7 @@
 name: Create Repository
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       name:
         description: Repository name
@@ -39,6 +39,15 @@ on:
         default: false
         type: boolean
 
+      visibility:
+        description: >
+          Repository visibility. One of: private, internal, public.
+          'internal' requires GitHub Enterprise Cloud (GHEC).
+          Overrides the value in repo-config if set.
+        required: false
+        default: 'public'
+        type: string
+
 jobs:
   create:
     name: Create ${{ inputs.org || github.repository_owner }}/${{ inputs.name }}
@@ -70,6 +79,7 @@ jobs:
           template-owner: ${{ inputs.template-repo != '' && (inputs.template-owner || github.repository_owner) || '' }}
           template-repo: ${{ inputs.template-repo }}
           include-all-branches: ${{ inputs.include-all-branches }}
+          visibility: ${{ inputs.visibility }}
 
       - name: Summary
         run: |
