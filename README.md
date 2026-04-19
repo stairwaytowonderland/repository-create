@@ -16,17 +16,17 @@ Supports blank creation or generation from a template repository.
 
 ```none
 .
-├── .editorconfig
 ├── .github
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── actions
-│   │   └── workflow-dispatch  # Composite action: triggers workflow_dispatch via gh CLI
+│   │   ├── npm-build               # Build npm package
+│   │   └── workflow-dispatch       # Composite action: triggers workflow_dispatch via gh CLI
 │   └── workflows
-│       ├── test.yaml               # Validates dist/ build on pull requests
 │       ├── create-repository.yaml  # workflow_dispatch trigger for repo creation
 │       ├── pre-commit.yaml         # Runs pre-commit hooks on pull requests
 │       ├── publish.yaml            # Creates GitHub release from a tag
-│       └── release.yaml            # Semantic release on push to main
+│       ├── release.yaml            # Semantic release on push to main
+│       └── test.yaml               # Validates dist/ build on pull requests
 ├── .pre-commit-config.yaml         # Pre-commit configuration
 ├── .releaserc                      # Semantic release configuration
 ├── action.yaml                     # JavaScript action definition
