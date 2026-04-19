@@ -18,11 +18,8 @@ Supports blank creation or generation from a template repository.
 .
 ├── .github
 │   ├── PULL_REQUEST_TEMPLATE.md
-│   ├── actions
-│   │   ├── node-semantic-release   # Composite action: build, typecheck, semantic-release, encode notes
-│   │   └── workflow-dispatch       # Composite action: triggers workflow_dispatch via gh CLI
 │   └── workflows
-│       ├── create-repository.yaml  # workflow_dispatch trigger for repo creation
+│       ├── create-repository.yaml  # workflow_call trigger for repo creation
 │       ├── pre-commit.yaml         # Runs pre-commit hooks on pull requests
 │       ├── publish.yaml            # Creates GitHub release from a tag
 │       ├── release.yaml            # Semantic release on push to main
