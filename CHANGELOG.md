@@ -1,3 +1,15 @@
+## [1.5.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.4.0...v1.5.0) (2026-04-20)
+
+### ✨ Features
+
+* new release ([868d335](https://github.com/stairwaytowonderland/repository-create/commit/868d33568b76adaab400407082ddc8392f5c8761))
+* rebuilt and adding dist ([0273466](https://github.com/stairwaytowonderland/repository-create/commit/0273466f2198c6d6c141b7749c114542946c511c))
+* ts modernization ([1bf740d](https://github.com/stairwaytowonderland/repository-create/commit/1bf740d3e3f9e617109f03df5adca45bb3c084eb))
+
+### 📚 Documentation
+
+* update README.md ([b634ba4](https://github.com/stairwaytowonderland/repository-create/commit/b634ba4d3a65e164835df3406b5f3a5b48b710d5))
+
 ## [1.4.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.3.0...v1.4.0) (2026-04-20)
 
 ### ✨ Features
