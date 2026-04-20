@@ -9,7 +9,7 @@
 	"scripts": {
 		"start": "node --import tsx/esm src/index.ts",
 		"typecheck": "tsc --noEmit",
-		"build": "esbuild src/action.ts --bundle --platform=node --target=node24 --outfile=dist/index.js",
+		"build": "esbuild src/action.ts --bundle --platform=node --target=node24 --outfile=dist/index.cjs",
 		"lint": "eslint src/ --ext .ts && prettier --check src/",
 		"lint-fix": "eslint src/ --fix",
 		"format": "prettier --write src/"
