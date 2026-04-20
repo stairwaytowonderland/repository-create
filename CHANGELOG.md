@@ -1,3 +1,9 @@
+## [1.6.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.5.0...v1.6.0) (2026-04-20)
+
+### ✨ Features
+
+* modify build command ([c60632c](https://github.com/stairwaytowonderland/repository-create/commit/c60632c50deab2ccc34dc6815decb58a367bb1b9))
+
 ## [1.5.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.4.0...v1.5.0) (2026-04-20)
 
 ### ✨ Features
