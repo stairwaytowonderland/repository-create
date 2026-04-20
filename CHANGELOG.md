@@ -1,3 +1,26 @@
+## [1.4.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.3.0...v1.4.0) (2026-04-20)
+
+### ✨ Features
+
+* removed dist and compiling as js instead of cjs ([a2d5ef1](https://github.com/stairwaytowonderland/repository-create/commit/a2d5ef1ff1575e73697d3f4e87d21a3e67a3944b))
+
+### 📚 Documentation
+
+* update README.md ([83316e2](https://github.com/stairwaytowonderland/repository-create/commit/83316e24aaca08e4ec817edaa3be80a3831b18eb))
+* update README.md ([135a3e6](https://github.com/stairwaytowonderland/repository-create/commit/135a3e68be08de5754cf94fc4521ffa68f473419))
+
+### 🏗️ Build System
+
+* removing local composite actions in favor of marketplace actions ([a2931fc](https://github.com/stairwaytowonderland/repository-create/commit/a2931fc54200c14feced3703f7659eadae8b6195))
+* update new-release-published output description ([74783f7](https://github.com/stairwaytowonderland/repository-create/commit/74783f753043add7cf09baebc3e8a76cfc99cb93))
+
+### 🔄 CI/CD
+
+* disable .github folder from paths; restricting test on pr to main ([7bbe845](https://github.com/stairwaytowonderland/repository-create/commit/7bbe84568f09371b10aa9dd740f4d95f6e458c28))
+* removed create-repository workflow ([daf058c](https://github.com/stairwaytowonderland/repository-create/commit/daf058c3e85620ca3cdff8e08d096dc9b96d4965))
+* update reference workflow-dispatch -> simple-workflow-dispatch ([6a43942](https://github.com/stairwaytowonderland/repository-create/commit/6a43942dd5d6c7681f3b0e79690ca3a0d634ec70))
+* update syntax in 'Decode release notes' conditional ([f5b3ce9](https://github.com/stairwaytowonderland/repository-create/commit/f5b3ce95715169395585dc8a04771de98275601c))
+
 ## [1.3.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.2.0...v1.3.0) (2026-04-19)
 
 ### ✨ Features
