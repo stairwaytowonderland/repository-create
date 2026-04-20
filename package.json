@@ -9,8 +9,15 @@
 	"scripts": {
 		"start": "node --import tsx/esm src/index.ts",
 		"typecheck": "tsc --noEmit",
-		"build": "esbuild src/action.ts --bundle --platform=node --target=node24 --outfile=dist/index.cjs"
+		"build": "esbuild src/index.ts --format=esm --bundle --platform=node --target=node24 --outfile=dist/index.js",
+		"lint": "eslint src/ --ext .ts && prettier --check src/",
+		"lint-fix": "eslint src/ --fix",
+		"format": "prettier --write src/"
 	},
+	"keywords": [
+		"github",
+		"actions"
+	],
 	"dependencies": {
 		"@actions/core": "^1.11.1",
 		"octokit": "^4.0.2"
@@ -22,10 +29,13 @@
 		"@types/node": "^25.6.0",
 		"conventional-changelog-conventionalcommits": "^8.0.0",
 		"esbuild": "^0.25.0",
+		"eslint": "^10.0.1",
+		"prettier": "^3.8.1",
 		"semantic-release": "^24.0.0",
 		"semantic-release-export-data": "^1.0.0",
 		"tsx": "^4.21.0",
-		"typescript": "^6.0.3"
+		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.56.0"
 	},
 	"overrides": {
 		"picomatch": "^4.0.4",

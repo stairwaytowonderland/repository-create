@@ -74,7 +74,7 @@ outputs:
 
 runs:
   using: node24
-  main: dist/index.cjs
+  main: dist/index.js
 
 branding:
   icon: git-branch
