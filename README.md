@@ -62,26 +62,15 @@ Supports blank creation or generation from a template repository.
 
 #### Use as an action from another workflow
 
-The calling job requires the following `permissions:`:
-
-| Permission | Level  | Reason                             |
-| ---------- | ------ | ---------------------------------- |
-| `contents` | `read` | Check out the action at `uses: ./` |
-
-> [!NOTE]
-> All GitHub API operations (creating the repository, applying settings, and branch rulesets) are performed using the
-> `github-token` input — a PAT with `repo` and `admin:org` scopes. No additional `permissions:` entries are needed
-> beyond `contents: read`.
-
 ```yaml
 - name: Create repository
   uses: stairwaytowonderland/repository-create@main
   with:
-    github-token: ${{ secrets.GH_PAT_CREATE_REPO }}
-    org: my-org
+    github-token: ${{ secrets.PAT }}
+    # org: ${{ github.org }}          # optional — github.org is default; input shown for reference
     name: my-new-repo
     repo-config: config/config.json   # optional
-    visibility: private               # optional — private | internal | public
+    visibility: private               # optional — private | internal | public (default)
     job-summary: true                 # optional — write a job summary (default: true)
 ```
 
