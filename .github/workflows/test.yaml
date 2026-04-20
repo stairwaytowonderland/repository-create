@@ -2,8 +2,9 @@ name: Test
 
 on:
   pull_request:
+    branches: [main]
     paths:
-      - '.github/**'
+      # - '.github/**'
       - 'src/**'
       - 'package*.json'
       - 'action.yaml'
