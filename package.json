@@ -1,6 +1,6 @@
 {
 	"name": "repository-create",
-	"version": "1.6.0",
+	"version": "1.7.0",
 	"description": "Dynamically create GitHub repositories with pre-defined settings and branch rulesets using Octokit.js",
 	"type": "module",
 	"engines": {

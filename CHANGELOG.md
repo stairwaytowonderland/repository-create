@@ -1,3 +1,9 @@
+## [1.7.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.6.0...v1.7.0) (2026-04-20)
+
+### ✨ Features
+
+* compiling as cjs instead of js ([19b86a2](https://github.com/stairwaytowonderland/repository-create/commit/19b86a2e5fd5d505bf09c6414dcdb1f88b395b73))
+
 ## [1.6.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.5.0...v1.6.0) (2026-04-20)
 
 ### ✨ Features
