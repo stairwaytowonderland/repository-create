@@ -31,7 +31,7 @@ Supports blank creation or generation from a template repository.
 │   ├── config.noinit.json          # Minimal config with no template and no auto_init
 │   └── config.default.json         # Sample default config with all options specified
 ├── dist
-│   └── index.js                    # Bundled action entrypoint (committed, auto-generated)
+│   └── index.cjs                   # Bundled action entrypoint (committed, auto-generated)
 ├── env.sample
 ├── CONTRIBUTING.md
 ├── LICENSE
