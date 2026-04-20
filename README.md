@@ -19,7 +19,6 @@ Supports blank creation or generation from a template repository.
 ├── .github
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   └── workflows
-│       ├── create-repository.yaml  # workflow_call trigger for repo creation
 │       ├── pre-commit.yaml         # Runs pre-commit hooks on pull requests
 │       ├── publish.yaml            # Creates GitHub release from a tag
 │       ├── release.yaml            # Semantic release on push to main
@@ -189,19 +188,6 @@ these values at runtime by passing a JSON config file.
 ```
 
 ### CLI Usage
-
-Trigger the `create-repository` workflow from the **Actions** tab in GitHub, or via the GitHub CLI:
-
-```bash
-gh workflow run create-repository.yaml \
-  -f name=my-new-repo \
-  -f org=my-org \
-  -f repo-config=config/config.json
-```
-
-> [!NOTE]
-> The workflow requires a secret named `GH_PAT_CREATE_REPO` — a Personal Access Token (or future GitHub App installation
-> token) with `repo` and `admin:org` scopes.
 
 #### Installation
 
