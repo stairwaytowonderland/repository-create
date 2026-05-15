@@ -15,27 +15,42 @@ export async function createRulesets(
 
 	for (const ruleset of rulesets) {
 		console.log(`  Creating ruleset "${ruleset.name}"...`);
-
-		const { data } = await octokit.request('POST /repos/{owner}/{repo}/rulesets', {
-			owner,
-			repo,
-			name: ruleset.name,
-			target: ruleset.target,
-			enforcement: ruleset.enforcement,
-			conditions: {
-				ref_name: {
-					include: ruleset.conditions.ref_name.include,
-					exclude: ruleset.conditions.ref_name.exclude,
+		try {
+			const { data } = await octokit.request('POST /repos/{owner}/{repo}/rulesets', {
+				owner,
+				repo,
+				name: ruleset.name,
+				target: ruleset.target,
+				enforcement: ruleset.enforcement,
+				conditions: {
+					ref_name: {
+						include: ruleset.conditions.ref_name.include,
+						exclude: ruleset.conditions.ref_name.exclude,
+					},
 				},
-			},
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			rules: ruleset.rules as any,
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			bypass_actors: ruleset.bypass_actors as any,
-		});
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				rules: ruleset.rules as any,
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				bypass_actors: ruleset.bypass_actors as any,
+			});
 
-		console.log(`  ✓ Ruleset "${ruleset.name}" created (id: ${data.id}).`);
-		results.push(data);
+			console.log(`  ✓ Ruleset "${ruleset.name}" created (id: ${data.id}).`);
+			results.push(data);
+		} catch (err: any) {
+			// Detect plan limitation error for private repos (403 or 422 with specific message)
+			const msg = err?.message || '';
+			if (
+				(err.status === 403 || err.status === 422) &&
+				/upgrade to GitHub Pro|make this repository public/i.test(msg)
+			) {
+				console.warn(`  ⚠️  Could not create ruleset "${ruleset.name}" for private repo: ${msg}`);
+				continue;
+			} else if (err.status === 403 || err.status === 422) {
+				console.warn(`  ⚠️  Could not create ruleset "${ruleset.name}": ${msg}`);
+				continue;
+			}
+			throw err;
+		}
 	}
 
 	return results;

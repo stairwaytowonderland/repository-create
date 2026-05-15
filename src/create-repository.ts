@@ -14,28 +14,31 @@ export async function createRepository(
 	octokit: Octokit,
 	{ org, name, settings, rulesets }: { org: string; name: string; settings: RepoSettings; rulesets: RulesetConfig[] }
 ): Promise<object> {
+	// Sanitize repository name for API calls: only [\w.-], others to '-'
+	const nameSanitized = name.replace(/[^\w.\-]/g, '-');
 	console.log(`\nCreating repository "${org}/${name}"...`);
 
 	let repo: { html_url: string; full_name: string; id: number };
 
 	if (settings.template) {
-		({ data: repo } = await createFromTemplate(octokit, { org, name, settings }));
+		({ data: repo } = await createFromTemplate(octokit, { org, name: nameSanitized, settings }));
 		if (settings.template.updateReadmeHeading !== false) {
+			// Use unsanitized name for README heading
 			await updateReadmeHeading(octokit, { owner: org, repo: name });
 		}
 	} else {
-		({ data: repo } = await createBlank(octokit, { org, name, settings }));
+		({ data: repo } = await createBlank(octokit, { org, name: nameSanitized, settings }));
 	}
 
 	console.log(`\n✓ Repository "${org}/${name}" created: (id: ${repo.id})`);
 
 	// Second-pass settings update (covers fields not available at creation time)
-	await applySettings(octokit, { owner: org, repo: name, settings });
+	await applySettings(octokit, { owner: org, repo: nameSanitized, settings });
 
 	// Branch rulesets
 	if (rulesets && rulesets.length > 0) {
 		console.log(`\nCreating branch rulesets...`);
-		await createRulesets(octokit, { owner: org, repo: name, rulesets });
+		await createRulesets(octokit, { owner: org, repo: nameSanitized, rulesets });
 	}
 
 	console.log(`\n✓ Repository "${repo.full_name}" setup complete.`);
