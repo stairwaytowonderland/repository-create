@@ -29327,25 +29327,37 @@ async function createRulesets(octokit, { owner, repo, rulesets }) {
   const results = [];
   for (const ruleset of rulesets) {
     console.log(`  Creating ruleset "${ruleset.name}"...`);
-    const { data } = await octokit.request("POST /repos/{owner}/{repo}/rulesets", {
-      owner,
-      repo,
-      name: ruleset.name,
-      target: ruleset.target,
-      enforcement: ruleset.enforcement,
-      conditions: {
-        ref_name: {
-          include: ruleset.conditions.ref_name.include,
-          exclude: ruleset.conditions.ref_name.exclude
-        }
-      },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      rules: ruleset.rules,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      bypass_actors: ruleset.bypass_actors
-    });
-    console.log(`  \u2713 Ruleset "${ruleset.name}" created (id: ${data.id}).`);
-    results.push(data);
+    try {
+      const { data } = await octokit.request("POST /repos/{owner}/{repo}/rulesets", {
+        owner,
+        repo,
+        name: ruleset.name,
+        target: ruleset.target,
+        enforcement: ruleset.enforcement,
+        conditions: {
+          ref_name: {
+            include: ruleset.conditions.ref_name.include,
+            exclude: ruleset.conditions.ref_name.exclude
+          }
+        },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        rules: ruleset.rules,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        bypass_actors: ruleset.bypass_actors
+      });
+      console.log(`  \u2713 Ruleset "${ruleset.name}" created (id: ${data.id}).`);
+      results.push(data);
+    } catch (err) {
+      const msg = err?.message || "";
+      if ((err.status === 403 || err.status === 422) && /upgrade to GitHub Pro|make this repository public/i.test(msg)) {
+        console.warn(`  \u26A0\uFE0F  Could not create ruleset "${ruleset.name}" for private repo: ${msg}`);
+        continue;
+      } else if (err.status === 403 || err.status === 422) {
+        console.warn(`  \u26A0\uFE0F  Could not create ruleset "${ruleset.name}": ${msg}`);
+        continue;
+      }
+      throw err;
+    }
   }
   return results;
 }
@@ -29401,24 +29413,25 @@ async function fetchReadmeWithRetry(octokit, { owner, repo }) {
 
 // src/create-repository.ts
 async function createRepository(octokit, { org, name, settings, rulesets }) {
+  const nameSanitized = name.replace(/[^\w.\-]/g, "-");
   console.log(`
 Creating repository "${org}/${name}"...`);
   let repo;
   if (settings.template) {
-    ({ data: repo } = await createFromTemplate(octokit, { org, name, settings }));
+    ({ data: repo } = await createFromTemplate(octokit, { org, name: nameSanitized, settings }));
     if (settings.template.updateReadmeHeading !== false) {
       await updateReadmeHeading(octokit, { owner: org, repo: name });
     }
   } else {
-    ({ data: repo } = await createBlank(octokit, { org, name, settings }));
+    ({ data: repo } = await createBlank(octokit, { org, name: nameSanitized, settings }));
   }
   console.log(`
 \u2713 Repository "${org}/${name}" created: (id: ${repo.id})`);
-  await applySettings(octokit, { owner: org, repo: name, settings });
+  await applySettings(octokit, { owner: org, repo: nameSanitized, settings });
   if (rulesets && rulesets.length > 0) {
     console.log(`
 Creating branch rulesets...`);
-    await createRulesets(octokit, { owner: org, repo: name, rulesets });
+    await createRulesets(octokit, { owner: org, repo: nameSanitized, rulesets });
   }
   console.log(`
 \u2713 Repository "${repo.full_name}" setup complete.`);

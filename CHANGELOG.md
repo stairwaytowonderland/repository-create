@@ -1,3 +1,14 @@
+## [1.8.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.7.0...v1.8.0) (2026-05-15)
+
+### ✨ Features
+
+* error handling and name sanitization ([#1](https://github.com/stairwaytowonderland/repository-create/issues/1)) ([f5dc396](https://github.com/stairwaytowonderland/repository-create/commit/f5dc396c99ed517ce21f419bffa6255f85ea368c))
+
+### 📚 Documentation
+
+* update README.md ([a294e1a](https://github.com/stairwaytowonderland/repository-create/commit/a294e1a4ecb79e425cd03da5b04e9dce11a1b809))
+* update README.md ([4de9b5e](https://github.com/stairwaytowonderland/repository-create/commit/4de9b5e12a8125b7c8634131d8741a6fca880248))
+
 ## [1.7.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.6.0...v1.7.0) (2026-04-20)
 
 ### ✨ Features
