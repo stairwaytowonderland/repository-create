@@ -72,8 +72,6 @@
 			{
 				"assets": [
 					"CHANGELOG.md",
-					"dist/index.js",
-					"dist/index.js.map",
 					"package.json",
 					"package-lock.json"
 				],

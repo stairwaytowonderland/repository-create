@@ -3,11 +3,10 @@ name: Release
 on:
   push:
     branches: [main]
-    paths:
-      # - '.github/**'
-      - 'src/**'
-      - 'package*.json'
-      - 'action.yaml'
+    paths-ignore:
+      - 'CHANGELOG.md'
+      - 'package.json'
+      - 'package-lock.json'
   workflow_dispatch:
 
 jobs:
@@ -32,7 +31,7 @@ jobs:
         id: release
         uses: stairwaytowonderland/node-semantic-release@main
         with:
-          github-token: ${{ secrets.GH_PAT_CREATE_REPO }}
+          github-token: ${{ secrets.GH_PAT_CREATE_RELEASE }}
 
       - name: Dispatch Publish workflow
         if: steps.release.outputs.new-release-published == 'true'
