@@ -47,6 +47,10 @@ async function run(): Promise<void> {
 	const createFromTemplateMaxRetries = core.getInput('create-from-template-max-retries');
 	const visibilityInput = core.getInput('visibility') as 'private' | 'internal' | 'public' | '';
 	const jobSummary = core.getBooleanInput('job-summary');
+	const createFromTemplateRetryDelayMs = createFromTemplateRetryDelay
+		? Number(createFromTemplateRetryDelay)
+		: undefined;
+	const createFromTemplateMaxRetryCount = createFromTemplateMaxRetries ? Number(createFromTemplateMaxRetries) : undefined;
 
 	// Resolve config file path relative to the Actions workspace root
 	const overrides = configInput ? loadConfigFile(resolve(process.env.GITHUB_WORKSPACE ?? '.', configInput)) : {};
@@ -72,8 +76,16 @@ async function run(): Promise<void> {
 			owner: templateOwner,
 			repo: templateRepo,
 			includeAllBranches,
-			createFromTemplateRetryDelay: createFromTemplateRetryDelay ? Number(createFromTemplateRetryDelay) : undefined,
-			createFromTemplateMaxRetries: createFromTemplateMaxRetries ? Number(createFromTemplateMaxRetries) : undefined,
+			createFromTemplateRetryDelay: createFromTemplateRetryDelayMs,
+			createFromTemplateMaxRetries: createFromTemplateMaxRetryCount,
+		};
+	}
+
+	if (settings.template) {
+		settings.template = {
+			...settings.template,
+			createFromTemplateRetryDelay: createFromTemplateRetryDelayMs,
+			createFromTemplateMaxRetries: createFromTemplateMaxRetryCount,
 		};
 	}
 
