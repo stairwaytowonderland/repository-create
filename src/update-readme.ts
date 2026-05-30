@@ -56,7 +56,7 @@ export async function updateReadmeHeading(
 }
 
 /**
- * Retries fetching the README every 5 seconds for up to 100 seconds.
+ * Retries fetching the README every 3 seconds for up to 30 seconds.
  * GitHub populates template contents asynchronously, so the file may not
  * exist immediately after createUsingTemplate resolves.
  */
@@ -66,8 +66,8 @@ async function fetchReadmeWithRetry(
 	options?: { retryDelayMs?: number; maxRetries?: number }
 ): Promise<GitHubFileContent | null> {
 	const candidates = ['README.md', 'readme.md', 'Readme.md'];
-	const maxAttempts = options?.maxRetries ?? 20;
-	const delayMs = options?.retryDelayMs ?? 5000;
+	const maxAttempts = options?.maxRetries ?? 10;
+	const delayMs = options?.retryDelayMs ?? 3000;
 
 	// Always sanitize repo name for API calls
 	const sanitizedRepo = sanitizeRepoName(repo);
