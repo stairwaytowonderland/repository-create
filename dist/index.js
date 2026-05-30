@@ -34659,14 +34659,14 @@ async function updateReadmeHeading(octokit, { owner, repo }, options) {
     info(`  ✓ README heading updated.`);
 }
 /**
- * Retries fetching the README every 3 seconds for up to 30 seconds.
+ * Retries fetching the README every 5 seconds for up to 100 seconds.
  * GitHub populates template contents asynchronously, so the file may not
  * exist immediately after createUsingTemplate resolves.
  */
 async function fetchReadmeWithRetry(octokit, { owner, repo }, options) {
     const candidates = ['README.md', 'readme.md', 'Readme.md'];
-    const maxAttempts = options?.maxRetries ?? 10;
-    const delayMs = options?.retryDelayMs ?? 3000;
+    const maxAttempts = options?.maxRetries ?? 20;
+    const delayMs = options?.retryDelayMs ?? 5000;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         for (const path of candidates) {
             try {
