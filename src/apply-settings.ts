@@ -1,5 +1,6 @@
 import type { Octokit } from 'octokit';
 import type { RepoSettings } from './types.js';
+import * as core from '@actions/core';
 
 /**
  * Applies general repository settings via PATCH /repos/{owner}/{repo}.
@@ -11,7 +12,7 @@ export async function applySettings(
 	octokit: Octokit,
 	{ owner, repo, settings }: { owner: string; repo: string; settings: RepoSettings }
 ) {
-	console.log(`  Applying repository settings...`);
+	core.info(`  Applying repository settings...`);
 
 	const { data } = await octokit.rest.repos.update({
 		owner,
@@ -30,6 +31,6 @@ export async function applySettings(
 		allow_auto_merge: settings.allowAutoMerge,
 	});
 
-	console.log(`  ✓ Settings applied.`);
+	core.info(`  ✓ Settings applied.`);
 	return data;
 }

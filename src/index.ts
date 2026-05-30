@@ -90,6 +90,12 @@ async function main(): Promise<void> {
 			owner: String(args['template-owner']),
 			repo: String(args['template-repo']),
 			includeAllBranches: args['include-all-branches'] === true,
+			createFromTemplateRetryDelay: args['create-from-template-retry-delay']
+				? Number(args['create-from-template-retry-delay'])
+				: undefined,
+			createFromTemplateMaxRetries: args['create-from-template-max-retries']
+				? Number(args['create-from-template-max-retries'])
+				: undefined,
 		};
 	}
 

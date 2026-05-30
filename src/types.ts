@@ -11,6 +11,10 @@ export interface TemplateConfig {
 	includeAllBranches?: boolean;
 	/** Replace first H1 in README with the new repo name (default: true) */
 	updateReadmeHeading?: boolean;
+	/** Retry delay in ms for fetching README after template creation */
+	createFromTemplateRetryDelay?: number;
+	/** Max retries for fetching README after template creation */
+	createFromTemplateMaxRetries?: number;
 }
 
 export interface RepoSettings {

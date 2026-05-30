@@ -43,6 +43,8 @@ async function run(): Promise<void> {
 	const templateOwner = core.getInput('template-owner');
 	const templateRepo = core.getInput('template-repo');
 	const includeAllBranches = core.getBooleanInput('include-all-branches');
+	const createFromTemplateRetryDelay = core.getInput('create-from-template-retry-delay');
+	const createFromTemplateMaxRetries = core.getInput('create-from-template-max-retries');
 	const visibilityInput = core.getInput('visibility') as 'private' | 'internal' | 'public' | '';
 	const jobSummary = core.getBooleanInput('job-summary');
 
@@ -70,6 +72,8 @@ async function run(): Promise<void> {
 			owner: templateOwner,
 			repo: templateRepo,
 			includeAllBranches,
+			createFromTemplateRetryDelay: createFromTemplateRetryDelay ? Number(createFromTemplateRetryDelay) : undefined,
+			createFromTemplateMaxRetries: createFromTemplateMaxRetries ? Number(createFromTemplateMaxRetries) : undefined,
 		};
 	}
 

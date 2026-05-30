@@ -1,5 +1,6 @@
 import type { Octokit } from 'octokit';
 import type { GitHubFileContent } from './types.js';
+import * as core from '@actions/core';
 
 /**
  * Updates the first H1 heading in the repository's README to match the repo name.
@@ -12,19 +13,20 @@ import type { GitHubFileContent } from './types.js';
  */
 export async function updateReadmeHeading(
 	octokit: Octokit,
-	{ owner, repo }: { owner: string; repo: string }
+	{ owner, repo }: { owner: string; repo: string },
+	options?: { retryDelayMs?: number; maxRetries?: number }
 ): Promise<void> {
-	console.log(`  Updating README heading to "${repo}"...`);
+	core.info(`  Updating README heading to "${repo}"...`);
 
-	const file = await fetchReadmeWithRetry(octokit, { owner, repo });
+	const file = await fetchReadmeWithRetry(octokit, { owner, repo }, options);
 
 	if (!file) {
-		console.log(`  ⚠ No README found after retries — skipping heading update.`);
+		core.warning(`  ⚠ No README found after retries — skipping heading update.`);
 		return;
 	}
 
 	if (file.type !== 'file' || !file.content) {
-		console.log(`  ⚠ README is not a regular file — skipping heading update.`);
+		core.warning(`  ⚠ README is not a regular file — skipping heading update.`);
 		return;
 	}
 
@@ -34,7 +36,7 @@ export async function updateReadmeHeading(
 	const updated = original.replace(/^#\s+.+$/m, `# ${repo}`);
 
 	if (updated === original) {
-		console.log(`  ⚠ No H1 heading found in README — skipping heading update.`);
+		core.warning(`  ⚠ No H1 heading found in README — skipping heading update.`);
 		return;
 	}
 
@@ -47,7 +49,7 @@ export async function updateReadmeHeading(
 		sha: file.sha,
 	});
 
-	console.log(`  ✓ README heading updated.`);
+	core.info(`  ✓ README heading updated.`);
 }
 
 /**
@@ -57,11 +59,12 @@ export async function updateReadmeHeading(
  */
 async function fetchReadmeWithRetry(
 	octokit: Octokit,
-	{ owner, repo }: { owner: string; repo: string }
+	{ owner, repo }: { owner: string; repo: string },
+	options?: { retryDelayMs?: number; maxRetries?: number }
 ): Promise<GitHubFileContent | null> {
 	const candidates = ['README.md', 'readme.md', 'Readme.md'];
-	const maxAttempts = 10;
-	const delayMs = 3000;
+	const maxAttempts = options?.maxRetries ?? 10;
+	const delayMs = options?.retryDelayMs ?? 3000;
 
 	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
 		for (const path of candidates) {
@@ -74,7 +77,7 @@ async function fetchReadmeWithRetry(
 		}
 
 		if (attempt < maxAttempts) {
-			console.log(`  Waiting for template contents to be ready (attempt ${attempt}/${maxAttempts})...`);
+			core.info(`  Waiting for template contents to be ready (attempt ${attempt}/${maxAttempts})...`);
 			await new Promise((resolve) => setTimeout(resolve, delayMs));
 		}
 	}

@@ -12,41 +12,46 @@ Supports blank creation or generation from a template repository.
 ## Project structure
 
 > [!NOTE]
-> `tree -a -I 'node_modules|.git' .`
+> `tree -a -F -L 3 -I '.git|.vscode' --gitignore --dirsfirst .`
 
 ```none
 .
 ├── .github
-│   ├── PULL_REQUEST_TEMPLATE.md
-│   └── workflows
-│       ├── pre-commit.yaml         # Runs pre-commit hooks on pull requests
-│       ├── publish.yaml            # Creates GitHub release from a tag
-│       ├── release.yaml            # Semantic release on push to main
-│       └── test.yaml               # Validates dist/ build on pull requests
-├── .pre-commit-config.yaml         # Pre-commit configuration
-├── .releaserc                      # Semantic release configuration
-├── action.yaml                     # JavaScript action definition
+│   ├── workflows
+│   │   ├── pre-commit.yaml         # Runs pre-commit hooks on pull requests
+│   │   ├── publish.yaml            # Creates GitHub release from a tag
+│   │   ├── release.yaml            # Semantic release on push to main
+│   │   └── test.yaml               # Validates dist/ build on pull requests
+│   ├── .dependabot.yml
+│   └── PULL_REQUEST_TEMPLATE.md
 ├── config
 │   ├── config.json                 # Standard config
 │   ├── config.noinit.json          # Minimal config with no template and no auto_init
 │   └── config.default.json         # Sample default config with all options specified
 ├── dist
 │   └── index.cjs                   # Bundled action entrypoint (committed, auto-generated)
-├── env.sample
+├── src
+│   ├── action.ts                   # GitHub Actions entrypoint (uses @actions/core)
+│   ├── apply-settings.ts           # PATCH general repo settings after creation
+│   ├── create-repository.ts        # Orchestrator: create → settings → rulesets
+│   ├── create-rulesets.ts          # POST branch rulesets
+│   ├── github-client.ts            # Octokit client factory (PAT today, App-ready)
+│   ├── index.ts                    # CLI entry point
+│   ├── repo-defaults.ts            # Default repo settings and branch ruleset config
+│   ├── types.ts                    # Shared TypeScript type definitions
+│   └── update-readme.ts            # Updates README heading after template creation
+├── .pre-commit-config.yaml         # Pre-commit configuration
+├── .releaserc                      # Semantic release configuration
+├── action.yaml                     # JavaScript action definition
+├── CHANGELOG.md
 ├── CONTRIBUTING.md
+├── env.sample
+├── eslint.config.mjs
 ├── LICENSE
+├── package-lock.json
 ├── package.json
 ├── README.md
-└── src
-    ├── action.ts             # GitHub Actions entrypoint (uses @actions/core)
-    ├── apply-settings.ts     # PATCH general repo settings after creation
-    ├── create-repository.ts  # Orchestrator: create → settings → rulesets
-    ├── create-rulesets.ts    # POST branch rulesets
-    ├── github-client.ts      # Octokit client factory (PAT today, App-ready)
-    ├── index.ts              # CLI entry point
-    ├── repo-defaults.ts      # Default repo settings and branch ruleset config
-    ├── types.ts              # Shared TypeScript type definitions
-    └── update-readme.ts      # Updates README heading after template creation
+└── tsconfig.json
 ```
 
 ## Prerequisites

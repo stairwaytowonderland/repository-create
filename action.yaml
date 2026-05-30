@@ -62,6 +62,21 @@ inputs:
     required: false
     default: 'true'
 
+  create-from-template-retry-delay:
+    description: >
+      Time in milliseconds to wait before retrying repository creation if a
+      template is being used and the API returns a 422 error indicating the
+      template is still being processed. Default: 3000 (3 seconds).
+    required: false
+    default: '3000'
+
+  create-from-template-max-retries:
+    description: >
+      Maximum number of retries if a template is being used and the API returns a
+      422 error indicating the template is still being processed. Default: 10.
+    required: false
+    default: '10'
+
 outputs:
   repo-url:
     description: HTML URL of the created repository (e.g. https://github.com/org/repo).

@@ -3,6 +3,7 @@ import type { RepoSettings, RulesetConfig, TemplateConfig } from './types.js';
 import { applySettings } from './apply-settings.js';
 import { createRulesets } from './create-rulesets.js';
 import { updateReadmeHeading } from './update-readme.js';
+import * as core from '@actions/core';
 
 /**
  * Orchestrates repository creation:
@@ -15,8 +16,8 @@ export async function createRepository(
 	{ org, name, settings, rulesets }: { org: string; name: string; settings: RepoSettings; rulesets: RulesetConfig[] }
 ): Promise<object> {
 	// Sanitize repository name for API calls: only [\w.-], others to '-'
-	const nameSanitized = name.replace(/[^\w.\-]/g, '-');
-	console.log(`\nCreating repository "${org}/${name}"...`);
+	const nameSanitized: string = name.replace(/[^\w.\-]/g, '-');
+	core.info(`\nCreating repository "${org}/${name}"...`);
 
 	let repo: { html_url: string; full_name: string; id: number };
 
@@ -24,25 +25,32 @@ export async function createRepository(
 		({ data: repo } = await createFromTemplate(octokit, { org, name: nameSanitized, settings }));
 		if (settings.template.updateReadmeHeading !== false) {
 			// Use unsanitized name for README heading
-			await updateReadmeHeading(octokit, { owner: org, repo: name });
+			await updateReadmeHeading(
+				octokit,
+				{ owner: org, repo: name },
+				{
+					retryDelayMs: settings.template.createFromTemplateRetryDelay,
+					maxRetries: settings.template.createFromTemplateMaxRetries,
+				}
+			);
 		}
 	} else {
 		({ data: repo } = await createBlank(octokit, { org, name: nameSanitized, settings }));
 	}
 
-	console.log(`\n✓ Repository "${org}/${name}" created: (id: ${repo.id})`);
+	core.info(`\n✓ Repository "${org}/${name}" created: (id: ${repo.id})`);
 
 	// Second-pass settings update (covers fields not available at creation time)
 	await applySettings(octokit, { owner: org, repo: nameSanitized, settings });
 
 	// Branch rulesets
 	if (rulesets && rulesets.length > 0) {
-		console.log(`\nCreating branch rulesets...`);
+		core.info(`\nCreating branch rulesets...`);
 		await createRulesets(octokit, { owner: org, repo: nameSanitized, rulesets });
 	}
 
-	console.log(`\n✓ Repository "${repo.full_name}" setup complete.`);
-	console.log(`\n🌐 Repository available at: ${repo.html_url}`);
+	core.info(`\n✓ Repository "${repo.full_name}" setup complete.`);
+	core.info(`\n🌐 Repository available at: ${repo.html_url}`);
 	return repo;
 }
 
@@ -59,7 +67,7 @@ function createBlank(octokit: Octokit, { org, name, settings }: { org: string; n
 		 * orgs that use 'internal' (GHEC). Both are sent so older API versions
 		 * continue to work.
 		 */
-		private: settings.visibility !== 'public',
+		// private: settings.visibility !== 'public',
 		visibility: settings.visibility as 'private' | 'public' | undefined,
 		has_issues: settings.hasIssues,
 		has_projects: settings.hasProjects,
@@ -87,8 +95,8 @@ function createFromTemplate(
 ) {
 	const { owner: templateOwner, repo: templateRepo, includeAllBranches = false } = settings.template as TemplateConfig;
 
-	console.log(`  Using template: ${templateOwner}/${templateRepo}`);
-	console.log(`  Destination:    ${org}/${name} (visibility: ${settings.visibility})`);
+	core.info(`  Using template: ${templateOwner}/${templateRepo}`);
+	core.info(`  Destination:    ${org}/${name} (visibility: ${settings.visibility})`);
 
 	return octokit.rest.repos
 		.createUsingTemplate({
