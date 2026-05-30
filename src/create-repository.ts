@@ -3,6 +3,7 @@ import type { RepoSettings, RulesetConfig, TemplateConfig } from './types.js';
 import { applySettings } from './apply-settings.js';
 import { createRulesets } from './create-rulesets.js';
 import { updateReadmeHeading } from './update-readme.js';
+import { sanitizeRepoName } from './utils.js';
 import * as core from '@actions/core';
 
 /**
@@ -16,7 +17,7 @@ export async function createRepository(
 	{ org, name, settings, rulesets }: { org: string; name: string; settings: RepoSettings; rulesets: RulesetConfig[] }
 ): Promise<object> {
 	// Sanitize repository name for API calls: only [\w.-], others to '-'
-	const nameSanitized: string = name.replace(/[^\w.\-]/g, '-');
+	const nameSanitized: string = sanitizeRepoName(name);
 	core.info(`\nCreating repository "${org}/${name}"...`);
 
 	let repo: { html_url: string; full_name: string; id: number };

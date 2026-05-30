@@ -34622,6 +34622,14 @@ async function createRulesets(octokit, { owner, repo, rulesets }) {
 }
 
 /**
+ * Sanitizes a repository name to match GitHub's normalization:
+ * Only [A-Za-z0-9_.-] are allowed, everything else becomes '-'.
+ */
+function sanitizeRepoName(name) {
+    return name.replace(/[^\w.\-]/g, '-');
+}
+
+/**
  * Updates the first H1 heading in the repository's README to match the repo name.
  *
  * Uses GET /repos/{owner}/{repo}/contents/README.md to fetch the current content,
@@ -34631,8 +34639,9 @@ async function createRulesets(octokit, { owner, repo, rulesets }) {
  * repo is created, so this function retries the README fetch until it appears.
  */
 async function updateReadmeHeading(octokit, { owner, repo }, options) {
-    info(`  Updating README heading to "${repo}"...`);
-    const file = await fetchReadmeWithRetry(octokit, { owner, repo }, options);
+    const sanitizedRepo = sanitizeRepoName(repo);
+    info(`  Updating README heading to "${repo}" (API repo: "${sanitizedRepo}")...`);
+    const file = await fetchReadmeWithRetry(octokit, { owner, repo: sanitizedRepo }, options);
     if (!file) {
         warning(`  ⚠ No README found after retries — skipping heading update.`);
         return;
@@ -34642,15 +34651,15 @@ async function updateReadmeHeading(octokit, { owner, repo }, options) {
         return;
     }
     const original = Buffer.from(file.content, 'base64').toString('utf8');
-    // Replace only the first H1 line (# Title)
-    const updated = original.replace(/^#\s+.+$/m, `# ${repo}`);
+    // Replace only the first H1 line (# Title), robust to spaces and special characters
+    const updated = original.replace(/^#\s+.*$/m, `# ${repo}`);
     if (updated === original) {
         warning(`  ⚠ No H1 heading found in README — skipping heading update.`);
         return;
     }
     await octokit.rest.repos.createOrUpdateFileContents({
         owner,
-        repo,
+        repo: sanitizedRepo,
         path: file.path,
         message: `chore(docs): rename README.md heading to ${repo} [skip ci]`,
         content: Buffer.from(updated).toString('base64'),
@@ -34667,10 +34676,12 @@ async function fetchReadmeWithRetry(octokit, { owner, repo }, options) {
     const candidates = ['README.md', 'readme.md', 'Readme.md'];
     const maxAttempts = options?.maxRetries ?? 20;
     const delayMs = options?.retryDelayMs ?? 5000;
+    // Always sanitize repo name for API calls
+    const sanitizedRepo = sanitizeRepoName(repo);
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         for (const path of candidates) {
             try {
-                const { data } = await octokit.rest.repos.getContent({ owner, repo, path });
+                const { data } = await octokit.rest.repos.getContent({ owner, repo: sanitizedRepo, path });
                 return data;
             }
             catch (err) {
@@ -34694,7 +34705,7 @@ async function fetchReadmeWithRetry(octokit, { owner, repo }, options) {
  */
 async function createRepository(octokit, { org, name, settings, rulesets }) {
     // Sanitize repository name for API calls: only [\w.-], others to '-'
-    const nameSanitized = name.replace(/[^\w.\-]/g, '-');
+    const nameSanitized = sanitizeRepoName(name);
     info(`\nCreating repository "${org}/${name}"...`);
     let repo;
     if (settings.template) {

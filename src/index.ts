@@ -19,6 +19,7 @@
  *   REPO_CONFIG   - Path to a JSON settings/rulesets override file (alternative to --repo-config)
  */
 
+import 'dotenv/config';
 import { readFileSync } from 'node:fs';
 import type { RepoSettings, RulesetConfig } from './types.js';
 import { createGitHubClient } from './github-client.js';

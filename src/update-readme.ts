@@ -1,6 +1,7 @@
 import type { Octokit } from 'octokit';
 import type { GitHubFileContent } from './types.js';
 import * as core from '@actions/core';
+import { sanitizeRepoName } from './utils.js';
 
 /**
  * Updates the first H1 heading in the repository's README to match the repo name.
@@ -11,14 +12,16 @@ import * as core from '@actions/core';
  * Note: GitHub populates template repository contents asynchronously after the
  * repo is created, so this function retries the README fetch until it appears.
  */
+
 export async function updateReadmeHeading(
 	octokit: Octokit,
 	{ owner, repo }: { owner: string; repo: string },
 	options?: { retryDelayMs?: number; maxRetries?: number }
 ): Promise<void> {
-	core.info(`  Updating README heading to "${repo}"...`);
+	const sanitizedRepo = sanitizeRepoName(repo);
+	core.info(`  Updating README heading to "${repo}" (API repo: "${sanitizedRepo}")...`);
 
-	const file = await fetchReadmeWithRetry(octokit, { owner, repo }, options);
+	const file = await fetchReadmeWithRetry(octokit, { owner, repo: sanitizedRepo }, options);
 
 	if (!file) {
 		core.warning(`  ⚠ No README found after retries — skipping heading update.`);
@@ -32,8 +35,8 @@ export async function updateReadmeHeading(
 
 	const original = Buffer.from(file.content, 'base64').toString('utf8');
 
-	// Replace only the first H1 line (# Title)
-	const updated = original.replace(/^#\s+.+$/m, `# ${repo}`);
+	// Replace only the first H1 line (# Title), robust to spaces and special characters
+	const updated = original.replace(/^#\s+.*$/m, `# ${repo}`);
 
 	if (updated === original) {
 		core.warning(`  ⚠ No H1 heading found in README — skipping heading update.`);
@@ -42,7 +45,7 @@ export async function updateReadmeHeading(
 
 	await octokit.rest.repos.createOrUpdateFileContents({
 		owner,
-		repo,
+		repo: sanitizedRepo,
 		path: file.path,
 		message: `chore(docs): rename README.md heading to ${repo} [skip ci]`,
 		content: Buffer.from(updated).toString('base64'),
@@ -66,10 +69,13 @@ async function fetchReadmeWithRetry(
 	const maxAttempts = options?.maxRetries ?? 20;
 	const delayMs = options?.retryDelayMs ?? 5000;
 
+	// Always sanitize repo name for API calls
+	const sanitizedRepo = sanitizeRepoName(repo);
+
 	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
 		for (const path of candidates) {
 			try {
-				const { data } = await octokit.rest.repos.getContent({ owner, repo, path });
+				const { data } = await octokit.rest.repos.getContent({ owner, repo: sanitizedRepo, path });
 				return data as GitHubFileContent;
 			} catch (err) {
 				if ((err as { status?: number }).status !== 404) throw err;
