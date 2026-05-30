@@ -29,7 +29,8 @@ Supports blank creation or generation from a template repository.
 │   ├── config.noinit.json          # Minimal config with no template and no auto_init
 │   └── config.default.json         # Sample default config with all options specified
 ├── dist
-│   └── index.cjs                   # Bundled action entrypoint (committed, auto-generated)
+│   ├── index.js                    # Bundled action entrypoint (committed, auto-generated)
+│   └── index.map.js                # Bundled action entrypoint sourcemap (committed, auto-generated)
 ├── src
 │   ├── action.ts                   # GitHub Actions entrypoint (uses @actions/core)
 │   ├── apply-settings.ts           # PATCH general repo settings after creation

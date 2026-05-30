@@ -72,8 +72,10 @@
 			{
 				"assets": [
 					"CHANGELOG.md",
-					"dist/index.cjs",
-					"package.json"
+					"dist/index.js",
+					"dist/index.js.map",
+					"package.json",
+					"package-lock.json"
 				],
 				"message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
 			}

@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    name: Bundle dist/index.cjs
+    name: Bundle dist/index.js
     runs-on: ubuntu-latest
 
     steps:

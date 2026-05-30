@@ -194,7 +194,7 @@ flowchart TD
     A([Push to main]) --> B[release.yaml triggered]
     B --> C[Checkout full history<br>fetch-depth: 0]
     C --> D[npm ci]
-    D --> E[npm run build<br>dist/index.cjs]
+    D --> E[npm run build<br>dist/index.js]
     E --> F[npx semantic-release]
 
     F --> G{Releasable<br>commits?}
@@ -204,7 +204,7 @@ flowchart TD
     I --> J[Generate release notes]
     J --> K[Update CHANGELOG.md]
     K --> L[Bump version in package.json]
-    L --> M[Commit CHANGELOG.md +<br>package.json + dist/index.cjs<br>chore release: vX.Y.Z skip ci]
+    L --> M[Commit CHANGELOG.md +<br>package.json + dist/index.js<br>chore release: vX.Y.Z skip ci]
     M --> N[Create Git tag vX.Y.Z]
     N --> O[Base64-encode release notes<br>Dispatch publish.yaml<br>tag + notes-b64]
     O --> P([release.yaml done ✓])
