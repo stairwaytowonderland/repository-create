@@ -34652,7 +34652,7 @@ async function updateReadmeHeading(octokit, { owner, repo }, options) {
         owner,
         repo,
         path: file.path,
-        message: `chore(docs): rename README.md heading to ${repo}`,
+        message: `chore(docs): rename README.md heading to ${repo} [skip ci]`,
         content: Buffer.from(updated).toString('base64'),
         sha: file.sha,
     });
