@@ -1,43 +1,33 @@
-name: Release
+name: Release a Version
 
 on:
-  push:
-    branches: [main]
-    paths-ignore:
-      - 'CHANGELOG.md'
-      - 'package.json'
-      - 'package-lock.json'
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      dispatch-workflow:
+        description: 'The workflow file to dispatch after a successful release.'
+        type: string
+        required: false
+      fail-on-no-release:
+        description: 'Fail the workflow if no release is published (e.g. if there are no relevant commits).'
+        type: boolean
+        required: false
+        default: false
+      ref:
+        description: 'The git ref or sha to release (e.g. refs/heads/main). Defaults to the current ref.'
+        type: string
+        required: false
+    secrets:
+      github-token:
+        description: 'GitHub Personal Access Token with repo scope for creating releases.'
+        required: false
 
 jobs:
   release:
-    name: Semantic release
-    runs-on: ubuntu-latest
-
-    permissions:
-      actions: write
-      contents: write
-      issues: write
-      pull-requests: write
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GH_PAT_CREATE_REPO }}
-
-      - name: Semantic release
-        id: release
-        uses: stairwaytowonderland/node-semantic-release@main
-        with:
-          github-token: ${{ secrets.GH_PAT_CREATE_RELEASE }}
-
-      - name: Dispatch Publish workflow
-        if: steps.release.outputs.new-release-published == 'true'
-        uses: stairwaytowonderland/simple-workflow-dispatch@main
-        with:
-          workflow: publish.yaml
-          tag: ${{ steps.release.outputs.new-release-git-tag }}
-          fields: |
-            notes-b64=${{ steps.release.outputs.new-release-notes-base64 }}
+    name: Release
+    uses: stairwaytowonderland/actions/.github/workflows/release.yaml@v1
+    with:
+      dispatch-workflow: ${{ inputs.dispatch-workflow }}
+      fail-on-no-release: ${{ inputs.fail-on-no-release }}
+      ref: ${{ inputs.ref || github.ref }}
+    secrets:
+      github-token: ${{ secrets.github-token || secrets.GH_PAT_CREATE_RELEASE }}
