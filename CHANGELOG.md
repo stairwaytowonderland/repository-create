@@ -1,3 +1,9 @@
+## [1.16.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.15.0...v1.16.0) (2026-05-30)
+
+### ✨ Features
+
+* refactor ([74fc2cb](https://github.com/stairwaytowonderland/repository-create/commit/74fc2cbabadb55ce042c1595aac849fadf74c652))
+
 ## [1.15.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.14.0...v1.15.0) (2026-05-30)
 
 ### ✨ Features
