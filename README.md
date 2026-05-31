@@ -22,8 +22,7 @@ Supports blank creation or generation from a template repository.
 │   │   ├── publish.yaml            # Creates GitHub release from a tag
 │   │   ├── release.yaml            # Semantic release on push to main
 │   │   └── test.yaml               # Validates dist/ build on pull requests
-│   ├── .dependabot.yml
-│   └── PULL_REQUEST_TEMPLATE.md
+│   └── .dependabot.yml
 ├── config
 │   ├── config.json                 # Standard config
 │   ├── config.noinit.json          # Minimal config with no template and no auto_init
