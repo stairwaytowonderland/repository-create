@@ -1,7 +1,7 @@
 # Contributing Guidelines
 
-Thank you for contributing to the [Organization Name] [Repository Type] repository! This guide will help you understand
-our workflow and best practices.
+Thank you for contributing to the [*stairwaytowonderland*](https://github.com/stairwaytowonderland) *repository-create*
+repository! This guide will help you understand our workflow and best practices.
 
 ## Workflow
 
@@ -63,21 +63,6 @@ Then create a pull request on GitHub with:
 
 ## Development Guidelines
 
-**Creating a *virtual environment* is <ins>highly recommended</ins>**
-
-```bash
-python3 -m venv path/to/venv # e.g. `python3 -m venv .venv`
-. path/to/venv/bin/activate  # e.g. `. .venv/bin/activate`
-```
-
-> [!NOTE]
-> Typically, *'path/to/venv'* is *'.venv'* in the current directory.
->
-> Run `deactivate` to deactivate the *virtual environment*.
-
-Please see the [official documentation](https://packaging.python.org/en/latest/tutorials/installing-packages/#optionally-create-a-virtual-environment)
-for more information.
-
 ### Code Style Guidelines
 
 - Ensure your code is well-commented and self-documenting.
@@ -93,6 +78,22 @@ missing semicolons, trailing whitespace, and debug statements. By using these ho
 prevent bad code from being uploaded.
 
 To install `pre-commit`, you can use `pip`:
+
+> [!TIP]
+>
+> **Creating a *virtual environment* is <ins>highly recommended</ins>**
+>
+> ```bash
+> python3 -m venv path/to/venv # e.g. `python3 -m venv .venv`
+> . path/to/venv/bin/activate  # e.g. `. .venv/bin/activate`
+> ```
+>
+> **Typically, *'path/to/venv'* is *'.venv'* in the current directory: `python3 -m venv .venv`**
+>
+> Run `deactivate` to deactivate the *virtual environment*.
+
+Please see the [official documentation](https://packaging.python.org/en/latest/tutorials/installing-packages/#optionally-create-a-virtual-environment)
+for more information.
 
 ```bash
 pip3 install pre-commit
@@ -141,13 +142,6 @@ For more details on how to configure and use pre-commit, please refer to the off
 - Add alt text to images: `![Description](image.png)`
 - Use relative links for internal references
 
-### File Organization
-
-- **[folder1]/**: [Description]
-- **[folder2]/**: [Description]
-- **[folder3]/**: [Description]
-- **[folder4]/**: [Description]
-
 ### Naming Conventions
 
 - Use lowercase with hyphens: `client-proposal-template.md`
@@ -156,15 +150,7 @@ For more details on how to configure and use pre-commit, please refer to the off
 
 ## What NOT to Commit
 
-The `.gitignore` file prevents these from being committed:
-
-- [File type 1] (.extension)
-- [File type 2] (.extension)
-- [File type 3] (.extension)
-- [File type 4] (.extension)
-- Large binary files
-
-**[Important Note]**: [Any important notes, e.g., Final deliverables should be stored elsewhere].
+The [`.gitignore`](./.gitignore) file prevents unnecessary files from being committed.
 
 ## Review Checklist
 
