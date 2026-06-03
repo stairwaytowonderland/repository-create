@@ -48,6 +48,10 @@
 							"hidden": true
 						},
 						{
+							"type": "revert",
+							"hidden": true
+						},
+						{
 							"type": "style",
 							"hidden": true
 						}
