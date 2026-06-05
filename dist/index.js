@@ -34638,34 +34638,104 @@ function sanitizeRepoName(name) {
  * Note: GitHub populates template repository contents asynchronously after the
  * repo is created, so this function retries the README fetch until it appears.
  */
-async function updateReadmeHeading(octokit, { owner, repo }, options) {
+async function updateReadmeHeading(octokit, { owner, repo }, options, file) {
     const sanitizedRepo = sanitizeRepoName(repo);
     info(`  Updating README heading to "${repo}" (API repo: "${sanitizedRepo}")...`);
-    const file = await fetchReadmeWithRetry(octokit, { owner, repo: sanitizedRepo }, options);
-    if (!file) {
+    const targetFile = file ?? (await fetchReadmeWithRetry(octokit, { owner, repo: sanitizedRepo }, options));
+    if (!targetFile) {
         warning(`  ⚠ No README found after retries — skipping heading update.`);
         return;
     }
-    if (file.type !== 'file' || !file.content) {
+    if (targetFile.type !== 'file' || !targetFile.content) {
         warning(`  ⚠ README is not a regular file — skipping heading update.`);
         return;
     }
-    const original = Buffer.from(file.content, 'base64').toString('utf8');
+    const original = Buffer.from(targetFile.content, 'base64').toString('utf8');
     // Replace only the first H1 line (# Title), robust to spaces and special characters
     const updated = original.replace(/^#\s+.*$/m, `# ${repo}`);
     if (updated === original) {
         warning(`  ⚠ No H1 heading found in README — skipping heading update.`);
         return;
     }
+    return targetFile;
+    // await octokit.rest.repos.createOrUpdateFileContents({
+    // 	owner,
+    // 	repo: sanitizedRepo,
+    // 	path: targetFile.path,
+    // 	message: `chore(docs): rename README.md heading to ${repo} [skip ci]`,
+    // 	content: Buffer.from(updated).toString('base64'),
+    // 	sha: targetFile.sha,
+    // });
+    // core.info(`  ✓ README heading updated.`);
+}
+/**
+ * Updates the badges immediately following the first H1 heading in the README to match the repo name.
+ *
+ * Uses GET /repos/{owner}/{repo}/contents/README.md to fetch the current content,
+ * replaces the badges immediately following the first H1 heading, then commits it back via PUT.
+ *
+ * Note: GitHub populates template repository contents asynchronously after the
+ * repo is created, so this function retries the README fetch until it appears.
+ *
+ * Example badge format:
+ * [![CI](https://github.com/<owner>/<repo>/actions/workflows/ci.yaml/badge.svg)](https://github.com/<owner>/<repo>/actions/workflows/ci.yaml)
+ */
+async function updateReadmeBadges(octokit, { owner, repo }, options, file) {
+    const sanitizedRepo = sanitizeRepoName(repo);
+    info(`  Updating README badges to match repo name "${repo}" (API repo: "${sanitizedRepo}")...`);
+    const targetFile = file ?? (await fetchReadmeWithRetry(octokit, { owner, repo: sanitizedRepo }, options));
+    if (!targetFile) {
+        warning(`  ⚠ No README found after retries — skipping badge update.`);
+        return;
+    }
+    if (targetFile.type !== 'file' || !targetFile.content) {
+        warning(`  ⚠ README is not a regular file — skipping badge update.`);
+        return;
+    }
+    const original = Buffer.from(targetFile.content, 'base64').toString('utf8');
+    // Replace badges immediately following the first H1 heading
+    const updated = original.replace(/^#\s+.*$\n((\s*\[!\[.*\]\(https:\/\/github\.com\/[^\/]+\/)[^\/]+(\/actions\/workflows\/.*badge\.svg\)\]\(https:\/\/github\.com\/[^\/]+\/actions\/workflows\/.*\)))*\n?/m, (match, badgePrefix, badgeSuffix) => {
+        if (!badgePrefix || !badgeSuffix)
+            return match; // No badges found, return original
+        // Update all badges in the matched block
+        const updatedBadges = badgePrefix +
+            repo +
+            badgeSuffix.replace(/(https:\/\/github\.com\/[^\/]+\/)[^\/]+(\/actions\/workflows\/.*badge\.svg\)\]\(https:\/\/github\.com\/[^\/]+\/actions\/workflows\/.*\))/g, `$1${repo}$2`);
+        return `# ${repo}\n${updatedBadges}\n`;
+    });
+    if (updated === original) {
+        warning(`  ⚠ No badges found immediately following H1 heading — skipping badge update.`);
+        return;
+    }
+    return targetFile;
+    // await octokit.rest.repos.createOrUpdateFileContents({
+    // 	owner,
+    // 	repo: sanitizedRepo,
+    // 	path: targetFile.path,
+    // 	message: `chore(docs): update README.md badges to match ${repo} [skip ci]`,
+    // 	content: Buffer.from(updated).toString('base64'),
+    // 	sha: targetFile.sha,
+    // });
+    // core.info(`  ✓ README badges updated.`);
+}
+async function updateReadme(octokit, { owner, repo }, options) {
+    let file = null;
+    file = await updateReadmeHeading(octokit, { owner, repo }, options, file);
+    file = await updateReadmeBadges(octokit, { owner, repo }, options, file);
+    const updatedContent = Buffer.from(file?.content ?? '', 'base64').toString('utf8');
+    if (!updatedContent || !updatedContent.trim()) {
+        warning(`  ⚠ README content is empty after updates — skipping commit.`);
+        return;
+    }
     await octokit.rest.repos.createOrUpdateFileContents({
         owner,
-        repo: sanitizedRepo,
-        path: file.path,
-        message: `chore(docs): rename README.md heading to ${repo} [skip ci]`,
-        content: Buffer.from(updated).toString('base64'),
-        sha: file.sha,
+        repo: sanitizeRepoName(repo),
+        path: file?.path ?? 'README.md',
+        message: `chore(docs): update README.md to match ${repo} [skip ci]`,
+        content: updatedContent,
+        sha: file?.sha,
     });
-    info(`  ✓ README heading updated.`);
+    info(`  ✓ README updated.`);
 }
 /**
  * Retries fetching the README every 3 seconds for up to 30 seconds.
@@ -34710,9 +34780,9 @@ async function createRepository(octokit, { org, name, settings, rulesets }) {
     let repo;
     if (settings.template) {
         ({ data: repo } = await createFromTemplate(octokit, { org, name: nameSanitized, settings }));
-        if (settings.template.updateReadmeHeading !== false) {
+        if (settings.template.updateReadme !== false) {
             // Use unsanitized name for README heading
-            await updateReadmeHeading(octokit, { owner: org, repo: name }, {
+            await updateReadme(octokit, { owner: org, repo: name }, {
                 retryDelayMs: settings.template.createFromTemplateRetryDelay,
                 maxRetries: settings.template.createFromTemplateMaxRetries,
             });
@@ -34813,7 +34883,7 @@ function createFromTemplate(octokit, { org, name, settings }) {
  *         "owner": "my-org",
  *         "repo":  "my-template-repo",
  *         "includeAllBranches": false,
- *         "updateReadmeHeading": true
+ *         "updateReadme": true,
  *       }
  *     }
  *   }
@@ -34953,7 +35023,9 @@ async function run() {
     const createFromTemplateRetryDelayMs = createFromTemplateRetryDelay
         ? Number(createFromTemplateRetryDelay)
         : undefined;
-    const createFromTemplateMaxRetryCount = createFromTemplateMaxRetries ? Number(createFromTemplateMaxRetries) : undefined;
+    const createFromTemplateMaxRetryCount = createFromTemplateMaxRetries
+        ? Number(createFromTemplateMaxRetries)
+        : undefined;
     // Resolve config file path relative to the Actions workspace root
     const overrides = configInput ? loadConfigFile(resolve(process.env.GITHUB_WORKSPACE ?? '.', configInput)) : {};
     const settings = { ...repoDefaults, ...overrides.settings };

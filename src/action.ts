@@ -50,7 +50,9 @@ async function run(): Promise<void> {
 	const createFromTemplateRetryDelayMs = createFromTemplateRetryDelay
 		? Number(createFromTemplateRetryDelay)
 		: undefined;
-	const createFromTemplateMaxRetryCount = createFromTemplateMaxRetries ? Number(createFromTemplateMaxRetries) : undefined;
+	const createFromTemplateMaxRetryCount = createFromTemplateMaxRetries
+		? Number(createFromTemplateMaxRetries)
+		: undefined;
 
 	// Resolve config file path relative to the Actions workspace root
 	const overrides = configInput ? loadConfigFile(resolve(process.env.GITHUB_WORKSPACE ?? '.', configInput)) : {};
