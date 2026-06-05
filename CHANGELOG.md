@@ -1,3 +1,13 @@
+## [1.23.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.22.0...v1.23.0) (2026-06-05)
+
+### ✨ Features
+
+* updating action ([99fee56](https://github.com/stairwaytowonderland/repository-create/commit/99fee562df4756550fbe1e4f5ab1d874c5941f0d))
+
+### 🏗️ Build System
+
+* **deps-dev:** bump the npm group across 1 directory with 4 updates ([#4](https://github.com/stairwaytowonderland/repository-create/issues/4)) ([5f4fec8](https://github.com/stairwaytowonderland/repository-create/commit/5f4fec8fbd9cbe0a41e18657ab5408a2321ba451))
+
 ## [1.22.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.21.0...v1.22.0) (2026-06-05)
 
 ### ✨ Features
