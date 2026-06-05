@@ -34693,15 +34693,12 @@ async function updateReadmeBadges(octokit, { owner, repo }, options, file) {
         return;
     }
     const original = Buffer.from(targetFile.content, 'base64').toString('utf8');
-    // Replace badges immediately following the first H1 heading
-    const updated = original.replace(/^#\s+.*$\n((\s*\[!\[.*\]\(https:\/\/github\.com\/[^\/]+\/)[^\/]+(\/actions\/workflows\/.*badge\.svg\)\]\(https:\/\/github\.com\/[^\/]+\/actions\/workflows\/.*\)))*\n?/m, (match, badgePrefix, badgeSuffix) => {
-        if (!badgePrefix || !badgeSuffix)
-            return match; // No badges found, return original
-        // Update all badges in the matched block
-        const updatedBadges = badgePrefix +
-            repo +
-            badgeSuffix.replace(/(https:\/\/github\.com\/[^\/]+\/)[^\/]+(\/actions\/workflows\/.*badge\.svg\)\]\(https:\/\/github\.com\/[^\/]+\/actions\/workflows\/.*\))/g, `$1${repo}$2`);
-        return `# ${repo}\n${updatedBadges}\n`;
+    const headingAndBadgeBlockRegex = /^(#\s+.*\n)((?:\[!\[[^\]]+\]\(https:\/\/github\.com\/[^/]+\/[^/]+\/actions\/workflows\/[^)]+\/badge\.svg[^)]*\)\]\(https:\/\/github\.com\/[^/]+\/[^/]+\/actions\/workflows\/[^)]+\)\s*\n)+)/m;
+    const badgeRepoSegmentRegex = /(https:\/\/github\.com\/[^/]+\/)([^/]+)(\/actions\/workflows\/[^)]+(?:\/badge\.svg[^)]*)?)/g;
+    // Replace only badge URLs immediately following the first H1 heading.
+    const updated = original.replace(headingAndBadgeBlockRegex, (_match, headingLine, badgeBlock) => {
+        const updatedBadgeBlock = badgeBlock.replace(badgeRepoSegmentRegex, `$1${repo}$3`);
+        return `${headingLine}${updatedBadgeBlock}`;
     });
     if (updated === original) {
         warning(`  ⚠ No badges found immediately following H1 heading — skipping badge update.`);
