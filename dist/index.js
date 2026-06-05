@@ -34720,8 +34720,9 @@ async function updateReadme(octokit, { owner, repo }, options) {
     let file = null;
     file = await updateReadmeHeading(octokit, { owner, repo }, options, file);
     file = await updateReadmeBadges(octokit, { owner, repo }, options, file);
-    const updatedContent = Buffer.from(file?.content ?? '', 'base64').toString('utf8');
-    if (!updatedContent || !updatedContent.trim()) {
+    const updatedContent = file?.content ?? '';
+    const updatedContentText = Buffer.from(updatedContent, 'base64').toString('utf8');
+    if (!updatedContent || !updatedContentText.trim()) {
         warning(`  ⚠ README content is empty after updates — skipping commit.`);
         return;
     }
