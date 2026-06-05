@@ -9,8 +9,8 @@ export interface TemplateConfig {
 	repo: string;
 	/** Copy all branches (default: default branch only) */
 	includeAllBranches?: boolean;
-	/** Replace first H1 in README with the new repo name (default: true) */
-	updateReadmeHeading?: boolean;
+	/** Update README after template creation (default: true) */
+	updateReadme?: boolean;
 	/** Retry delay in ms for fetching README after template creation */
 	createFromTemplateRetryDelay?: number;
 	/** Max retries for fetching README after template creation */

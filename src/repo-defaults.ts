@@ -19,7 +19,7 @@ import type { RepoSettings, RulesetConfig } from './types.js';
  *         "owner": "my-org",
  *         "repo":  "my-template-repo",
  *         "includeAllBranches": false,
- *         "updateReadmeHeading": true
+ *         "updateReadme": true,
  *       }
  *     }
  *   }

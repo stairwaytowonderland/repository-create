@@ -2,7 +2,7 @@ import type { Octokit } from 'octokit';
 import type { RepoSettings, RulesetConfig, TemplateConfig } from './types.js';
 import { applySettings } from './apply-settings.js';
 import { createRulesets } from './create-rulesets.js';
-import { updateReadmeHeading } from './update-readme.js';
+import { updateReadme } from './update-readme.js';
 import { sanitizeRepoName } from './utils.js';
 import * as core from '@actions/core';
 
@@ -24,9 +24,9 @@ export async function createRepository(
 
 	if (settings.template) {
 		({ data: repo } = await createFromTemplate(octokit, { org, name: nameSanitized, settings }));
-		if (settings.template.updateReadmeHeading !== false) {
+		if (settings.template.updateReadme !== false) {
 			// Use unsanitized name for README heading
-			await updateReadmeHeading(
+			await updateReadme(
 				octokit,
 				{ owner: org, repo: name },
 				{
