@@ -75,7 +75,7 @@ Supports blank creation or generation from a template repository.
     # org: ${{ github.org }}          # optional — github.org is default; input shown for reference
     name: my-new-repo
     repo-config: config/config.json   # optional
-    visibility: private               # optional — private | internal | public (default)
+    visibility: public                # optional — private | internal | public (default)
     job-summary: true                 # optional — write a job summary (default: true)
 ```
 
