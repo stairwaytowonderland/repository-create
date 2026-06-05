@@ -34657,7 +34657,10 @@ async function updateReadmeHeading(octokit, { owner, repo }, options, file) {
         warning(`  ⚠ No H1 heading found in README — skipping heading update.`);
         return;
     }
-    return targetFile;
+    return {
+        ...targetFile,
+        content: Buffer.from(updated).toString('base64'),
+    };
     // await octokit.rest.repos.createOrUpdateFileContents({
     // 	owner,
     // 	repo: sanitizedRepo,
@@ -34693,18 +34696,16 @@ async function updateReadmeBadges(octokit, { owner, repo }, options, file) {
         return;
     }
     const original = Buffer.from(targetFile.content, 'base64').toString('utf8');
-    const headingAndBadgeBlockRegex = /^(#\s+.*\n)((?:\[!\[[^\]]+\]\(https:\/\/github\.com\/[^/]+\/[^/]+\/actions\/workflows\/[^)]+\/badge\.svg[^)]*\)\]\(https:\/\/github\.com\/[^/]+\/[^/]+\/actions\/workflows\/[^)]+\)\s*\n)+)/m;
-    const badgeRepoSegmentRegex = /(https:\/\/github\.com\/[^/]+\/)([^/]+)(\/actions\/workflows\/[^)]+(?:\/badge\.svg[^)]*)?)/g;
-    // Replace only badge URLs immediately following the first H1 heading.
-    const updated = original.replace(headingAndBadgeBlockRegex, (_match, headingLine, badgeBlock) => {
-        const updatedBadgeBlock = badgeBlock.replace(badgeRepoSegmentRegex, `$1${repo}$3`);
-        return `${headingLine}${updatedBadgeBlock}`;
-    });
+    const badgeRepoSegmentRegex = /(https:\/\/github\.com\/[^/]+\/)([^/]+)(\/actions\/workflows\/[^)]+(?:\/badge\.svg(?:\?[^)]*)?)?)/g;
+    const updated = original.replace(badgeRepoSegmentRegex, `$1${repo}$3`);
     if (updated === original) {
-        warning(`  ⚠ No badges found immediately following H1 heading — skipping badge update.`);
+        warning(`  ⚠ No GitHub Actions workflow badges found in README — skipping badge update.`);
         return;
     }
-    return targetFile;
+    return {
+        ...targetFile,
+        content: Buffer.from(updated).toString('base64'),
+    };
     // await octokit.rest.repos.createOrUpdateFileContents({
     // 	owner,
     // 	repo: sanitizedRepo,
