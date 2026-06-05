@@ -1,3 +1,13 @@
+## [1.21.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.20.0...v1.21.0) (2026-06-05)
+
+### ✨ Features
+
+* update readme badges and single updateReadme ([ff4acc5](https://github.com/stairwaytowonderland/repository-create/commit/ff4acc5ef16bc1039a9851ef12de746c6945763e))
+
+### 📚 Documentation
+
+* updating CONTRIBUTING.md ([d648d53](https://github.com/stairwaytowonderland/repository-create/commit/d648d53ddedc3c0b9ce698a25c3fa01e093853fd))
+
 ## [1.20.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.19.0...v1.20.0) (2026-05-30)
 
 ### ✨ Features
