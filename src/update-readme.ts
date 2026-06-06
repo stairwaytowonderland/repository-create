@@ -181,8 +181,8 @@ export async function updateReadme(
 	let file = null;
 
 	file = await updateReadmeHeading(octokit, { owner, repo }, options, file);
+	file = await updateReadmeGitHubShieldsBadges(octokit, { owner, repo }, options, file);
 	file = await updateReadmeGitHubBadges(octokit, { owner, repo }, options, file);
-	// file = await updateReadmeGitHubShieldsBadges(octokit, { owner, repo }, options, file);
 
 	if (!file) {
 		core.warning(`  ⚠ README was not updated — skipping commit.`);
