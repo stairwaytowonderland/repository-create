@@ -90,7 +90,7 @@ async function updateReadmeGitHubBadges(
 
 	const original = Buffer.from(targetFile.content, 'base64').toString('utf8');
 	const badgeRepoSegmentRegex =
-		/(https:\/\/github\.com\/[^/]+\/)([^/]+)(\/actions\/workflows\/[^)]+(?:\/badge\.svg(?:\?[^)]*)?)?)/g;
+		/(https:\/\/github\.com\/[^/]+\/)([^/]+)(\/actions\/workflows\/[^)]+(?:\/badge\.svg(?:\?[^)]*)?)?)\)/g;
 
 	const updated = original.replace(badgeRepoSegmentRegex, `$1${repo}$3`);
 
@@ -147,9 +147,9 @@ async function updateReadmeGitHubShieldsBadges(
 
 	const original = Buffer.from(targetFile.content, 'base64').toString('utf8');
 	const badgeRepoSegmentRegex =
-		/(https:\/\/img\.shields\.io\/github\/(?:v\/release|last-commit|license)\/)([^/]+)\/([^/?]+)([?\/][^)]+)?\)/g;
+		/(https:\/\/img\.shields\.io\/github\/(?:v\/release|last-commit|license)\/[^/]+)\/([^/?]+)([?\/][^)]+)?\)\]\((https:\/\/github\.com\/[^/]+\/)([^/]+)\/[^\/]+\)/g;
 
-	const updated = original.replace(badgeRepoSegmentRegex, `$1${repo}$4)`);
+	const updated = original.replace(badgeRepoSegmentRegex, `$1${repo}$3)`);
 
 	if (updated === original) {
 		core.warning(`  ⚠ No GitHub Shields.io badges found in README — skipping badge update.`);

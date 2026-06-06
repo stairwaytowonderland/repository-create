@@ -34690,7 +34690,7 @@ async function updateReadmeGitHubBadges(octokit, { owner, repo }, options, file)
         return;
     }
     const original = Buffer.from(targetFile.content, 'base64').toString('utf8');
-    const badgeRepoSegmentRegex = /(https:\/\/github\.com\/[^/]+\/)([^/]+)(\/actions\/workflows\/[^)]+(?:\/badge\.svg(?:\?[^)]*)?)?)/g;
+    const badgeRepoSegmentRegex = /(https:\/\/github\.com\/[^/]+\/)([^/]+)(\/actions\/workflows\/[^)]+(?:\/badge\.svg(?:\?[^)]*)?)?)\)/g;
     const updated = original.replace(badgeRepoSegmentRegex, `$1${repo}$3`);
     if (updated === original) {
         warning(`  ⚠ No GitHub Actions workflow badges found in README — skipping badge update.`);
@@ -34731,8 +34731,8 @@ async function updateReadmeGitHubShieldsBadges(octokit, { owner, repo }, options
         return;
     }
     const original = Buffer.from(targetFile.content, 'base64').toString('utf8');
-    const badgeRepoSegmentRegex = /(https:\/\/img\.shields\.io\/github\/(?:v\/release|last-commit|license)\/)([^/]+)\/([^/?]+)([?\/][^)]+)?\)/g;
-    const updated = original.replace(badgeRepoSegmentRegex, `$1${repo}$4)`);
+    const badgeRepoSegmentRegex = /(https:\/\/img\.shields\.io\/github\/(?:v\/release|last-commit|license)\/[^/]+)\/([^/?]+)([?\/][^)]+)?\)\]\((https:\/\/github\.com\/[^/]+\/)([^/]+)\/[^\/]+\)/g;
+    const updated = original.replace(badgeRepoSegmentRegex, `$1${repo}$3)`);
     if (updated === original) {
         warning(`  ⚠ No GitHub Shields.io badges found in README — skipping badge update.`);
         return;
