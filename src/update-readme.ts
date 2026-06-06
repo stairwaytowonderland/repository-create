@@ -147,7 +147,7 @@ async function updateReadmeGitHubShieldsBadges(
 
 	const original = Buffer.from(targetFile.content, 'base64').toString('utf8');
 	const badgeRepoSegmentRegex =
-		/(https:\/\/img\.shields\.io\/github\/(?:v\/release|last-commit|license)\/[^/]+)\/([^/?]+)([?\/][^)]+)?\)\]\((https:\/\/github\.com\/[^/]+\/)([^/]+)\/[^\/]+\)/g;
+		/(?:(\[\![^\]]+\]\(https:\/\/img\.shields\.io\/github\/(?:v\/release|last-commit|license)\/[^/]+\/)([^)\?]+)((?:\?[^)]*)?)\)[^:]+\((https:\/\/github\.com\/[^/]+\/)([^/]+))/g;
 
 	const updated = original.replace(badgeRepoSegmentRegex, `$1${repo}$3)`);
 
