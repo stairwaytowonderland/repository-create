@@ -149,7 +149,7 @@ async function updateReadmeGitHubShieldsBadges(
 	const badgeRepoSegmentRegex =
 		/(?:(\[\![^\]]+\]\(https:\/\/img\.shields\.io\/github\/(?:v\/release|last-commit|license)\/[^/]+\/)([^)\?]+)((?:\?[^)]*)?)\)[^:]+\((https:\/\/github\.com\/[^/]+\/)([^/]+)(((\/[^\/]+))+)\))/g;
 
-	const updated = original.replace(badgeRepoSegmentRegex, `$1${repo}$3)`);
+	const updated = original.replace(badgeRepoSegmentRegex, `$1${repo}$3)]($4${repo}$6))`);
 
 	if (updated === original) {
 		core.warning(`  ⚠ No GitHub Shields.io badges found in README — skipping badge update.`);
@@ -182,7 +182,7 @@ export async function updateReadme(
 
 	file = await updateReadmeHeading(octokit, { owner, repo }, options, file);
 	file = await updateReadmeGitHubShieldsBadges(octokit, { owner, repo }, options, file);
-	// file = await updateReadmeGitHubBadges(octokit, { owner, repo }, options, file);
+	file = await updateReadmeGitHubBadges(octokit, { owner, repo }, options, file);
 
 	if (!file) {
 		core.warning(`  ⚠ README was not updated — skipping commit.`);
