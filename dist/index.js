@@ -34732,7 +34732,7 @@ async function updateReadmeGitHubShieldsBadges(octokit, { owner, repo }, options
     }
     const original = Buffer.from(targetFile.content, 'base64').toString('utf8');
     const badgeRepoSegmentRegex = /(?:(\[\![^\]]+\]\(https:\/\/img\.shields\.io\/github\/(?:v\/release|last-commit|license)\/[^/]+\/)([^)\?]+)((?:\?[^)]*)?)\)[^:]+\((https:\/\/github\.com\/[^/]+\/)([^/]+)(((\/[^\/]+))+)\))/g;
-    const updated = original.replace(badgeRepoSegmentRegex, `$1${repo}$3)]($4${repo}$6))`);
+    const updated = original.replace(badgeRepoSegmentRegex, `$1${repo}$3)]($4${repo}$6)`);
     if (updated === original) {
         warning(`  ⚠ No GitHub Shields.io badges found in README — skipping badge update.`);
         return;
