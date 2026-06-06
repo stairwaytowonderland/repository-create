@@ -90,7 +90,7 @@ async function updateReadmeGitHubBadges(
 
 	const original = Buffer.from(targetFile.content, 'base64').toString('utf8');
 	const badgeRepoSegmentRegex =
-		/(https:\/\/github\.com\/[^/]+\/)([^/]+)(\/actions\/workflows\/[^)]+(?:\/badge\.svg(?:\?[^)]*)?)?)\)/g;
+		/(https:\/\/github\.com\/[^/]+\/)([^/]+)(\/actions\/workflows\/[^)]+(?:\/badge\.svg(?:\?[^)]*)?)?)/g;
 
 	const updated = original.replace(badgeRepoSegmentRegex, `$1${repo}$3`);
 
