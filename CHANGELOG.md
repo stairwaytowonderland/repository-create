@@ -1,3 +1,9 @@
+## [1.29.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.28.0...v1.29.0) (2026-06-06)
+
+### ✨ Features
+
+* updating action ([851f910](https://github.com/stairwaytowonderland/repository-create/commit/851f910348e3ceeed02af3a24b11279fb18a49fb))
+
 ## [1.28.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.27.0...v1.28.0) (2026-06-06)
 
 ### ✨ Features
