@@ -62,18 +62,12 @@ async function updateReadmeHeading(
 }
 
 /**
- * Updates the badges immediately following the first H1 heading in the README to match the repo name.
- *
- * Uses GET /repos/{owner}/{repo}/contents/README.md to fetch the current content,
- * replaces the badges immediately following the first H1 heading, then commits it back via PUT.
- *
- * Note: GitHub populates template repository contents asynchronously after the
- * repo is created, so this function retries the README fetch until it appears.
+ * Updates the repository owner and name in GitHub Actions workflow badges in the README.
  *
  * Example badge format:
  * [![CI](https://github.com/<owner>/<repo>/actions/workflows/ci.yaml/badge.svg)](https://github.com/<owner>/<repo>/actions/workflows/ci.yaml)
  */
-async function updateReadmeBadges(
+async function updateReadmeGitHubBadges(
 	octokit: Octokit,
 	{ owner, repo }: { owner: string; repo: string },
 	options?: { retryDelayMs?: number; maxRetries?: number },
@@ -119,7 +113,64 @@ async function updateReadmeBadges(
 	// 	sha: targetFile.sha,
 	// });
 
-	// core.info(`  ✓ README badges updated.`);
+	// core.info(`  ✓ README GitHub badges updated.`);
+}
+
+/**
+ * Updates the repository owner and name in GitHub Actions workflow badges in the README.
+ *
+ * Example badge formats:
+ * [![GitHub latest release](https://img.shields.io/github/v/release/<owner>/<repo>?include_prereleases&logo=rocket)](https://github.com/<owner>/<repo>/releases)
+ * [![GitHub last commit](https://img.shields.io/github/last-commit/<owner>/<repo>/main?logo=git)](https://github.com/<owner>/<repo>/commits/main)
+ * [![GitHub license](https://img.shields.io/github/license/<owner>/<repo>?logo=opensourceinitiative&color=yellow)](https://github.com/<owner>/<repo>/tree/main/LICENSE)
+ */
+async function updateReadmeGitHubShieldsBadges(
+	octokit: Octokit,
+	{ owner, repo }: { owner: string; repo: string },
+	options?: { retryDelayMs?: number; maxRetries?: number },
+	file?: GitHubFileContent | null
+): Promise<GitHubFileContent | undefined> {
+	const sanitizedRepo = sanitizeRepoName(repo);
+	core.info(`  Updating README badges to match repo name "${repo}" (API repo: "${sanitizedRepo}")...`);
+
+	const targetFile = file ?? (await fetchReadmeWithRetry(octokit, { owner, repo: sanitizedRepo }, options));
+
+	if (!targetFile) {
+		core.warning(`  ⚠ No README found after retries — skipping badge update.`);
+		return;
+	}
+
+	if (targetFile.type !== 'file' || !targetFile.content) {
+		core.warning(`  ⚠ README is not a regular file — skipping badge update.`);
+		return;
+	}
+
+	const original = Buffer.from(targetFile.content, 'base64').toString('utf8');
+	const badgeRepoSegmentRegex =
+		/(https:\/\/img\.shields\.io\/github\/(?:v\/release|last-commit|license)\/)([^/]+)\/([^/?]+)([?\/][^)]+)?\)/g;
+
+	const updated = original.replace(badgeRepoSegmentRegex, `$1${repo}$4)`);
+
+	if (updated === original) {
+		core.warning(`  ⚠ No GitHub Shields.io badges found in README — skipping badge update.`);
+		return;
+	}
+
+	return {
+		...targetFile,
+		content: Buffer.from(updated).toString('base64'),
+	};
+
+	// await octokit.rest.repos.createOrUpdateFileContents({
+	// 	owner,
+	// 	repo: sanitizedRepo,
+	// 	path: targetFile.path,
+	// 	message: `chore(docs): update README.md badges to match ${repo} [skip ci]`,
+	// 	content: Buffer.from(updated).toString('base64'),
+	// 	sha: targetFile.sha,
+	// });
+
+	// core.info(`  ✓ README GitHub Shields.io badges updated.`);
 }
 
 export async function updateReadme(
@@ -130,7 +181,13 @@ export async function updateReadme(
 	let file = null;
 
 	file = await updateReadmeHeading(octokit, { owner, repo }, options, file);
-	file = await updateReadmeBadges(octokit, { owner, repo }, options, file);
+	file = await updateReadmeGitHubBadges(octokit, { owner, repo }, options, file);
+	file = await updateReadmeGitHubShieldsBadges(octokit, { owner, repo }, options, file);
+
+	if (!file) {
+		core.warning(`  ⚠ README was not updated — skipping commit.`);
+		return;
+	}
 
 	const updatedContent = file?.content ?? '';
 	const updatedContentText = Buffer.from(updatedContent, 'base64').toString('utf8');
