@@ -34687,8 +34687,8 @@ async function updateReadmeRepoLinks(octokit, { owner, repo }, options, file) {
         return;
     }
     const original = Buffer.from(targetFile.content, 'base64').toString('utf8');
-    const repoLinkRegex = new RegExp(`((?:https://github\\.com/|git@github\\.com:)${owner}/)([^/)\`]+)(/[^)\`]+)?`, 'g');
-    const updated = original.replace(repoLinkRegex, `$1${repo}$3`);
+    const repoLinkRegex = new RegExp(`((?:https://github\\.com/|git@github\\.com:)${owner}/)([^/)\`]+)(/[^)\`]+)?(^.*$)?`, 'g');
+    const updated = original.replace(repoLinkRegex, `$1${repo}$3\n$4`);
     if (updated === original) {
         warning(`  ⚠ No GitHub repository links found in README — skipping repository links update.`);
         return;
