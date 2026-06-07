@@ -62,6 +62,46 @@ async function updateReadmeHeading(
 }
 
 /**
+ * Updates GitHub repository links in the README to match the repo name.
+ */
+async function updateReadmeRepoLinks(
+	octokit: Octokit,
+	{ owner, repo }: { owner: string; repo: string },
+	options?: { retryDelayMs?: number; maxRetries?: number },
+	file?: GitHubFileContent | null
+): Promise<GitHubFileContent | undefined> {
+	const sanitizedRepo = sanitizeRepoName(repo);
+	core.info(`  Updating README repository links to match repo name "${repo}" (API repo: "${sanitizedRepo}")...`);
+
+	const targetFile = file ?? (await fetchReadmeWithRetry(octokit, { owner, repo: sanitizedRepo }, options));
+
+	if (!targetFile) {
+		core.warning(`  ⚠ No README found after retries — skipping repository links update.`);
+		return;
+	}
+
+	if (targetFile.type !== 'file' || !targetFile.content) {
+		core.warning(`  ⚠ README is not a regular file — skipping repository links update.`);
+		return;
+	}
+
+	const original = Buffer.from(targetFile.content, 'base64').toString('utf8');
+	const repoLinkRegex = new RegExp(`(https://github\\.com/${owner}/)([^/]+)(/[^)]+)?`, 'g');
+
+	const updated = original.replace(repoLinkRegex, `$1${repo}$3`);
+
+	if (updated === original) {
+		core.warning(`  ⚠ No GitHub repository links found in README — skipping repository links update.`);
+		return;
+	}
+
+	return {
+		...targetFile,
+		content: Buffer.from(updated).toString('base64'),
+	};
+}
+
+/**
  * Updates the repository owner and name in GitHub Actions workflow badges in the README.
  *
  * Example badge format:
@@ -181,8 +221,9 @@ export async function updateReadme(
 	let file = null;
 
 	file = await updateReadmeHeading(octokit, { owner, repo }, options, file);
-	file = await updateReadmeGitHubShieldsBadges(octokit, { owner, repo }, options, file);
-	file = await updateReadmeGitHubBadges(octokit, { owner, repo }, options, file);
+	file = await updateReadmeRepoLinks(octokit, { owner, repo }, options, file);
+	// file = await updateReadmeGitHubShieldsBadges(octokit, { owner, repo }, options, file);
+	// file = await updateReadmeGitHubBadges(octokit, { owner, repo }, options, file);
 
 	if (!file) {
 		core.warning(`  ⚠ README was not updated — skipping commit.`);

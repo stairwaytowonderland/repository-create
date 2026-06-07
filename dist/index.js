@@ -34672,90 +34672,38 @@ async function updateReadmeHeading(octokit, { owner, repo }, options, file) {
     // core.info(`  ✓ README heading updated.`);
 }
 /**
- * Updates the repository owner and name in GitHub Actions workflow badges in the README.
- *
- * Example badge format:
- * [![CI](https://github.com/<owner>/<repo>/actions/workflows/ci.yaml/badge.svg)](https://github.com/<owner>/<repo>/actions/workflows/ci.yaml)
+ * Updates GitHub repository links in the README to match the repo name.
  */
-async function updateReadmeGitHubBadges(octokit, { owner, repo }, options, file) {
+async function updateReadmeRepoLinks(octokit, { owner, repo }, options, file) {
     const sanitizedRepo = sanitizeRepoName(repo);
-    info(`  Updating README badges to match repo name "${repo}" (API repo: "${sanitizedRepo}")...`);
+    info(`  Updating README repository links to match repo name "${repo}" (API repo: "${sanitizedRepo}")...`);
     const targetFile = file ?? (await fetchReadmeWithRetry(octokit, { owner, repo: sanitizedRepo }, options));
     if (!targetFile) {
-        warning(`  ⚠ No README found after retries — skipping badge update.`);
+        warning(`  ⚠ No README found after retries — skipping repository links update.`);
         return;
     }
     if (targetFile.type !== 'file' || !targetFile.content) {
-        warning(`  ⚠ README is not a regular file — skipping badge update.`);
+        warning(`  ⚠ README is not a regular file — skipping repository links update.`);
         return;
     }
     const original = Buffer.from(targetFile.content, 'base64').toString('utf8');
-    const badgeRepoSegmentRegex = /(https:\/\/github\.com\/[^/]+\/)([^/]+)(\/actions\/workflows\/[^)]+(?:\/badge\.svg(?:\?[^)]*)?)?)/g;
-    const updated = original.replace(badgeRepoSegmentRegex, `$1${repo}$3`);
+    const repoLinkRegex = new RegExp(`(https://github\\.com/${owner}/)([^/]+)(/[^)]+)?`, 'g');
+    const updated = original.replace(repoLinkRegex, `$1${repo}$3`);
     if (updated === original) {
-        warning(`  ⚠ No GitHub Actions workflow badges found in README — skipping badge update.`);
+        warning(`  ⚠ No GitHub repository links found in README — skipping repository links update.`);
         return;
     }
     return {
         ...targetFile,
         content: Buffer.from(updated).toString('base64'),
     };
-    // await octokit.rest.repos.createOrUpdateFileContents({
-    // 	owner,
-    // 	repo: sanitizedRepo,
-    // 	path: targetFile.path,
-    // 	message: `chore(docs): update README.md badges to match ${repo} [skip ci]`,
-    // 	content: Buffer.from(updated).toString('base64'),
-    // 	sha: targetFile.sha,
-    // });
-    // core.info(`  ✓ README GitHub badges updated.`);
-}
-/**
- * Updates the repository owner and name in GitHub Actions workflow badges in the README.
- *
- * Example badge formats:
- * [![GitHub latest release](https://img.shields.io/github/v/release/<owner>/<repo>?include_prereleases&logo=rocket)](https://github.com/<owner>/<repo>/releases)
- * [![GitHub last commit](https://img.shields.io/github/last-commit/<owner>/<repo>/main?logo=git)](https://github.com/<owner>/<repo>/commits/main)
- * [![GitHub license](https://img.shields.io/github/license/<owner>/<repo>?logo=opensourceinitiative&color=yellow)](https://github.com/<owner>/<repo>/tree/main/LICENSE)
- */
-async function updateReadmeGitHubShieldsBadges(octokit, { owner, repo }, options, file) {
-    const sanitizedRepo = sanitizeRepoName(repo);
-    info(`  Updating README badges to match repo name "${repo}" (API repo: "${sanitizedRepo}")...`);
-    const targetFile = file ?? (await fetchReadmeWithRetry(octokit, { owner, repo: sanitizedRepo }, options));
-    if (!targetFile) {
-        warning(`  ⚠ No README found after retries — skipping badge update.`);
-        return;
-    }
-    if (targetFile.type !== 'file' || !targetFile.content) {
-        warning(`  ⚠ README is not a regular file — skipping badge update.`);
-        return;
-    }
-    const original = Buffer.from(targetFile.content, 'base64').toString('utf8');
-    const badgeRepoSegmentRegex = /(?:(\[\![^\]]+\]\(https:\/\/img\.shields\.io\/github\/(?:v\/release|last-commit|license)\/[^/]+\/)([^)\?]+)((?:\?[^)]*)?)\)[^:]+\((https:\/\/github\.com\/[^/]+\/)([^/]+)(((\/[^\/]+))+)\))/g;
-    const updated = original.replace(badgeRepoSegmentRegex, `$1${repo}$3)]($4${repo}$6)`);
-    if (updated === original) {
-        warning(`  ⚠ No GitHub Shields.io badges found in README — skipping badge update.`);
-        return;
-    }
-    return {
-        ...targetFile,
-        content: Buffer.from(updated).toString('base64'),
-    };
-    // await octokit.rest.repos.createOrUpdateFileContents({
-    // 	owner,
-    // 	repo: sanitizedRepo,
-    // 	path: targetFile.path,
-    // 	message: `chore(docs): update README.md badges to match ${repo} [skip ci]`,
-    // 	content: Buffer.from(updated).toString('base64'),
-    // 	sha: targetFile.sha,
-    // });
-    // core.info(`  ✓ README GitHub Shields.io badges updated.`);
 }
 async function updateReadme(octokit, { owner, repo }, options) {
     let file = null;
     file = await updateReadmeHeading(octokit, { owner, repo }, options, file);
-    file = await updateReadmeGitHubShieldsBadges(octokit, { owner, repo }, options, file);
-    file = await updateReadmeGitHubBadges(octokit, { owner, repo }, options, file);
+    file = await updateReadmeRepoLinks(octokit, { owner, repo }, options, file);
+    // file = await updateReadmeGitHubShieldsBadges(octokit, { owner, repo }, options, file);
+    // file = await updateReadmeGitHubBadges(octokit, { owner, repo }, options, file);
     if (!file) {
         warning(`  ⚠ README was not updated — skipping commit.`);
         return;
