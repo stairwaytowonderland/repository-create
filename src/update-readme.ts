@@ -86,7 +86,7 @@ async function updateReadmeRepoLinks(
 	}
 
 	const original = Buffer.from(targetFile.content, 'base64').toString('utf8');
-	const repoLinkRegex = new RegExp(`(https://github\\.com/${owner}/)([^/]+)(/[^)]+)?`, 'g');
+	const repoLinkRegex = new RegExp(`((?:https://github\\.com/|git@github\\.com:)${owner}/)([^/)\`]+)(/[^)\`]+)?`, 'g');
 
 	const updated = original.replace(repoLinkRegex, `$1${repo}$3`);
 
