@@ -222,7 +222,7 @@ export async function updateReadme(
 
 	file = await updateReadmeHeading(octokit, { owner, repo }, options, file);
 	file = await updateReadmeRepoLinks(octokit, { owner, repo }, options, file);
-	// file = await updateReadmeGitHubShieldsBadges(octokit, { owner, repo }, options, file);
+	file = await updateReadmeGitHubShieldsBadges(octokit, { owner, repo }, options, file);
 	// file = await updateReadmeGitHubBadges(octokit, { owner, repo }, options, file);
 
 	if (!file) {
