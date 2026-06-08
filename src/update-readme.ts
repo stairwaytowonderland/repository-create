@@ -63,7 +63,7 @@ async function updateReadmeHeading(
 async function updateReadmeRepoLinks(
 	octokit: Octokit,
 	{ owner, repo }: { owner: string; repo: string },
-	options?: { retryDelayMs?: number; maxRetries?: number },
+	options?: { retryDelayMs?: number; maxRetries?: number; replaceGitProtocolLinks?: boolean },
 	file?: GitHubFileContent | null
 ): Promise<GitHubFileContent | null> {
 	try {
@@ -72,10 +72,15 @@ async function updateReadmeRepoLinks(
 
 		const targetFile = await normalizeTargetFile(octokit, { owner, sanitizedRepo }, options, file);
 		const original = base64Decode(targetFile.content);
-		const repoLinkRegex = new RegExp(
-			`((?:https://github\\.com/|git@github\\.com:)${owner}/)([^/)\`]+)(/[^)\`]+)?(^.*$)?`,
-			'g'
-		);
+		let repoLinkRegex: RegExp;
+		if (options?.replaceGitProtocolLinks) {
+			repoLinkRegex = new RegExp(
+				`((?:https://github\\.com/|git@github\\.com:)${owner}/)([^/)\`]+)(/[^)\`]+)?(^.*$)?`,
+				'g'
+			);
+		} else {
+			repoLinkRegex = new RegExp(`(https://github\\.com/${owner}/)([^/)\`]+)(/[^)\`]+)?(^.*$)?`, 'g');
+		}
 
 		const updated = original.replace(repoLinkRegex, `$1${repo}$3\n$4`);
 

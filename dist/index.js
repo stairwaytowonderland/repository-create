@@ -34690,7 +34690,13 @@ async function updateReadmeRepoLinks(octokit, { owner, repo }, options, file) {
         info(`  Updating README repository links to match repo name "${repo}" (API repo: "${sanitizedRepo}")...`);
         const targetFile = await normalizeTargetFile(octokit, { owner, sanitizedRepo }, options, file);
         const original = base64Decode(targetFile.content);
-        const repoLinkRegex = new RegExp(`((?:https://github\\.com/|git@github\\.com:)${owner}/)([^/)\`]+)(/[^)\`]+)?(^.*$)?`, 'g');
+        let repoLinkRegex;
+        if (options?.replaceGitProtocolLinks) {
+            repoLinkRegex = new RegExp(`((?:https://github\\.com/|git@github\\.com:)${owner}/)([^/)\`]+)(/[^)\`]+)?(^.*$)?`, 'g');
+        }
+        else {
+            repoLinkRegex = new RegExp(`(https://github\\.com/${owner}/)([^/)\`]+)(/[^)\`]+)?(^.*$)?`, 'g');
+        }
         const updated = original.replace(repoLinkRegex, `$1${repo}$3\n$4`);
         if (updated === original) {
             warning(`  ⚠ No GitHub repository links found in README — skipping repository links update.`);
