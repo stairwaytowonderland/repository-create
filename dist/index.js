@@ -34883,6 +34883,7 @@ async function createRepository(octokit, { org, name, settings, rulesets }) {
             await updateReadme(octokit, { owner: org, repo: name }, {
                 retryDelayMs: settings.template.createFromTemplateRetryDelay,
                 maxRetries: settings.template.createFromTemplateMaxRetries,
+                replaceGitProtocolLinks: settings.template.replaceGitProtocolLinks,
             });
         }
     }
@@ -35116,6 +35117,7 @@ async function run() {
     const includeAllBranches = getBooleanInput('include-all-branches');
     const createFromTemplateRetryDelay = getInput('create-from-template-retry-delay');
     const createFromTemplateMaxRetries = getInput('create-from-template-max-retries');
+    const replaceGitProtocolLinks = getBooleanInput('replace-git-protocol-links');
     const visibilityInput = getInput('visibility');
     const jobSummary = getBooleanInput('job-summary');
     const createFromTemplateRetryDelayMs = createFromTemplateRetryDelay
@@ -35147,6 +35149,7 @@ async function run() {
             includeAllBranches,
             createFromTemplateRetryDelay: createFromTemplateRetryDelayMs,
             createFromTemplateMaxRetries: createFromTemplateMaxRetryCount,
+            replaceGitProtocolLinks,
         };
     }
     if (settings.template) {

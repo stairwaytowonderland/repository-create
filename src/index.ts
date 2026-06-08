@@ -97,6 +97,7 @@ async function main(): Promise<void> {
 			createFromTemplateMaxRetries: args['create-from-template-max-retries']
 				? Number(args['create-from-template-max-retries'])
 				: undefined,
+			replaceGitProtocolLinks: args['replace-git-protocol-links'] === true,
 		};
 	}
 

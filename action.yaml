@@ -77,6 +77,11 @@ inputs:
     required: false
     default: '10'
 
+  replace-git-protocol-links:
+    description: >
+      Optional flag to also replace Git protocol links (e.g. git://) in the README.
+    required: false
+
 outputs:
   repo-url:
     description: HTML URL of the created repository (e.g. https://github.com/org/repo).

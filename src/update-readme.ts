@@ -202,7 +202,7 @@ async function updateReadmeGitHubShieldsBadges(
 export async function updateReadme(
 	octokit: Octokit,
 	{ owner, repo }: { owner: string; repo: string },
-	options?: { retryDelayMs?: number; maxRetries?: number }
+	options?: { retryDelayMs?: number; maxRetries?: number; replaceGitProtocolLinks?: boolean }
 ): Promise<void> {
 	let file = null;
 

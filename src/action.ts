@@ -45,6 +45,7 @@ async function run(): Promise<void> {
 	const includeAllBranches = core.getBooleanInput('include-all-branches');
 	const createFromTemplateRetryDelay = core.getInput('create-from-template-retry-delay');
 	const createFromTemplateMaxRetries = core.getInput('create-from-template-max-retries');
+	const replaceGitProtocolLinks = core.getBooleanInput('replace-git-protocol-links');
 	const visibilityInput = core.getInput('visibility') as 'private' | 'internal' | 'public' | '';
 	const jobSummary = core.getBooleanInput('job-summary');
 	const createFromTemplateRetryDelayMs = createFromTemplateRetryDelay
@@ -80,6 +81,7 @@ async function run(): Promise<void> {
 			includeAllBranches,
 			createFromTemplateRetryDelay: createFromTemplateRetryDelayMs,
 			createFromTemplateMaxRetries: createFromTemplateMaxRetryCount,
+			replaceGitProtocolLinks,
 		};
 	}
 

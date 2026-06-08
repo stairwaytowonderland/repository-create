@@ -32,6 +32,7 @@ export async function createRepository(
 				{
 					retryDelayMs: settings.template.createFromTemplateRetryDelay,
 					maxRetries: settings.template.createFromTemplateMaxRetries,
+					replaceGitProtocolLinks: settings.template.replaceGitProtocolLinks,
 				}
 			);
 		}
