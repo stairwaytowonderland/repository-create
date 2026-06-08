@@ -34642,7 +34642,7 @@ function base64Decode(encoded) {
 }
 
 /**
- * Updates the first H1 heading in the repository's README to match the repo name.
+ * Updates the all occurrences of H1 heading in the README that match the template name.
  *
  * Uses GET /repos/{owner}/{repo}/contents/README.md to fetch the current content,
  * replaces the first `# ...` line, then commits it back via PUT.
@@ -34650,14 +34650,15 @@ function base64Decode(encoded) {
  * Note: GitHub populates template repository contents asynchronously after the
  * repo is created, so this function retries the README fetch until it appears.
  */
-async function updateReadmeHeading(octokit, { owner, repo }, options, file) {
+async function updateReadmeHeading(octokit, repo, options, file) {
     try {
-        const sanitizedRepo = sanitizeRepoName(repo);
-        info(`  Updating README heading to "${repo}" (API repo: "${sanitizedRepo}")...`);
-        const targetFile = await normalizeTargetFile(octokit, { owner, sanitizedRepo }, options, file);
+        const sanitizedRepo = sanitizeRepoName(repo.repo);
+        info(`  Updating README heading to "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
+        const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
         const original = base64Decode(targetFile.content);
         // Replace only the first H1 line (# Title), robust to spaces and special characters
-        const updated = original.replace(/^#\s+.*$/m, `# ${repo}`);
+        // const updated = original.replace(/^#\s+.*$/m, `# ${repo}`);
+        const updated = original.replace(new RegExp(`#\\s+${repo.template}`, 'gm'), `# ${repo}`);
         if (updated === original) {
             warning(`  ⚠ No H1 heading found in README — skipping heading update.`);
             return null;
@@ -34684,20 +34685,20 @@ async function updateReadmeHeading(octokit, { owner, repo }, options, file) {
 /**
  * Updates GitHub repository links in the README to match the repo name.
  */
-async function updateReadmeRepoLinks(octokit, { owner, repo }, options, file) {
+async function updateReadmeRepoLinks(octokit, repo, options, file) {
     try {
-        const sanitizedRepo = sanitizeRepoName(repo);
-        info(`  Updating README repository links to match repo name "${repo}" (API repo: "${sanitizedRepo}")...`);
-        const targetFile = await normalizeTargetFile(octokit, { owner, sanitizedRepo }, options, file);
+        const sanitizedRepo = sanitizeRepoName(repo.repo);
+        info(`  Updating README repository links to match repo name "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
+        const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
         const original = base64Decode(targetFile.content);
         let repoLinkRegex;
         if (options?.replaceGitProtocolLinks) {
-            repoLinkRegex = new RegExp(`((?:https://github\\.com/|git@github\\.com:)${owner}/)([^/)?.\`]+)(/[^)\`]+(?:^.*$)?)?`, 'g');
+            repoLinkRegex = new RegExp(`((?:https://github\\.com/|git@github\\.com:)${repo.owner}/)([^/)?.\`]+)(/[^)\`]+(?:^.*$)?)?`, 'g');
         }
         else {
-            repoLinkRegex = new RegExp(`(https://github\\.com/${owner}/)([^/)?.\`]+)(/[^)\`]+(?:^.*$)?)?`, 'g');
+            repoLinkRegex = new RegExp(`(https://github\\.com/${repo.owner}/)([^/)?.\`]+)(/[^)\`]+(?:^.*$)?)?`, 'g');
         }
-        const updated = original.replace(repoLinkRegex, `$1${repo}$3`);
+        const updated = original.replace(repoLinkRegex, `$1${repo.repo}$3`);
         if (updated === original) {
             warning(`  ⚠ No GitHub repository links found in README — skipping repository links update.`);
             return null;
@@ -34762,14 +34763,14 @@ async function updateReadmeRepoLinks(octokit, { owner, repo }, options, file) {
  * [![GitHub last commit](https://img.shields.io/github/last-commit/<owner>/<repo>/main?logo=git)](https://github.com/<owner>/<repo>/commits/main)
  * [![GitHub license](https://img.shields.io/github/license/<owner>/<repo>?logo=opensourceinitiative&color=yellow)](https://github.com/<owner>/<repo>/tree/main/LICENSE)
  */
-async function updateReadmeGitHubShieldsBadges(octokit, { owner, repo }, options, file) {
-    const sanitizedRepo = sanitizeRepoName(repo);
+async function updateReadmeGitHubShieldsBadges(octokit, repo, options, file) {
+    const sanitizedRepo = sanitizeRepoName(repo.repo);
     try {
-        info(`  Updating README badges to match repo name "${repo}" (API repo: "${sanitizedRepo}")...`);
-        const targetFile = await normalizeTargetFile(octokit, { owner, sanitizedRepo }, options, file);
+        info(`  Updating README badges to match repo name "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
+        const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
         const original = base64Decode(targetFile.content);
         const badgeRepoSegmentRegex = /(?:(\[\![^\]]+\]\(https:\/\/img\.shields\.io\/github\/(?:v\/release|last-commit|license)\/[^/]+\/)([^)\?]+)((?:\?[^)]*)?)\)[^:]+\((https:\/\/github\.com\/[^/]+\/)([^/]+)(((\/[^\/]+))+)\))/g;
-        const updated = original.replace(badgeRepoSegmentRegex, `$1${repo}$3)]($4${repo}$6)`);
+        const updated = original.replace(badgeRepoSegmentRegex, `$1${repo.repo}$3)]($4${repo.owner}/${repo.repo}$6)`);
         if (updated === original) {
             warning(`  ⚠ No GitHub Shields.io badges found in README — skipping badge update.`);
             return null;
@@ -34793,11 +34794,11 @@ async function updateReadmeGitHubShieldsBadges(octokit, { owner, repo }, options
         return null;
     }
 }
-async function updateReadme(octokit, { owner, repo }, options) {
+async function updateReadme(octokit, repo, options) {
     let file = null;
-    file = await updateReadmeHeading(octokit, { owner, repo }, options, file);
-    file = await updateReadmeRepoLinks(octokit, { owner, repo }, options, file);
-    file = await updateReadmeGitHubShieldsBadges(octokit, { owner, repo }, options, file);
+    file = await updateReadmeHeading(octokit, { owner: repo.owner, repo: repo.repo, template: repo.template }, options, file);
+    file = await updateReadmeRepoLinks(octokit, { owner: repo.owner, repo: repo.repo }, options, file);
+    file = await updateReadmeGitHubShieldsBadges(octokit, { owner: repo.owner, repo: repo.repo }, options, file);
     // file = await updateReadmeGitHubBadges(octokit, { owner, repo }, options, file);
     if (!file) {
         warning(`  ⚠ README was not updated — skipping commit.`);
@@ -34808,10 +34809,10 @@ async function updateReadme(octokit, { owner, repo }, options) {
         warning(`  ⚠ README content is empty after updates — skipping commit.`);
     }
     await octokit.rest.repos.createOrUpdateFileContents({
-        owner,
-        repo: sanitizeRepoName(repo),
+        owner: repo.owner,
+        repo: sanitizeRepoName(repo.repo),
         path: file?.path ?? 'README.md',
-        message: `chore(docs): update README.md to match ${repo} [skip ci]`,
+        message: `chore(docs): update README.md to match ${repo.repo} [skip ci]`,
         content: updatedContent,
         sha: file?.sha,
     });
@@ -34852,8 +34853,8 @@ async function fetchReadmeWithRetry(octokit, { owner, repo }, options) {
  * If the file is not provided, it will attempt to fetch it with retries.
  * Throws an error if the README is not found or is not a regular file.
  */
-async function normalizeTargetFile(octokit, { owner, sanitizedRepo }, options, file) {
-    const targetFile = file ?? (await fetchReadmeWithRetry(octokit, { owner, repo: sanitizedRepo }, options));
+async function normalizeTargetFile(octokit, sanitized, options, file) {
+    const targetFile = file ?? (await fetchReadmeWithRetry(octokit, { owner: sanitized.owner, repo: sanitized.repo }, options));
     if (!targetFile) {
         warning(`  ⚠ No README found after retries — skipping heading update.`);
         throw new Error('README file not found');
@@ -34880,7 +34881,7 @@ async function createRepository(octokit, { org, name, settings, rulesets }) {
         ({ data: repo } = await createFromTemplate(octokit, { org, name: nameSanitized, settings }));
         if (settings.template.updateReadme !== false) {
             // Use unsanitized name for README heading
-            await updateReadme(octokit, { owner: org, repo: name }, {
+            await updateReadme(octokit, { owner: org, repo: name, template: settings.template?.repo }, {
                 retryDelayMs: settings.template.createFromTemplateRetryDelay,
                 maxRetries: settings.template.createFromTemplateMaxRetries,
                 replaceGitProtocolLinks: settings.template.replaceGitProtocolLinks,

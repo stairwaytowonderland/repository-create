@@ -6,7 +6,7 @@ import { base64Decode, base64Encode, sanitizeRepoName } from './utils.js';
 type ReadmeFileContent = GitHubFileContent & { type: 'file'; content: string };
 
 /**
- * Updates the first H1 heading in the repository's README to match the repo name.
+ * Updates the all occurrences of H1 heading in the README that match the template name.
  *
  * Uses GET /repos/{owner}/{repo}/contents/README.md to fetch the current content,
  * replaces the first `# ...` line, then commits it back via PUT.
@@ -17,19 +17,20 @@ type ReadmeFileContent = GitHubFileContent & { type: 'file'; content: string };
 
 async function updateReadmeHeading(
 	octokit: Octokit,
-	{ owner, repo }: { owner: string; repo: string },
+	repo: { owner: string; repo: string; template?: string },
 	options?: { retryDelayMs?: number; maxRetries?: number },
 	file?: GitHubFileContent | null
 ): Promise<GitHubFileContent | null> {
 	try {
-		const sanitizedRepo = sanitizeRepoName(repo);
-		core.info(`  Updating README heading to "${repo}" (API repo: "${sanitizedRepo}")...`);
+		const sanitizedRepo = sanitizeRepoName(repo.repo);
+		core.info(`  Updating README heading to "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
 
-		const targetFile = await normalizeTargetFile(octokit, { owner, sanitizedRepo }, options, file);
+		const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
 		const original = base64Decode(targetFile.content);
 
 		// Replace only the first H1 line (# Title), robust to spaces and special characters
-		const updated = original.replace(/^#\s+.*$/m, `# ${repo}`);
+		// const updated = original.replace(/^#\s+.*$/m, `# ${repo}`);
+		const updated = original.replace(new RegExp(`#\\s+${repo.template}`, 'gm'), `# ${repo}`);
 
 		if (updated === original) {
 			core.warning(`  ⚠ No H1 heading found in README — skipping heading update.`);
@@ -62,27 +63,27 @@ async function updateReadmeHeading(
  */
 async function updateReadmeRepoLinks(
 	octokit: Octokit,
-	{ owner, repo }: { owner: string; repo: string },
+	repo: { owner: string; repo: string },
 	options?: { retryDelayMs?: number; maxRetries?: number; replaceGitProtocolLinks?: boolean },
 	file?: GitHubFileContent | null
 ): Promise<GitHubFileContent | null> {
 	try {
-		const sanitizedRepo = sanitizeRepoName(repo);
-		core.info(`  Updating README repository links to match repo name "${repo}" (API repo: "${sanitizedRepo}")...`);
+		const sanitizedRepo = sanitizeRepoName(repo.repo);
+		core.info(`  Updating README repository links to match repo name "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
 
-		const targetFile = await normalizeTargetFile(octokit, { owner, sanitizedRepo }, options, file);
+		const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
 		const original = base64Decode(targetFile.content);
 		let repoLinkRegex: RegExp;
 		if (options?.replaceGitProtocolLinks) {
 			repoLinkRegex = new RegExp(
-				`((?:https://github\\.com/|git@github\\.com:)${owner}/)([^/)?.\`]+)(/[^)\`]+(?:^.*$)?)?`,
+				`((?:https://github\\.com/|git@github\\.com:)${repo.owner}/)([^/)?.\`]+)(/[^)\`]+(?:^.*$)?)?`,
 				'g'
 			);
 		} else {
-			repoLinkRegex = new RegExp(`(https://github\\.com/${owner}/)([^/)?.\`]+)(/[^)\`]+(?:^.*$)?)?`, 'g');
+			repoLinkRegex = new RegExp(`(https://github\\.com/${repo.owner}/)([^/)?.\`]+)(/[^)\`]+(?:^.*$)?)?`, 'g');
 		}
 
-		const updated = original.replace(repoLinkRegex, `$1${repo}$3`);
+		const updated = original.replace(repoLinkRegex, `$1${repo.repo}$3`);
 
 		if (updated === original) {
 			core.warning(`  ⚠ No GitHub repository links found in README — skipping repository links update.`);
@@ -158,20 +159,20 @@ async function updateReadmeRepoLinks(
  */
 async function updateReadmeGitHubShieldsBadges(
 	octokit: Octokit,
-	{ owner, repo }: { owner: string; repo: string },
+	repo: { owner: string; repo: string },
 	options?: { retryDelayMs?: number; maxRetries?: number },
 	file?: GitHubFileContent | null
 ): Promise<GitHubFileContent | null> {
-	const sanitizedRepo = sanitizeRepoName(repo);
+	const sanitizedRepo = sanitizeRepoName(repo.repo);
 	try {
-		core.info(`  Updating README badges to match repo name "${repo}" (API repo: "${sanitizedRepo}")...`);
+		core.info(`  Updating README badges to match repo name "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
 
-		const targetFile = await normalizeTargetFile(octokit, { owner, sanitizedRepo }, options, file);
+		const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
 		const original = base64Decode(targetFile.content);
 		const badgeRepoSegmentRegex =
 			/(?:(\[\![^\]]+\]\(https:\/\/img\.shields\.io\/github\/(?:v\/release|last-commit|license)\/[^/]+\/)([^)\?]+)((?:\?[^)]*)?)\)[^:]+\((https:\/\/github\.com\/[^/]+\/)([^/]+)(((\/[^\/]+))+)\))/g;
 
-		const updated = original.replace(badgeRepoSegmentRegex, `$1${repo}$3)]($4${repo}$6)`);
+		const updated = original.replace(badgeRepoSegmentRegex, `$1${repo.repo}$3)]($4${repo.owner}/${repo.repo}$6)`);
 
 		if (updated === original) {
 			core.warning(`  ⚠ No GitHub Shields.io badges found in README — skipping badge update.`);
@@ -201,14 +202,19 @@ async function updateReadmeGitHubShieldsBadges(
 
 export async function updateReadme(
 	octokit: Octokit,
-	{ owner, repo }: { owner: string; repo: string },
+	repo: { owner: string; repo: string; template?: string },
 	options?: { retryDelayMs?: number; maxRetries?: number; replaceGitProtocolLinks?: boolean }
 ): Promise<void> {
 	let file = null;
 
-	file = await updateReadmeHeading(octokit, { owner, repo }, options, file);
-	file = await updateReadmeRepoLinks(octokit, { owner, repo }, options, file);
-	file = await updateReadmeGitHubShieldsBadges(octokit, { owner, repo }, options, file);
+	file = await updateReadmeHeading(
+		octokit,
+		{ owner: repo.owner, repo: repo.repo, template: repo.template },
+		options,
+		file
+	);
+	file = await updateReadmeRepoLinks(octokit, { owner: repo.owner, repo: repo.repo }, options, file);
+	file = await updateReadmeGitHubShieldsBadges(octokit, { owner: repo.owner, repo: repo.repo }, options, file);
 	// file = await updateReadmeGitHubBadges(octokit, { owner, repo }, options, file);
 
 	if (!file) {
@@ -223,10 +229,10 @@ export async function updateReadme(
 	}
 
 	await octokit.rest.repos.createOrUpdateFileContents({
-		owner,
-		repo: sanitizeRepoName(repo),
+		owner: repo.owner,
+		repo: sanitizeRepoName(repo.repo),
 		path: file?.path ?? 'README.md',
-		message: `chore(docs): update README.md to match ${repo} [skip ci]`,
+		message: `chore(docs): update README.md to match ${repo.repo} [skip ci]`,
 		content: updatedContent,
 		sha: file?.sha,
 	});
@@ -278,11 +284,12 @@ async function fetchReadmeWithRetry(
  */
 async function normalizeTargetFile(
 	octokit: Octokit,
-	{ owner, sanitizedRepo }: { owner: string; sanitizedRepo: string },
+	sanitized: { owner: string; repo: string },
 	options?: { retryDelayMs?: number; maxRetries?: number },
 	file?: GitHubFileContent | null
 ): Promise<ReadmeFileContent> {
-	const targetFile = file ?? (await fetchReadmeWithRetry(octokit, { owner, repo: sanitizedRepo }, options));
+	const targetFile =
+		file ?? (await fetchReadmeWithRetry(octokit, { owner: sanitized.owner, repo: sanitized.repo }, options));
 
 	if (!targetFile) {
 		core.warning(`  ⚠ No README found after retries — skipping heading update.`);
