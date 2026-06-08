@@ -34653,12 +34653,14 @@ function base64Decode(encoded) {
 async function updateReadmeHeading(octokit, repo, options, file) {
     try {
         const sanitizedRepo = sanitizeRepoName(repo.repo);
-        info(`  Updating README heading from "${repo.template}" to "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
         const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
         const original = base64Decode(targetFile.content);
+        const matches = original.match(/^#\s+.*$/m);
+        const originalHeading = matches ? matches[0].replace(/^#\s+/, '').trim() : null;
+        info(`  Updating README heading from "${originalHeading}" to "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
         // Replace only the first H1 line (# Title), robust to spaces and special characters
-        // const updated = original.replace(/^#\s+.*$/m, `# ${repo}`);
-        const updated = original.replace(new RegExp(`#\\s+${repo.template}`, 'gm'), `# ${repo.repo}`);
+        // const updated = original.replace(/^#\s+.*$/m, `# ${repo.repo}`);
+        const updated = original.replace(new RegExp(`#\\s+${originalHeading}`, 'gm'), `# ${repo.repo}`);
         if (updated === original) {
             warning(`  ⚠ No H1 heading found in README — skipping heading update.`);
             return null;
