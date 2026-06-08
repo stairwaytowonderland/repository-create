@@ -1,7 +1,7 @@
 import type { Octokit } from 'octokit';
 import type { GitHubFileContent } from './types.js';
 import * as core from '@actions/core';
-import { sanitizeRepoName } from './utils.js';
+import { base64Decode, base64Encode, sanitizeRepoName } from './utils.js';
 
 type ReadmeFileContent = GitHubFileContent & { type: 'file'; content: string };
 
@@ -290,12 +290,4 @@ async function normalizeTargetFile(
 	}
 
 	return targetFile as ReadmeFileContent;
-}
-
-function base64Encode(content: string): string {
-	return Buffer.from(content).toString('base64');
-}
-
-function base64Decode(encoded: string): string {
-	return Buffer.from(encoded, 'base64').toString('utf8');
 }

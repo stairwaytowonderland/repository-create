@@ -34628,6 +34628,18 @@ async function createRulesets(octokit, { owner, repo, rulesets }) {
 function sanitizeRepoName(name) {
     return name.replace(/[^\w.\-]/g, '-');
 }
+/**
+ * Base64 encodes a string (e.g. for GitHub API content encoding).
+ */
+function base64Encode(content) {
+    return Buffer.from(content).toString('base64');
+}
+/**
+ * Base64 decodes a string (e.g. for GitHub API content decoding).
+ */
+function base64Decode(encoded) {
+    return Buffer.from(encoded, 'base64').toString('utf8');
+}
 
 /**
  * Updates the first H1 heading in the repository's README to match the repo name.
@@ -34845,12 +34857,6 @@ async function normalizeTargetFile(octokit, { owner, sanitizedRepo }, options, f
         throw new Error('README file is not a regular file');
     }
     return targetFile;
-}
-function base64Encode(content) {
-    return Buffer.from(content).toString('base64');
-}
-function base64Decode(encoded) {
-    return Buffer.from(encoded, 'base64').toString('utf8');
 }
 
 /**
