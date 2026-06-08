@@ -78,10 +78,10 @@ async function run(): Promise<void> {
 		settings.template = {
 			owner: templateOwner,
 			repo: templateRepo,
-			includeAllBranches,
+			includeAllBranches: includeAllBranches,
 			createFromTemplateRetryDelay: createFromTemplateRetryDelayMs,
 			createFromTemplateMaxRetries: createFromTemplateMaxRetryCount,
-			replaceGitProtocolLinks,
+			replaceGitProtocolLinks: replaceGitProtocolLinks,
 		};
 	}
 
@@ -90,6 +90,7 @@ async function run(): Promise<void> {
 			...settings.template,
 			createFromTemplateRetryDelay: createFromTemplateRetryDelayMs,
 			createFromTemplateMaxRetries: createFromTemplateMaxRetryCount,
+			replaceGitProtocolLinks: replaceGitProtocolLinks,
 		};
 	}
 

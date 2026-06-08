@@ -35146,10 +35146,10 @@ async function run() {
         settings.template = {
             owner: templateOwner,
             repo: templateRepo,
-            includeAllBranches,
+            includeAllBranches: includeAllBranches,
             createFromTemplateRetryDelay: createFromTemplateRetryDelayMs,
             createFromTemplateMaxRetries: createFromTemplateMaxRetryCount,
-            replaceGitProtocolLinks,
+            replaceGitProtocolLinks: replaceGitProtocolLinks,
         };
     }
     if (settings.template) {
@@ -35157,6 +35157,7 @@ async function run() {
             ...settings.template,
             createFromTemplateRetryDelay: createFromTemplateRetryDelayMs,
             createFromTemplateMaxRetries: createFromTemplateMaxRetryCount,
+            replaceGitProtocolLinks: replaceGitProtocolLinks,
         };
     }
     const octokit = createGitHubClient(token);
