@@ -23,14 +23,14 @@ async function updateReadmeHeading(
 ): Promise<GitHubFileContent | null> {
 	try {
 		const sanitizedRepo = sanitizeRepoName(repo.repo);
-		core.info(`  Updating README heading to "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
+		core.info(`  Updating README heading from "${repo.template}" to "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
 
 		const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
 		const original = base64Decode(targetFile.content);
 
 		// Replace only the first H1 line (# Title), robust to spaces and special characters
 		// const updated = original.replace(/^#\s+.*$/m, `# ${repo}`);
-		const updated = original.replace(new RegExp(`#\\s+${repo.template}`, 'gm'), `# ${repo}`);
+		const updated = original.replace(new RegExp(`#\\s+${repo.template}`, 'gm'), `# ${repo.repo}`);
 
 		if (updated === original) {
 			core.warning(`  ⚠ No H1 heading found in README — skipping heading update.`);
