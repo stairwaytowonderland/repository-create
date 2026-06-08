@@ -16,10 +16,10 @@ on:
         description: 'The git ref or sha to release (e.g. refs/heads/main). Defaults to the current ref.'
         type: string
         required: false
-    secrets:
-      github-token:
-        description: 'GitHub Personal Access Token with repo scope for creating releases.'
-        required: false
+    # secrets:
+    #   github-token:
+    #     description: 'GitHub Personal Access Token with repo scope for creating releases.'
+    #     required: false
 
 jobs:
   release:
@@ -30,4 +30,4 @@ jobs:
       fail-on-no-release: ${{ inputs.fail-on-no-release }}
       ref: ${{ inputs.ref || github.ref }}
     secrets:
-      github-token: ${{ secrets.github-token || secrets.GH_PAT_CREATE_RELEASE }}
+      github-token: ${{ secrets.GH_PAT_CREATE_RELEASE }}
