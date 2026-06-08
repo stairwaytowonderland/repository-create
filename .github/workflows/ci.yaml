@@ -37,6 +37,7 @@ jobs:
     with:
       # dispatch-workflow: publish.yaml
       fail-on-no-release: ${{ inputs.fail-on-no-release || false }}
+    secrets: inherit
     # secrets:
     #   github-token: ${{ secrets.GH_PAT_CREATE_RELEASE }}
 
@@ -46,6 +47,7 @@ jobs:
     uses: ./.github/workflows/publish.yaml
     with:
       tag: ${{ github.ref_name }}
+    secrets: inherit
     # secrets:
     #   github-token: ${{ secrets.GH_PAT_CREATE_RELEASE }}
 
