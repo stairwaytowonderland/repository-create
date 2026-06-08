@@ -1,3 +1,10 @@
+## [1.48.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.47.0...v1.48.0) (2026-06-08)
+
+### ✨ Features
+
+* updating workflows ([8ccdd6a](https://github.com/stairwaytowonderland/repository-create/commit/8ccdd6a502fed09a6f062cb850141feaf9e98648))
+* updating workflows ([630dfa5](https://github.com/stairwaytowonderland/repository-create/commit/630dfa56b45601240d8fb2512c13177440bb401b))
+
 ## [1.47.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.46.0...v1.47.0) (2026-06-08)
 
 ### ✨ Features
