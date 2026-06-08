@@ -34692,10 +34692,10 @@ async function updateReadmeRepoLinks(octokit, { owner, repo }, options, file) {
         const original = base64Decode(targetFile.content);
         let repoLinkRegex;
         if (options?.replaceGitProtocolLinks) {
-            repoLinkRegex = new RegExp(`((?:https://github\\.com/|git@github\\.com:)${owner}/)([^/)\`]+)(/[^)\`]+)?(^.*$)?`, 'g');
+            repoLinkRegex = new RegExp(`((?:https://github\\.com/|git@github\\.com:)${owner}/)([^/).\`]+)(/[^)\`]+)?(^.*$)?`, 'g');
         }
         else {
-            repoLinkRegex = new RegExp(`(https://github\\.com/${owner}/)([^/)\`]+)(/[^)\`]+)?(^.*$)?`, 'g');
+            repoLinkRegex = new RegExp(`(https://github\\.com/${owner}/)([^/).\`]+)(/[^)\`]+)?(^.*$)?`, 'g');
         }
         const updated = original.replace(repoLinkRegex, `$1${repo}$3\n$4`);
         if (updated === original) {
