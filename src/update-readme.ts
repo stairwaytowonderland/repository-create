@@ -224,7 +224,7 @@ async function updateReadmeFirstTasks(
 
 		const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
 		const original = base64Decode(targetFile.content);
-		const updated = original.replace(/(^(?:-|[0-9]+\.)\s+)(\[[^\]]\])(\s+\*+(?:Create your repo)\:.*$)/gm, '$1[x]$3');
+		const updated = original.replace(/(^(?:-|[0-9]+\.)\s+)(\[[^\]]\])(\s+\*+(?:.*Create your repo)\:.*$)/gm, '$1[x]$3');
 
 		if (updated === original) {
 			core.warning(`  ⚠ No unchecked task list items found in README — skipping first tasks update.`);
@@ -257,7 +257,7 @@ export async function updateReadme(
 	file = await updateReadmeRepoLinks(octokit, { owner: repo.owner, repo: repo.repo }, options, file);
 	file = await updateReadmeGitHubShieldsBadges(octokit, { owner: repo.owner, repo: repo.repo }, options, file);
 	// file = await updateReadmeGitHubBadges(octokit, { owner, repo }, options, file);
-	// file = await updateReadmeFirstTasks(octokit, { owner: repo.owner, repo: repo.repo }, options, file);
+	file = await updateReadmeFirstTasks(octokit, { owner: repo.owner, repo: repo.repo }, options, file);
 
 	if (!file) {
 		core.warning(`  ⚠ README was not updated — skipping commit.`);
