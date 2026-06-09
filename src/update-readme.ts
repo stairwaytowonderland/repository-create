@@ -21,10 +21,14 @@ async function updateReadmeHeading(
 	options?: { retryDelayMs?: number; maxRetries?: number },
 	file?: GitHubFileContent | null
 ): Promise<GitHubFileContent | null> {
+	const sanitizedRepo = sanitizeRepoName(repo.repo);
+	core.info(`  Updating README heading to match repo name "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
+
+	const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
+	const original = base64Decode(targetFile.content);
+	let content: string = targetFile.content;
+
 	try {
-		const sanitizedRepo = sanitizeRepoName(repo.repo);
-		const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
-		const original = base64Decode(targetFile.content);
 		const matches = original.match(/^#\s+.*$/m);
 		const originalHeading = matches ? matches[0].replace(/^#\s+/, '').trim() : null;
 
@@ -37,15 +41,11 @@ async function updateReadmeHeading(
 		// const updated = original.replace(/^#\s+.*$/m, `# ${repo.repo}`);
 		const updated = original.replace(new RegExp(`#\\s+${originalHeading}`, 'gm'), `# ${repo.repo}`);
 
-		if (updated === original) {
+		if (updated !== original) {
+			content = base64Encode(updated);
+		} else {
 			core.warning(`  ⚠ No H1 heading found in README — skipping heading update.`);
-			return null;
 		}
-
-		return {
-			...targetFile,
-			content: base64Encode(updated),
-		};
 
 		// await octokit.rest.repos.createOrUpdateFileContents({
 		// 	owner,
@@ -59,8 +59,12 @@ async function updateReadmeHeading(
 		// core.info(`  ✓ README heading updated.`);
 	} catch (err) {
 		core.warning(`  ⚠ Failed to update README heading: ${(err as Error).message}`);
-		return null;
 	}
+
+	return {
+		...targetFile,
+		content: content,
+	};
 }
 
 /**
@@ -72,37 +76,40 @@ async function updateReadmeRepoLinks(
 	options?: { retryDelayMs?: number; maxRetries?: number; replaceGitProtocolLinks?: boolean },
 	file?: GitHubFileContent | null
 ): Promise<GitHubFileContent | null> {
+	const sanitizedRepo = sanitizeRepoName(repo.repo);
+	core.info(`  Updating README repository links to match repo name "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
+
+	const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
+	const original = base64Decode(targetFile.content);
+	let content: string = targetFile.content;
+
+	let search: RegExp;
+	if (options?.replaceGitProtocolLinks) {
+		search = new RegExp(
+			`((?:https://github\\.com/|git@github\\.com:)${repo.owner}/)([^/)?.\`]+)(/[^)\`]+(?:^.*$)?)?`,
+			'g'
+		);
+	} else {
+		search = new RegExp(`(https://github\\.com/${repo.owner}/)([^/)?.\`]+)(/[^)\`]+(?:^.*$)?)?`, 'g');
+	}
+	const replacement = `$1${repo.repo}$3`;
+
 	try {
-		const sanitizedRepo = sanitizeRepoName(repo.repo);
-		core.info(`  Updating README repository links to match repo name "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
+		const updated = original.replace(search, replacement);
 
-		const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
-		const original = base64Decode(targetFile.content);
-		let repoLinkRegex: RegExp;
-		if (options?.replaceGitProtocolLinks) {
-			repoLinkRegex = new RegExp(
-				`((?:https://github\\.com/|git@github\\.com:)${repo.owner}/)([^/)?.\`]+)(/[^)\`]+(?:^.*$)?)?`,
-				'g'
-			);
+		if (updated !== original) {
+			content = base64Encode(updated);
 		} else {
-			repoLinkRegex = new RegExp(`(https://github\\.com/${repo.owner}/)([^/)?.\`]+)(/[^)\`]+(?:^.*$)?)?`, 'g');
-		}
-
-		const updated = original.replace(repoLinkRegex, `$1${repo.repo}$3`);
-
-		if (updated === original) {
 			core.warning(`  ⚠ No GitHub repository links found in README — skipping repository links update.`);
-			return null;
 		}
-
-		return {
-			...targetFile,
-			content: base64Encode(updated),
-		};
 	} catch (err) {
 		core.warning(`  ⚠ Failed to update README repository links: ${(err as Error).message}`);
-		return null;
 	}
+
+	return {
+		...targetFile,
+		content: content,
+	};
 }
 
 /**
@@ -169,25 +176,25 @@ async function updateReadmeGitHubShieldsBadges(
 	file?: GitHubFileContent | null
 ): Promise<GitHubFileContent | null> {
 	const sanitizedRepo = sanitizeRepoName(repo.repo);
+	core.info(`  Updating README badges to match repo name "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
+
+	const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
+	const original = base64Decode(targetFile.content);
+	let content: string = targetFile.content;
+
+	const search =
+		/(?:(\[\![^\]]+\]\(https:\/\/img\.shields\.io\/github\/(?:v\/release|last-commit|license)\/[^/]+\/)([^)\?]+)((?:\?[^)]*)?)\)[^:]+\((https:\/\/github\.com\/[^/]+\/)([^/]+)(((\/[^\/]+))+)\))/g;
+
+	const replacement = `$1${repo.repo}$3)]($4${repo.owner}/${repo.repo}$6)`;
+
 	try {
-		core.info(`  Updating README badges to match repo name "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
+		const updated = original.replace(search, replacement);
 
-		const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
-		const original = base64Decode(targetFile.content);
-		const badgeRepoSegmentRegex =
-			/(?:(\[\![^\]]+\]\(https:\/\/img\.shields\.io\/github\/(?:v\/release|last-commit|license)\/[^/]+\/)([^)\?]+)((?:\?[^)]*)?)\)[^:]+\((https:\/\/github\.com\/[^/]+\/)([^/]+)(((\/[^\/]+))+)\))/g;
-
-		const updated = original.replace(badgeRepoSegmentRegex, `$1${repo.repo}$3)]($4${repo.owner}/${repo.repo}$6)`);
-
-		if (updated === original) {
+		if (updated !== original) {
+			content = base64Encode(updated);
+		} else {
 			core.warning(`  ⚠ No GitHub Shields.io badges found in README — skipping badge update.`);
-			return null;
 		}
-
-		return {
-			...targetFile,
-			content: base64Encode(updated),
-		};
 
 		// await octokit.rest.repos.createOrUpdateFileContents({
 		// 	owner,
@@ -201,8 +208,12 @@ async function updateReadmeGitHubShieldsBadges(
 		// core.info(`  ✓ README GitHub Shields.io badges updated.`);
 	} catch (err) {
 		core.warning(`  ⚠ Failed to update README badges: ${(err as Error).message}`);
-		return null;
 	}
+
+	return {
+		...targetFile,
+		content: content,
+	};
 }
 
 /**
