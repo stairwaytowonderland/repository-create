@@ -1,3 +1,10 @@
+## [1.57.1](https://github.com/stairwaytowonderland/repository-create/compare/v1.57.0...v1.57.1) (2026-06-09)
+
+### 🏗️ Build System
+
+* **deps-dev:** bump @typescript-eslint/eslint-plugin from 8.60.1 to 8.61.0 in the npm group ([#6](https://github.com/stairwaytowonderland/repository-create/issues/6)) ([570ed16](https://github.com/stairwaytowonderland/repository-create/commit/570ed16e90390adcff7c4a322f0e7f7e6c6f074c))
+* **deps-dev:** test this ([d739e33](https://github.com/stairwaytowonderland/repository-create/commit/d739e3302b3efd80ee0ab05e5711e17eb432d641))
+
 ## [1.57.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.56.0...v1.57.0) (2026-06-09)
 
 ### ✨ Features
