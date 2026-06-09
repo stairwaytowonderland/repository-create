@@ -216,29 +216,34 @@ async function updateReadmeFirstTasks(
 	options?: { retryDelayMs?: number; maxRetries?: number },
 	file?: GitHubFileContent | null
 ): Promise<GitHubFileContent | null> {
+	const sanitizedRepo = sanitizeRepoName(repo.repo);
+	core.info(
+		`  Updating README first tasks checkboxes to checked for repo "${repo.repo}" (API repo: "${sanitizedRepo}")...`
+	);
+
+	const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
+	const original = base64Decode(targetFile.content);
+	let content: string = original;
+
+	const search: RegExp = /(-\s+\[[ xX]\]\s+\*+.*Create your repo.*$)/gm;
+	const replacement = '$1[x]';
+
 	try {
-		const sanitizedRepo = sanitizeRepoName(repo.repo);
-		core.info(
-			`  Updating README first tasks checkboxes to checked for repo "${repo.repo}" (API repo: "${sanitizedRepo}")...`
-		);
+		const updated = original.replace(search, replacement);
 
-		const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
-		const original = base64Decode(targetFile.content);
-		const updated = original.replace(/(^(?:-|[0-9]+\.)\s+)(\[[^\]]\])(\s+\*+(?:.*Create your repo)\:.*$)/gm, '$1[x]$3');
-
-		if (updated === original) {
+		if (updated !== original) {
+			content = base64Encode(updated);
+		} else {
 			core.warning(`  ⚠ No unchecked task list items found in README — skipping first tasks update.`);
-			return null;
 		}
-
-		return {
-			...targetFile,
-			content: base64Encode(updated),
-		};
 	} catch (err) {
 		core.warning(`  ⚠ Failed to update README first tasks: ${(err as Error).message}`);
-		return null;
 	}
+
+	return {
+		...targetFile,
+		content: content,
+	};
 }
 
 export async function updateReadme(

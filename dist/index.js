@@ -34802,25 +34802,29 @@ async function updateReadmeGitHubShieldsBadges(octokit, repo, options, file) {
  * Sets the repository creation tasks checkboxes to checked (x) in the README, if they exist.
  */
 async function updateReadmeFirstTasks(octokit, repo, options, file) {
+    const sanitizedRepo = sanitizeRepoName(repo.repo);
+    info(`  Updating README first tasks checkboxes to checked for repo "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
+    const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
+    const original = base64Decode(targetFile.content);
+    let content = original;
+    const search = /(-\s+\[[ xX]\]\s+\*+.*Create your repo.*$)/gm;
+    const replacement = '$1[x]';
     try {
-        const sanitizedRepo = sanitizeRepoName(repo.repo);
-        info(`  Updating README first tasks checkboxes to checked for repo "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
-        const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
-        const original = base64Decode(targetFile.content);
-        const updated = original.replace(/(^(?:-|[0-9]+\.)\s+)(\[[^\]]\])(\s+\*+(?:.*Create your repo)\:.*$)/gm, '$1[x]$3');
-        if (updated === original) {
-            warning(`  ⚠ No unchecked task list items found in README — skipping first tasks update.`);
-            return null;
+        const updated = original.replace(search, replacement);
+        if (updated !== original) {
+            content = base64Encode(updated);
         }
-        return {
-            ...targetFile,
-            content: base64Encode(updated),
-        };
+        else {
+            warning(`  ⚠ No unchecked task list items found in README — skipping first tasks update.`);
+        }
     }
     catch (err) {
         warning(`  ⚠ Failed to update README first tasks: ${err.message}`);
-        return null;
     }
+    return {
+        ...targetFile,
+        content: content,
+    };
 }
 async function updateReadme(octokit, repo, options) {
     let file = null;
