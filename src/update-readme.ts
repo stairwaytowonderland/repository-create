@@ -205,6 +205,42 @@ async function updateReadmeGitHubShieldsBadges(
 	}
 }
 
+/**
+ * Updates the repository first tasks checkboxes.
+ *
+ * Sets the repository creation tasks checkboxes to checked (x) in the README, if they exist.
+ */
+async function updateReadmeFirstTasks(
+	octokit: Octokit,
+	repo: { owner: string; repo: string },
+	options?: { retryDelayMs?: number; maxRetries?: number },
+	file?: GitHubFileContent | null
+): Promise<GitHubFileContent | null> {
+	try {
+		const sanitizedRepo = sanitizeRepoName(repo.repo);
+		core.info(
+			`  Updating README first tasks checkboxes to checked for repo "${repo.repo}" (API repo: "${sanitizedRepo}")...`
+		);
+
+		const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
+		const original = base64Decode(targetFile.content);
+		const updated = original.replace(/(^(?:-|[0-9]+\.)\s+)(\[[^\]]\])(\s+\*+(?:Create your repo)\:.*$)/gm, '$1[x]$3');
+
+		if (updated === original) {
+			core.warning(`  ⚠ No unchecked task list items found in README — skipping first tasks update.`);
+			return null;
+		}
+
+		return {
+			...targetFile,
+			content: base64Encode(updated),
+		};
+	} catch (err) {
+		core.warning(`  ⚠ Failed to update README first tasks: ${(err as Error).message}`);
+		return null;
+	}
+}
+
 export async function updateReadme(
 	octokit: Octokit,
 	repo: { owner: string; repo: string; template?: string },
