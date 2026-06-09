@@ -1,3 +1,14 @@
+## [1.58.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.57.1...v1.58.0) (2026-06-09)
+
+### ✨ Features
+
+* updating action ([0c56185](https://github.com/stairwaytowonderland/repository-create/commit/0c56185250848a1dda5bde6e7f12ac5bff95467a))
+
+### 🏗️ Build System
+
+* **deps-dev:** test this ([b946658](https://github.com/stairwaytowonderland/repository-create/commit/b9466583cae8f0c1f89bc433a18b01f2c09e6bdd))
+* update releaserc ([4d31150](https://github.com/stairwaytowonderland/repository-create/commit/4d31150de358b9d70b474617229fa1945c23c11c))
+
 ## [1.57.1](https://github.com/stairwaytowonderland/repository-create/compare/v1.57.0...v1.57.1) (2026-06-09)
 
 ### 🏗️ Build System
