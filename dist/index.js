@@ -34796,12 +34796,39 @@ async function updateReadmeGitHubShieldsBadges(octokit, repo, options, file) {
         return null;
     }
 }
+/**
+ * Updates the repository first tasks checkboxes.
+ *
+ * Sets the repository creation tasks checkboxes to checked (x) in the README, if they exist.
+ */
+async function updateReadmeFirstTasks(octokit, repo, options, file) {
+    try {
+        const sanitizedRepo = sanitizeRepoName(repo.repo);
+        info(`  Updating README first tasks checkboxes to checked for repo "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
+        const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
+        const original = base64Decode(targetFile.content);
+        const updated = original.replace(/(^(?:-|[0-9]+\.)\s+)(\[[^\]]\])(\s+\*+(?:Create your repo)\:.*$)/gm, '$1[x]$3');
+        if (updated === original) {
+            warning(`  ⚠ No unchecked task list items found in README — skipping first tasks update.`);
+            return null;
+        }
+        return {
+            ...targetFile,
+            content: base64Encode(updated),
+        };
+    }
+    catch (err) {
+        warning(`  ⚠ Failed to update README first tasks: ${err.message}`);
+        return null;
+    }
+}
 async function updateReadme(octokit, repo, options) {
     let file = null;
     file = await updateReadmeHeading(octokit, { owner: repo.owner, repo: repo.repo, template: repo.template }, options, file);
     file = await updateReadmeRepoLinks(octokit, { owner: repo.owner, repo: repo.repo }, options, file);
     file = await updateReadmeGitHubShieldsBadges(octokit, { owner: repo.owner, repo: repo.repo }, options, file);
     // file = await updateReadmeGitHubBadges(octokit, { owner, repo }, options, file);
+    file = await updateReadmeFirstTasks(octokit, { owner: repo.owner, repo: repo.repo }, options, file);
     if (!file) {
         warning(`  ⚠ README was not updated — skipping commit.`);
     }
