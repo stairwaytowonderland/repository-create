@@ -34806,7 +34806,7 @@ async function updateReadmeFirstTasks(octokit, repo, options, file) {
     info(`  Updating README first tasks checkboxes to checked for repo "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
     const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
     const original = base64Decode(targetFile.content);
-    let content = original;
+    let content = targetFile.content;
     const search = /(-\s+\[[ xX]\]\s+\*+.*Create your repo.*$)/gm;
     const replacement = '$1[x]';
     try {

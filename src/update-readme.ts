@@ -223,7 +223,7 @@ async function updateReadmeFirstTasks(
 
 	const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
 	const original = base64Decode(targetFile.content);
-	let content: string = original;
+	let content: string = targetFile.content;
 
 	const search: RegExp = /(-\s+\[[ xX]\]\s+\*+.*Create your repo.*$)/gm;
 	const replacement = '$1[x]';
