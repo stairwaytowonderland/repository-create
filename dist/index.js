@@ -34816,7 +34816,7 @@ async function updateReadmeFirstTasks(octokit, repo, options, file) {
     const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
     const original = base64Decode(targetFile.content);
     let content = targetFile.content;
-    const search = /(^(?:-|[0-9]+\.)\s+)(\[[^\]]\])(\s+\*+(?:.*Create your repo)\:.*$)/gm;
+    const search = /(^(?:-|[0-9]+\.)\s+)(\[[^\]]\])(\s+\*+.*(?:Create your repo|Create some labels)\:.*$)/gm;
     const replacement = '$1[x]$3';
     try {
         const updated = original.replace(search, replacement);

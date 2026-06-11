@@ -236,7 +236,7 @@ async function updateReadmeFirstTasks(
 	const original = base64Decode(targetFile.content);
 	let content: string = targetFile.content;
 
-	const search: RegExp = /(^(?:-|[0-9]+\.)\s+)(\[[^\]]\])(\s+\*+(?:.*Create your repo)\:.*$)/gm;
+	const search: RegExp = /(^(?:-|[0-9]+\.)\s+)(\[[^\]]\])(\s+\*+.*(?:Create your repo|Create some labels)\:.*$)/gm;
 	const replacement = '$1[x]$3';
 
 	try {
