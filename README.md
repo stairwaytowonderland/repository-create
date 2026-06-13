@@ -95,11 +95,15 @@ Supports blank creation or generation from a template repository.
 
 #### Action outputs
 
-| Output      | Description                                      |
-| ----------- | ------------------------------------------------ |
-| `repo-url`  | HTML URL of the created repository               |
-| `repo-name` | Full name of the created repository (`org/repo`) |
-| `repo-id`   | Numeric ID of the created repository             |
+| Output             | Description                                        |
+| ------------------ | -------------------------------------------------- |
+| `repo-url`         | HTML URL of the created repository                 |
+| `repo-full-name`   | Full name of the created repository (`org/repo`)   |
+| `repo-name`        | Name of the created repository (`org/repo`)        |
+| `repo-owner-name`  | Owner name of the created repository (`org/repo`)  |
+| `repo-owner-login` | Owner login of the created repository (`org/repo`) |
+| `repo-owner-email` | Owner email of the created repository (`org/repo`) |
+| `repo-id`          | Numeric ID of the created repository               |
 
 ### Configuration
 

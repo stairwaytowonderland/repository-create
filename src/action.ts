@@ -98,11 +98,17 @@ async function run(): Promise<void> {
 	const repo = (await createRepository(octokit, { org, name, settings, rulesets })) as {
 		html_url: string;
 		full_name: string;
+		name: string;
+		owner: { name?: string; login: string; email?: string };
 		id: number;
 	};
 
 	core.setOutput('repo-url', repo.html_url);
-	core.setOutput('repo-name', repo.full_name);
+	core.setOutput('repo-full-name', repo.full_name);
+	core.setOutput('repo-name', repo.name);
+	core.setOutput('repo-owner-name', repo.owner.name ?? '');
+	core.setOutput('repo-owner-login', repo.owner.login);
+	core.setOutput('repo-owner-email', repo.owner.email ?? '');
 	core.setOutput('repo-id', String(repo.id));
 
 	if (jobSummary) {

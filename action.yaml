@@ -86,8 +86,20 @@ outputs:
   repo-url:
     description: HTML URL of the created repository (e.g. https://github.com/org/repo).
 
-  repo-name:
+  repo-full-name:
     description: Full name of the created repository (e.g. org/repo).
+
+  repo-name:
+    description: Name of the created repository (e.g. repo).
+
+  repo-owner-name:
+    description: Name of the repository owner (e.g. organization or user name).
+
+  repo-owner-login:
+    description: Login of the repository owner (e.g. organization or user login).
+
+  repo-owner-email:
+    description: Email of the repository owner, if available.
 
   repo-id:
     description: Numeric ID of the created repository.

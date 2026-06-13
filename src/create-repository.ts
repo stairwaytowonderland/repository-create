@@ -20,7 +20,7 @@ export async function createRepository(
 	const nameSanitized: string = sanitizeRepoName(name);
 	core.info(`\nCreating repository "${org}/${name}"...`);
 
-	let repo: { html_url: string; full_name: string; id: number };
+	let repo: { html_url: string; full_name: string; name: string; owner: object; id: number };
 
 	if (settings.template) {
 		({ data: repo } = await createFromTemplate(octokit, { org, name: nameSanitized, settings }));

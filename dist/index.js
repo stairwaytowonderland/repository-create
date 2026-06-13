@@ -35206,7 +35206,11 @@ async function run() {
     const octokit = createGitHubClient(token);
     const repo = (await createRepository(octokit, { org, name, settings, rulesets }));
     setOutput('repo-url', repo.html_url);
-    setOutput('repo-name', repo.full_name);
+    setOutput('repo-full-name', repo.full_name);
+    setOutput('repo-name', repo.name);
+    setOutput('repo-owner-name', repo.owner.name ?? '');
+    setOutput('repo-owner-login', repo.owner.login);
+    setOutput('repo-owner-email', repo.owner.email ?? '');
     setOutput('repo-id', String(repo.id));
     if (jobSummary) {
         await summary
