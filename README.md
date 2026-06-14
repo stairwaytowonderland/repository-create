@@ -83,7 +83,7 @@ Supports blank creation or generation from a template repository.
 
 | Input                        | Description                                                                                                          | Required | Default               |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------------- | -------- | --------------------- |
-| `github-token`               | Token with `repo` + `admin:org` scopes                                                                               | Yes      | `${{ github.token }}` |
+| `github-token`               | Token with `repo` + `admin:org` scopes                                                                               | No       | `${{ github.token }}` |
 | `org`                        | Target GitHub organization                                                                                           | Yes      | `''`                  |
 | `name`                       | Repository name to create                                                                                            | Yes      | `''`                  |
 | `repo-config`                | Path to JSON override file (relative to workspace root)                                                              | No       | `''`                  |

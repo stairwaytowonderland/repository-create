@@ -10,7 +10,6 @@ inputs:
       or a GitHub App installation token. Note: the default GITHUB_TOKEN does
       not have admin:org scope and cannot create organization repositories —
       supply a token with the required scopes.
-    required: true
     default: ${{ github.token }}
 
   org:
