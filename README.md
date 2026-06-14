@@ -81,17 +81,20 @@ Supports blank creation or generation from a template repository.
 
 #### Action inputs
 
-| Input                  | Required | Description                                                                                                          |
-| ---------------------- | -------- | -------------------------------------------------------------------------------------------------------------------- |
-| `github-token`         | Yes      | Token with `repo` + `admin:org` scopes                                                                               |
-| `org`                  | Yes      | Target GitHub organization                                                                                           |
-| `name`                 | Yes      | Repository name to create                                                                                            |
-| `repo-config`          | No       | Path to JSON override file (relative to workspace root)                                                              |
-| `visibility`           | No       | Repository visibility: `private`, `internal`, or `public`. Overrides `repo-config` if set. `internal` requires GHEC. |
-| `template-owner`       | No       | Owner of the template repository                                                                                     |
-| `template-repo`        | No       | Name of the template repository                                                                                      |
-| `include-all-branches` | No       | Copy all template branches (default: `false`)                                                                        |
-| `job-summary`          | No       | Write a job summary to the Actions step summary (default: `true`)                                                    |
+| Input                        | Description                                                                                                          | Required | Default               |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------- | -------- | --------------------- |
+| `github-token`               | Token with `repo` + `admin:org` scopes                                                                               | Yes      | `${{ github.token }}` |
+| `org`                        | Target GitHub organization                                                                                           | Yes      | `''`                  |
+| `name`                       | Repository name to create                                                                                            | Yes      | `''`                  |
+| `repo-config`                | Path to JSON override file (relative to workspace root)                                                              | No       | `''`                  |
+| `visibility`                 | Repository visibility: `private`, `internal`, or `public`. Overrides `repo-config` if set. `internal` requires GHEC. | No       | `public`              |
+| `template-owner`             | Owner of the template repository                                                                                     | No       | `''`                  |
+| `template-repo`              | Name of the template repository                                                                                      | No       | `''`                  |
+| `include-all-branches`       | Copy all template branches (default: `false`)                                                                        | No       | `''`                  |
+| `replace-git-protocol-links` | Optional flag to also replace Git protocol links (e.g. git://) in the README.                                        | No       | `''`                  |
+| `job-summary`                | Write a job summary to the Actions step summary (default: `true`)                                                    | No       | `true`                |
+| `job-summary`                | Write a job summary to the Actions step summary (default: `true`)                                                    | No       | `true`                |
+| `job-summary`                | Write a job summary to the Actions step summary (default: `true`)                                                    | No       | `true`                |
 
 #### Action outputs
 

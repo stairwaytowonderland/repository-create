@@ -11,6 +11,7 @@ inputs:
       not have admin:org scope and cannot create organization repositories —
       supply a token with the required scopes.
     required: true
+    default: ${{ github.token }}
 
   org:
     description: Target GitHub organization.
@@ -24,42 +25,32 @@ inputs:
     description: >
       Path to a JSON settings/rulesets override file, relative to the workspace
       root (GITHUB_WORKSPACE). Omit to use built-in defaults.
-    required: false
-    default: ''
 
   template-owner:
     description: >
       Owner of the template repository. Requires template-repo to also be set.
       Takes precedence over any template configured in repo-config.
-    required: false
-    default: ''
 
   template-repo:
     description: >
       Name of the template repository. Requires template-owner to also be set.
       The template repository must have "Template repository" enabled in its
       settings.
-    required: false
-    default: ''
 
   visibility:
     description: >
       Repository visibility. One of: private, internal, public.
       'internal' requires GitHub Enterprise Cloud (GHEC).
       Overrides the value in repo-config if set.
-    required: false
-    default: ''
+    default: 'public'
 
   include-all-branches:
     description: >
       When creating from a template, copy all branches instead of only the
       default branch.
-    required: false
-    default: 'false'
 
   job-summary:
     description: Write a job summary to the GitHub Actions step summary.
-    required: false
     default: 'true'
 
   create-from-template-retry-delay:
@@ -67,30 +58,25 @@ inputs:
       Time in milliseconds to wait before retrying repository creation if a
       template is being used and the API returns a 422 error indicating the
       template is still being processed. Default: 3000 (3 seconds).
-    required: false
     default: '3000'
 
   create-from-template-max-retries:
     description: >
       Maximum number of retries if a template is being used and the API returns a
       422 error indicating the template is still being processed. Default: 10.
-    required: false
     default: '10'
 
   replace-git-protocol-links:
     description: >
       Optional flag to also replace Git protocol links (e.g. git://) in the README.
-    required: false
 
   create-labels:
     description: >
       Optional flag to create a default set of issue labels in the new repository.
-    required: false
 
   create-issues:
     description: >
       Optional flag to create a default issue in the new repository.
-    required: false
 
 outputs:
   repo-id:
