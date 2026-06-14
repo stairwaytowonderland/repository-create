@@ -34816,8 +34816,18 @@ async function updateReadmeFirstTasks(octokit, repo, options, file) {
     const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
     const original = base64Decode(targetFile.content);
     let content = targetFile.content;
-    const search = /(^(?:-|[0-9]+\.)\s+)(\[[^\]]\])(\s+\*+.*(?:Create your repo|Create some labels)\:.*$)/gm;
-    const replacement = '$1[x]$3';
+    let searchString = 'Create your repo';
+    if (options?.createLabels) {
+        searchString += '|Create some labels';
+    }
+    if (options?.createIssues) {
+        searchString += '|Create some issues';
+    }
+    // const search: RegExp =
+    // 	/(^(?:-|[0-9]+\.)\s+)(\[[^\]]\])(\s+\*+.*(?:Create your repo|Create some labels|Create some issues)\:.*$)/gm;
+    // const replacement = '$1[x]$3';
+    const search = new RegExp(`(^(?:-|[0-9]+\\.)\\s+)(\\[[^\\]]\\])(\\s+.*(?:${searchString})\:.*$)`, 'gm');
+    const replacement = `$1[x]$3`;
     try {
         const updated = original.replace(search, replacement);
         if (updated !== original) {
@@ -34837,11 +34847,20 @@ async function updateReadmeFirstTasks(octokit, repo, options, file) {
 }
 async function updateReadme(octokit, repo, options) {
     let file = null;
-    file = await updateReadmeHeading(octokit, { owner: repo.owner, repo: repo.repo, template: repo.template }, options, file);
-    file = await updateReadmeRepoLinks(octokit, { owner: repo.owner, repo: repo.repo }, options, file);
-    file = await updateReadmeGitHubShieldsBadges(octokit, { owner: repo.owner, repo: repo.repo }, options, file);
+    file = await updateReadmeHeading(octokit, { owner: repo.owner, repo: repo.repo, template: repo.template }, { retryDelayMs: options?.retryDelayMs, maxRetries: options?.maxRetries }, file);
+    file = await updateReadmeRepoLinks(octokit, { owner: repo.owner, repo: repo.repo }, {
+        retryDelayMs: options?.retryDelayMs,
+        maxRetries: options?.maxRetries,
+        replaceGitProtocolLinks: options?.replaceGitProtocolLinks,
+    }, file);
+    file = await updateReadmeGitHubShieldsBadges(octokit, { owner: repo.owner, repo: repo.repo }, { retryDelayMs: options?.retryDelayMs, maxRetries: options?.maxRetries }, file);
     // file = await updateReadmeGitHubBadges(octokit, { owner, repo }, options, file);
-    file = await updateReadmeFirstTasks(octokit, { owner: repo.owner, repo: repo.repo }, options, file);
+    file = await updateReadmeFirstTasks(octokit, { owner: repo.owner, repo: repo.repo }, {
+        retryDelayMs: options?.retryDelayMs,
+        maxRetries: options?.maxRetries,
+        createLabels: options?.createLabels,
+        createIssues: options?.createIssues,
+    }, file);
     if (!file) {
         warning(`  ⚠ README was not updated — skipping commit.`);
     }
@@ -34914,19 +34933,21 @@ async function normalizeTargetFile(octokit, sanitized, options, file) {
  *   2. Apply general settings (second-pass PATCH for settings unavailable at creation)
  *   3. Create branch rulesets
  */
-async function createRepository(octokit, { org, name, settings, rulesets }) {
+async function createRepository(octokit, { org, name, settings, rulesets, createOptions, }) {
     // Sanitize repository name for API calls: only [\w.-], others to '-'
     const nameSanitized = sanitizeRepoName(name);
     info(`\nCreating repository "${org}/${name}"...`);
     let repo;
     if (settings.template) {
         ({ data: repo } = await createFromTemplate(octokit, { org, name: nameSanitized, settings }));
-        if (settings.template.updateReadme !== false) {
+        if (createOptions.updateReadme) {
             // Use unsanitized name for README heading
             await updateReadme(octokit, { owner: org, repo: name, template: settings.template?.repo }, {
                 retryDelayMs: settings.template.createFromTemplateRetryDelay,
                 maxRetries: settings.template.createFromTemplateMaxRetries,
-                replaceGitProtocolLinks: settings.template.replaceGitProtocolLinks,
+                replaceGitProtocolLinks: createOptions.replaceGitProtocolLinks,
+                createLabels: createOptions.createLabels,
+                createIssues: createOptions.createIssues,
             });
         }
     }
@@ -35120,6 +35141,12 @@ const rulesetDefaults = [
         bypass_actors: [],
     },
 ];
+const createOptionsDefaults = {
+    updateReadme: true,
+    replaceGitProtocolLinks: false,
+    createLabels: true,
+    createIssues: false,
+};
 
 /**
  * GitHub Actions entrypoint for the create-repository action.
@@ -35161,6 +35188,8 @@ async function run() {
     const createFromTemplateRetryDelay = getInput('create-from-template-retry-delay');
     const createFromTemplateMaxRetries = getInput('create-from-template-max-retries');
     const replaceGitProtocolLinks = getBooleanInput('replace-git-protocol-links');
+    const createLabels = getBooleanInput('create-labels');
+    const createIssues = getBooleanInput('create-issues');
     const visibilityInput = getInput('visibility');
     const jobSummary = getBooleanInput('job-summary');
     const createFromTemplateRetryDelayMs = createFromTemplateRetryDelay
@@ -35173,6 +35202,12 @@ async function run() {
     const overrides = configInput ? loadConfigFile(resolve(process.env.GITHUB_WORKSPACE ?? '.', configInput)) : {};
     const settings = { ...repoDefaults, ...overrides.settings };
     const rulesets = overrides.rulesets ?? rulesetDefaults;
+    const createOptions = {
+        ...createOptionsDefaults,
+        replaceGitProtocolLinks,
+        createLabels,
+        createIssues,
+    };
     // Action inputs take precedence over config-file settings
     if (visibilityInput) {
         const allowed = ['private', 'internal', 'public'];
@@ -35192,7 +35227,6 @@ async function run() {
             includeAllBranches: includeAllBranches,
             createFromTemplateRetryDelay: createFromTemplateRetryDelayMs,
             createFromTemplateMaxRetries: createFromTemplateMaxRetryCount,
-            replaceGitProtocolLinks: replaceGitProtocolLinks,
         };
     }
     if (settings.template) {
@@ -35200,11 +35234,10 @@ async function run() {
             ...settings.template,
             createFromTemplateRetryDelay: createFromTemplateRetryDelayMs,
             createFromTemplateMaxRetries: createFromTemplateMaxRetryCount,
-            replaceGitProtocolLinks: replaceGitProtocolLinks,
         };
     }
     const octokit = createGitHubClient(token);
-    const repo = (await createRepository(octokit, { org, name, settings, rulesets }));
+    const repo = (await createRepository(octokit, { org, name, settings, rulesets, createOptions }));
     setOutput('repo-url', repo.html_url);
     setOutput('repo-full-name', repo.full_name);
     setOutput('repo-name', repo.name);

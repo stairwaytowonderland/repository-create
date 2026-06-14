@@ -9,14 +9,21 @@ export interface TemplateConfig {
 	repo: string;
 	/** Copy all branches (default: default branch only) */
 	includeAllBranches?: boolean;
-	/** Update README after template creation (default: true) */
-	updateReadme?: boolean;
-	/** Optional flag to also replace Git protocol links in the README */
-	replaceGitProtocolLinks?: boolean;
 	/** Retry delay in ms for fetching README after template creation */
 	createFromTemplateRetryDelay?: number;
 	/** Max retries for fetching README after template creation */
 	createFromTemplateMaxRetries?: number;
+}
+
+export interface CreateOptions {
+	/** Update README after template creation (default: true) */
+	updateReadme?: boolean;
+	/** Optional flag to also replace Git protocol links in the README */
+	replaceGitProtocolLinks?: boolean;
+	/** Create default labels */
+	createLabels?: boolean;
+	/** Create default issues */
+	createIssues?: boolean;
 }
 
 export interface RepoSettings {

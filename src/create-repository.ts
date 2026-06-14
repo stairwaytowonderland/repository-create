@@ -1,5 +1,5 @@
 import type { Octokit } from 'octokit';
-import type { RepoSettings, RulesetConfig, TemplateConfig } from './types.js';
+import type { CreateOptions, RepoSettings, RulesetConfig, TemplateConfig } from './types.js';
 import { applySettings } from './apply-settings.js';
 import { createRulesets } from './create-rulesets.js';
 import { updateReadme } from './update-readme.js';
@@ -14,7 +14,13 @@ import * as core from '@actions/core';
  */
 export async function createRepository(
 	octokit: Octokit,
-	{ org, name, settings, rulesets }: { org: string; name: string; settings: RepoSettings; rulesets: RulesetConfig[] }
+	{
+		org,
+		name,
+		settings,
+		rulesets,
+		createOptions,
+	}: { org: string; name: string; settings: RepoSettings; rulesets: RulesetConfig[]; createOptions: CreateOptions }
 ): Promise<object> {
 	// Sanitize repository name for API calls: only [\w.-], others to '-'
 	const nameSanitized: string = sanitizeRepoName(name);
@@ -24,7 +30,7 @@ export async function createRepository(
 
 	if (settings.template) {
 		({ data: repo } = await createFromTemplate(octokit, { org, name: nameSanitized, settings }));
-		if (settings.template.updateReadme !== false) {
+		if (createOptions.updateReadme) {
 			// Use unsanitized name for README heading
 			await updateReadme(
 				octokit,
@@ -32,7 +38,9 @@ export async function createRepository(
 				{
 					retryDelayMs: settings.template.createFromTemplateRetryDelay,
 					maxRetries: settings.template.createFromTemplateMaxRetries,
-					replaceGitProtocolLinks: settings.template.replaceGitProtocolLinks,
+					replaceGitProtocolLinks: createOptions.replaceGitProtocolLinks,
+					createLabels: createOptions.createLabels,
+					createIssues: createOptions.createIssues,
 				}
 			);
 		}

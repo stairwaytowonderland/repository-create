@@ -224,7 +224,12 @@ async function updateReadmeGitHubShieldsBadges(
 async function updateReadmeFirstTasks(
 	octokit: Octokit,
 	repo: { owner: string; repo: string },
-	options?: { retryDelayMs?: number; maxRetries?: number },
+	options?: {
+		retryDelayMs?: number;
+		maxRetries?: number;
+		createLabels?: boolean;
+		createIssues?: boolean;
+	},
 	file?: GitHubFileContent | null
 ): Promise<GitHubFileContent | null> {
 	const sanitizedRepo = sanitizeRepoName(repo.repo);
@@ -236,8 +241,20 @@ async function updateReadmeFirstTasks(
 	const original = base64Decode(targetFile.content);
 	let content: string = targetFile.content;
 
-	const search: RegExp = /(^(?:-|[0-9]+\.)\s+)(\[[^\]]\])(\s+\*+.*(?:Create your repo|Create some labels)\:.*$)/gm;
-	const replacement = '$1[x]$3';
+	let searchString = 'Create your repo';
+	if (options?.createLabels) {
+		searchString += '|Create some labels';
+	}
+	if (options?.createIssues) {
+		searchString += '|Create some issues';
+	}
+
+	// const search: RegExp =
+	// 	/(^(?:-|[0-9]+\.)\s+)(\[[^\]]\])(\s+\*+.*(?:Create your repo|Create some labels|Create some issues)\:.*$)/gm;
+	// const replacement = '$1[x]$3';
+
+	const search = new RegExp(`(^(?:-|[0-9]+\\.)\\s+)(\\[[^\\]]\\])(\\s+.*(?:${searchString})\:.*$)`, 'gm');
+	const replacement = `$1[x]$3`;
 
 	try {
 		const updated = original.replace(search, replacement);
@@ -260,20 +277,50 @@ async function updateReadmeFirstTasks(
 export async function updateReadme(
 	octokit: Octokit,
 	repo: { owner: string; repo: string; template?: string },
-	options?: { retryDelayMs?: number; maxRetries?: number; replaceGitProtocolLinks?: boolean }
+	options?: {
+		retryDelayMs?: number;
+		maxRetries?: number;
+		replaceGitProtocolLinks?: boolean;
+		createLabels?: boolean;
+		createIssues?: boolean;
+	}
 ): Promise<void> {
 	let file = null;
 
 	file = await updateReadmeHeading(
 		octokit,
 		{ owner: repo.owner, repo: repo.repo, template: repo.template },
-		options,
+		{ retryDelayMs: options?.retryDelayMs, maxRetries: options?.maxRetries },
 		file
 	);
-	file = await updateReadmeRepoLinks(octokit, { owner: repo.owner, repo: repo.repo }, options, file);
-	file = await updateReadmeGitHubShieldsBadges(octokit, { owner: repo.owner, repo: repo.repo }, options, file);
+	file = await updateReadmeRepoLinks(
+		octokit,
+		{ owner: repo.owner, repo: repo.repo },
+		{
+			retryDelayMs: options?.retryDelayMs,
+			maxRetries: options?.maxRetries,
+			replaceGitProtocolLinks: options?.replaceGitProtocolLinks,
+		},
+		file
+	);
+	file = await updateReadmeGitHubShieldsBadges(
+		octokit,
+		{ owner: repo.owner, repo: repo.repo },
+		{ retryDelayMs: options?.retryDelayMs, maxRetries: options?.maxRetries },
+		file
+	);
 	// file = await updateReadmeGitHubBadges(octokit, { owner, repo }, options, file);
-	file = await updateReadmeFirstTasks(octokit, { owner: repo.owner, repo: repo.repo }, options, file);
+	file = await updateReadmeFirstTasks(
+		octokit,
+		{ owner: repo.owner, repo: repo.repo },
+		{
+			retryDelayMs: options?.retryDelayMs,
+			maxRetries: options?.maxRetries,
+			createLabels: options?.createLabels,
+			createIssues: options?.createIssues,
+		},
+		file
+	);
 
 	if (!file) {
 		core.warning(`  ⚠ README was not updated — skipping commit.`);

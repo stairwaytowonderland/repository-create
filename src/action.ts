@@ -13,10 +13,10 @@
 import * as core from '@actions/core';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import type { RepoSettings, RulesetConfig } from './types.js';
+import type { RepoSettings, RulesetConfig, CreateOptions } from './types.js';
 import { createGitHubClient } from './github-client.js';
 import { createRepository } from './create-repository.js';
-import { repoDefaults, rulesetDefaults } from './repo-defaults.js';
+import { repoDefaults, rulesetDefaults, createOptionsDefaults } from './repo-defaults.js';
 
 /**
  * Loads and parses a JSON config override file.
@@ -46,6 +46,8 @@ async function run(): Promise<void> {
 	const createFromTemplateRetryDelay = core.getInput('create-from-template-retry-delay');
 	const createFromTemplateMaxRetries = core.getInput('create-from-template-max-retries');
 	const replaceGitProtocolLinks = core.getBooleanInput('replace-git-protocol-links');
+	const createLabels = core.getBooleanInput('create-labels');
+	const createIssues = core.getBooleanInput('create-issues');
 	const visibilityInput = core.getInput('visibility') as 'private' | 'internal' | 'public' | '';
 	const jobSummary = core.getBooleanInput('job-summary');
 	const createFromTemplateRetryDelayMs = createFromTemplateRetryDelay
@@ -60,6 +62,12 @@ async function run(): Promise<void> {
 
 	const settings: RepoSettings = { ...repoDefaults, ...overrides.settings };
 	const rulesets: RulesetConfig[] = overrides.rulesets ?? rulesetDefaults;
+	const createOptions: CreateOptions = {
+		...createOptionsDefaults,
+		replaceGitProtocolLinks,
+		createLabels,
+		createIssues,
+	};
 
 	// Action inputs take precedence over config-file settings
 	if (visibilityInput) {
@@ -81,7 +89,6 @@ async function run(): Promise<void> {
 			includeAllBranches: includeAllBranches,
 			createFromTemplateRetryDelay: createFromTemplateRetryDelayMs,
 			createFromTemplateMaxRetries: createFromTemplateMaxRetryCount,
-			replaceGitProtocolLinks: replaceGitProtocolLinks,
 		};
 	}
 
@@ -90,12 +97,11 @@ async function run(): Promise<void> {
 			...settings.template,
 			createFromTemplateRetryDelay: createFromTemplateRetryDelayMs,
 			createFromTemplateMaxRetries: createFromTemplateMaxRetryCount,
-			replaceGitProtocolLinks: replaceGitProtocolLinks,
 		};
 	}
 
 	const octokit = createGitHubClient(token);
-	const repo = (await createRepository(octokit, { org, name, settings, rulesets })) as {
+	const repo = (await createRepository(octokit, { org, name, settings, rulesets, createOptions })) as {
 		html_url: string;
 		full_name: string;
 		name: string;

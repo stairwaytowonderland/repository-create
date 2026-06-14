@@ -1,4 +1,4 @@
-import type { RepoSettings, RulesetConfig } from './types.js';
+import type { RepoSettings, RulesetConfig, CreateOptions } from './types.js';
 
 /**
  * Default repository settings and branch ruleset configuration.
@@ -120,3 +120,10 @@ export const rulesetDefaults: RulesetConfig[] = [
 		bypass_actors: [],
 	},
 ];
+
+export const createOptionsDefaults: CreateOptions = {
+	updateReadme: true,
+	replaceGitProtocolLinks: false,
+	createLabels: true,
+	createIssues: false,
+};

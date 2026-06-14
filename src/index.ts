@@ -24,7 +24,7 @@ import { readFileSync } from 'node:fs';
 import type { RepoSettings, RulesetConfig } from './types.js';
 import { createGitHubClient } from './github-client.js';
 import { createRepository } from './create-repository.js';
-import { repoDefaults, rulesetDefaults } from './repo-defaults.js';
+import { repoDefaults, rulesetDefaults, createOptionsDefaults } from './repo-defaults.js';
 
 /**
  * Parses --key value pairs from process.argv.
@@ -75,12 +75,28 @@ async function main(): Promise<void> {
 		throw new Error('GitHub token is required. Set the GITHUB_TOKEN environment variable.');
 	}
 
+	const templateOwner = String(args['template-owner'] ?? process.env.TEMPLATE_OWNER);
+	const templateRepo = String(args['template-repo'] ?? process.env.TEMPLATE_REPO);
+	const includeAllBranches = args['include-all-branches'] === true;
+	const createFromTemplateRetryDelay = args['create-from-template-retry-delay']
+		? Number(args['create-from-template-retry-delay'])
+		: undefined;
+	const createFromTemplateMaxRetries = args['create-from-template-max-retries']
+		? Number(args['create-from-template-max-retries'])
+		: undefined;
+
+	const updateReadme = args['update-readme'] === true;
+	const replaceGitProtocolLinks = args['replace-git-protocol-links'] === true;
+	const createLabels = args['create-labels'] === true;
+	const createIssues = args['create-issues'] === true;
+
 	// Optional JSON config file to override defaults (flag takes precedence over env var)
 	const configPath = args['repo-config'] ?? process.env.REPO_CONFIG;
 	const overrides = configPath ? loadConfigFile(String(configPath)) : {};
 
 	const settings: RepoSettings = { ...repoDefaults, ...overrides.settings };
 	const rulesets: RulesetConfig[] = overrides.rulesets ?? rulesetDefaults;
+	const createOptions = { ...createOptionsDefaults, updateReadme, replaceGitProtocolLinks, createLabels, createIssues };
 
 	// CLI template flags take precedence over config-file template settings
 	if (args['template-owner'] || args['template-repo']) {
@@ -88,22 +104,25 @@ async function main(): Promise<void> {
 			throw new Error('Both --template-owner and --template-repo are required when using a template.');
 		}
 		settings.template = {
-			owner: String(args['template-owner']),
-			repo: String(args['template-repo']),
-			includeAllBranches: args['include-all-branches'] === true,
-			createFromTemplateRetryDelay: args['create-from-template-retry-delay']
-				? Number(args['create-from-template-retry-delay'])
-				: undefined,
-			createFromTemplateMaxRetries: args['create-from-template-max-retries']
-				? Number(args['create-from-template-max-retries'])
-				: undefined,
-			replaceGitProtocolLinks: args['replace-git-protocol-links'] === true,
+			owner: templateOwner,
+			repo: templateRepo,
+			includeAllBranches: includeAllBranches,
+			createFromTemplateRetryDelay: createFromTemplateRetryDelay,
+			createFromTemplateMaxRetries: createFromTemplateMaxRetries,
+		};
+	}
+
+	if (settings.template) {
+		settings.template = {
+			...settings.template,
+			createFromTemplateRetryDelay: createFromTemplateRetryDelay,
+			createFromTemplateMaxRetries: createFromTemplateMaxRetries,
 		};
 	}
 
 	const octokit = createGitHubClient(token);
 
-	await createRepository(octokit, { org: String(org), name: String(name), settings, rulesets });
+	await createRepository(octokit, { org: String(org), name: String(name), settings, rulesets, createOptions });
 }
 
 main().catch((err: Error) => {
