@@ -34818,19 +34818,14 @@ async function updateReadmeFirstTasks(octokit, repo, options, file) {
     let content = targetFile.content;
     const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const tasks = ['Create your repo'];
-    const includeCreateLabels = options?.createLabels === true;
-    const includeCreateIssues = options?.createIssues === true;
-    if (includeCreateLabels) {
+    if (options?.createLabels) {
         tasks.push('Create some labels');
     }
-    if (includeCreateIssues) {
+    if (options?.createIssues) {
         tasks.push('Create some issues');
     }
-    const taskAlternation = tasks.map(escapeRegExp).join('|');
-    // const search: RegExp =
-    // 	/(^(?:-|[0-9]+\.)\s+)(\[[^\]]\])(\s+\*+.*(?:Create your repo|Create some labels|Create some issues)\:.*$)/gm;
-    // const replacement = '$1[x]$3';
-    const pattern = `^(?:-|[0-9]+\\.)\\s+(\\[[^\\]]\\])\\s+\\*+.*(?:${taskAlternation})\\:.*$`;
+    const tasksToCheck = tasks.map(escapeRegExp).join('|');
+    const pattern = `^(?:-|[0-9]+\\.)\\s+(\\[[^\\]]\\])\\s+\\*+.*(?:${tasksToCheck})\\:.*$`;
     const search = new RegExp(pattern, 'gm');
     const replacement = `$1[x]$3`;
     info(`  Searching for first tasks checkboxes with pattern: ${pattern}`);
@@ -35150,7 +35145,7 @@ const rulesetDefaults = [
 const createOptionsDefaults = {
     updateReadme: true,
     replaceGitProtocolLinks: false,
-    createLabels: true,
+    createLabels: false,
     createIssues: false,
 };
 

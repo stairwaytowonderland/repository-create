@@ -124,6 +124,6 @@ export const rulesetDefaults: RulesetConfig[] = [
 export const createOptionsDefaults: CreateOptions = {
 	updateReadme: true,
 	replaceGitProtocolLinks: false,
-	createLabels: true,
+	createLabels: false,
 	createIssues: false,
 };
