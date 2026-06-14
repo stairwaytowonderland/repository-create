@@ -34816,17 +34816,19 @@ async function updateReadmeFirstTasks(octokit, repo, options, file) {
     const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
     const original = base64Decode(targetFile.content);
     let content = targetFile.content;
-    let searchString = 'Create your repo';
+    const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const tasks = ['Create your repo'];
     if (options?.createLabels) {
-        searchString += '|Create some labels';
+        tasks.push('Create some labels');
     }
     if (options?.createIssues) {
-        searchString += '|Create some issues';
+        tasks.push('Create some issues');
     }
+    const taskAlternation = tasks.map(escapeRegExp).join('|');
     // const search: RegExp =
     // 	/(^(?:-|[0-9]+\.)\s+)(\[[^\]]\])(\s+\*+.*(?:Create your repo|Create some labels|Create some issues)\:.*$)/gm;
     // const replacement = '$1[x]$3';
-    const search = new RegExp(`(^(?:-|[0-9]+\\.)\\s+)(\\[[^\\]]\\])(\\s+.*(?:${searchString})\:.*$)`, 'gm');
+    const search = new RegExp(`(^(?:-|[0-9]+\\.)\\s+)(\\[[^\\]]\\])(\\s+\\*+.*(?:${taskAlternation})\:.*$)`, 'gm');
     const replacement = `$1[x]$3`;
     try {
         const updated = original.replace(search, replacement);
