@@ -252,7 +252,7 @@ async function updateReadmeFirstTasks(
 	}
 
 	const tasksToCheck = tasks.map(escapeRegExp).join('|');
-	const pattern = `^(?:-|[0-9]+\\.)\\s+(\\[[^\\]]\\])\\s+\\*+.*(?:${tasksToCheck})\\:.*$`;
+	const pattern = `(^(?:-|[0-9]+\\.)\\s+)(\\[[^\\]]\\])(\\s+\\*+.*(?:${tasksToCheck})\\:.*$)`;
 	const search = new RegExp(pattern, 'gm');
 	const replacement = `$1[x]$3`;
 
