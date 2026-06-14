@@ -82,6 +82,16 @@ inputs:
       Optional flag to also replace Git protocol links (e.g. git://) in the README.
     required: false
 
+  create-labels:
+    description: >
+      Optional flag to create a default set of issue labels in the new repository.
+    required: false
+
+  create-issues:
+    description: >
+      Optional flag to create a default issue in the new repository.
+    required: false
+
 outputs:
   repo-url:
     description: HTML URL of the created repository (e.g. https://github.com/org/repo).
