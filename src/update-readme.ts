@@ -260,8 +260,11 @@ async function updateReadmeFirstTasks(
 	// 	/(^(?:-|[0-9]+\.)\s+)(\[[^\]]\])(\s+\*+.*(?:Create your repo|Create some labels|Create some issues)\:.*$)/gm;
 	// const replacement = '$1[x]$3';
 
-	const search = new RegExp(`(^(?:-|[0-9]+\\.)\\s+)(\\[[^\\]]\\])(\\s+\\*+.*(?:${taskAlternation})\:.*$)`, 'gm');
+	const pattern = `^(?:-|[0-9]+\\.)\\s+(\\[[^\\]]\\])\\s+\\*+.*(?:${taskAlternation})\\:.*$`;
+	const search = new RegExp(pattern, 'gm');
 	const replacement = `$1[x]$3`;
+
+	core.info(`  Searching for first tasks checkboxes with pattern: ${pattern}`);
 
 	try {
 		const updated = original.replace(search, replacement);
