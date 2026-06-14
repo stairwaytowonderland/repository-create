@@ -93,6 +93,9 @@ inputs:
     required: false
 
 outputs:
+  repo-id:
+    description: Numeric ID of the created repository.
+
   repo-url:
     description: HTML URL of the created repository (e.g. https://github.com/org/repo).
 
@@ -102,17 +105,14 @@ outputs:
   repo-name:
     description: Name of the created repository (e.g. repo).
 
+  repo-owner-id:
+    description: Numeric ID of the repository owner (e.g. organization or user ID).
+
   repo-owner-name:
     description: Name of the repository owner (e.g. organization or user name).
 
-  repo-owner-login:
-    description: Login of the repository owner (e.g. organization or user login).
-
-  repo-owner-email:
-    description: Email of the repository owner, if available.
-
-  repo-id:
-    description: Numeric ID of the created repository.
+  repo-owner-url:
+    description: URL of the repository owner (e.g. https://github.com/org).
 
 runs:
   using: node24

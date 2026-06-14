@@ -105,23 +105,25 @@ async function run(): Promise<void> {
 		html_url: string;
 		full_name: string;
 		name: string;
-		owner: { name: string; login: string; email: string };
+		owner: { id: number; login: string; html_url: string; type: string };
 		id: number;
 	};
 
+	core.setOutput('repo-id', String(repo.id));
 	core.setOutput('repo-url', repo.html_url);
 	core.setOutput('repo-full-name', repo.full_name);
 	core.setOutput('repo-name', repo.name);
-	core.setOutput('repo-owner-name', repo.owner.name);
-	core.setOutput('repo-owner-login', repo.owner.login);
-	core.setOutput('repo-owner-email', repo.owner.email);
-	core.setOutput('repo-id', String(repo.id));
+	core.setOutput('repo-owner-id', String(repo.owner.id));
+	core.setOutput('repo-owner-url', repo.owner.html_url);
+	core.setOutput('repo-owner-name', repo.owner.login);
 
 	if (jobSummary) {
 		await core.summary
 			.addHeading('Repository Created')
 			.addRaw(`\n**URL:** ${repo.html_url}\n\n`)
 			.addRaw(`**Name:** \`${repo.full_name}\`\n\n`)
+			.addRaw(`**ID:** ${repo.id}\n\n`)
+			.addRaw(`**Owner:** [${repo.owner.login}](${repo.owner.html_url}) (ID: ${repo.owner.id})\n\n`)
 			.addRaw(`**Triggered by:** @${process.env.GITHUB_ACTOR ?? 'unknown'}`)
 			.write();
 	}

@@ -35238,18 +35238,20 @@ async function run() {
     }
     const octokit = createGitHubClient(token);
     const repo = (await createRepository(octokit, { org, name, settings, rulesets, createOptions }));
+    setOutput('repo-id', String(repo.id));
     setOutput('repo-url', repo.html_url);
     setOutput('repo-full-name', repo.full_name);
     setOutput('repo-name', repo.name);
-    setOutput('repo-owner-name', repo.owner.name);
-    setOutput('repo-owner-login', repo.owner.login);
-    setOutput('repo-owner-email', repo.owner.email);
-    setOutput('repo-id', String(repo.id));
+    setOutput('repo-owner-id', String(repo.owner.id));
+    setOutput('repo-owner-url', repo.owner.html_url);
+    setOutput('repo-owner-name', repo.owner.login);
     if (jobSummary) {
         await summary
             .addHeading('Repository Created')
             .addRaw(`\n**URL:** ${repo.html_url}\n\n`)
             .addRaw(`**Name:** \`${repo.full_name}\`\n\n`)
+            .addRaw(`**ID:** ${repo.id}\n\n`)
+            .addRaw(`**Owner:** [${repo.owner.login}](${repo.owner.html_url}) (ID: ${repo.owner.id})\n\n`)
             .addRaw(`**Triggered by:** @${process.env.GITHUB_ACTOR ?? 'unknown'}`)
             .write();
     }
