@@ -1,3 +1,9 @@
+## [1.70.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.69.0...v1.70.0) (2026-06-14)
+
+### ✨ Features
+
+* default github-token input and make not required ([36b629d](https://github.com/stairwaytowonderland/repository-create/commit/36b629d5bdc0c193cd655a2db7250a0c7935c0ce))
+
 ## [1.69.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.68.0...v1.69.0) (2026-06-14)
 
 ### ✨ Features
