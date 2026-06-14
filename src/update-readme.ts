@@ -244,10 +244,13 @@ async function updateReadmeFirstTasks(
 	const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 	const tasks = ['Create your repo'];
-	if (options?.createLabels) {
+	const includeCreateLabels = options?.createLabels === true;
+	const includeCreateIssues = options?.createIssues === true;
+
+	if (includeCreateLabels) {
 		tasks.push('Create some labels');
 	}
-	if (options?.createIssues) {
+	if (includeCreateIssues) {
 		tasks.push('Create some issues');
 	}
 

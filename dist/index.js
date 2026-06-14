@@ -34818,10 +34818,12 @@ async function updateReadmeFirstTasks(octokit, repo, options, file) {
     let content = targetFile.content;
     const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const tasks = ['Create your repo'];
-    if (options?.createLabels) {
+    const includeCreateLabels = options?.createLabels === true;
+    const includeCreateIssues = options?.createIssues === true;
+    if (includeCreateLabels) {
         tasks.push('Create some labels');
     }
-    if (options?.createIssues) {
+    if (includeCreateIssues) {
         tasks.push('Create some issues');
     }
     const taskAlternation = tasks.map(escapeRegExp).join('|');
