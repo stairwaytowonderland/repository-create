@@ -6,8 +6,7 @@ updates:
       # interval: "monthly"
       # day: "friday"
       interval: 'daily'
-    labels:
-      - 'dependencies'
+    # labels: ['dependencies', 'github_actions']
     groups:
       github-actions:
         applies-to: version-updates
@@ -22,8 +21,7 @@ updates:
     ignore:
       - dependency-name: '*'
         update-types: ['version-update:semver-major']
-    labels:
-      - 'dependencies'
+    # labels: ['dependencies', 'javascript']
     groups:
       npm:
         applies-to: version-updates
