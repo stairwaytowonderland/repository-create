@@ -29,6 +29,9 @@ updates:
       # interval: "monthly"
       # day: "friday"
       interval: 'daily'
+    commit-message:
+      prefix: 'chore'
+      include: 'scope' # Automatically appends "(deps)" -> chore(deps):
     # labels: ['dependencies', 'github_actions']
     groups:
       github-actions:
@@ -41,6 +44,9 @@ updates:
       # interval: "monthly"
       # day: "friday"
       interval: 'daily'
+    commit-message:
+      prefix: 'chore'
+      include: 'scope' # Automatically appends "(deps)" -> chore(deps):
     ignore:
       - dependency-name: '*'
         update-types: ['version-update:semver-major']
