@@ -13,5 +13,12 @@ pnpm-lock.yaml
 # Ignore specific file types
 **/*.html
 **/*.log
+**/*.csv
 
+# Ignore specific files and directories
+.DS_Store
+.licenses/
+badges/
+
+CHANGELOG.md
 README.md

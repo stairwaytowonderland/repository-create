@@ -9,24 +9,18 @@ Supports blank creation or generation from a template repository.
 > **Future state:** authentication is designed to be swapped from a Personal
 > Access Token (PAT) to a GitHub App — see [`src/github-client.ts`](src/github-client.ts).
 
-## Project structure
+> [!TIP]
+> See the [`.github` folder's _"Readme"_](./.github/index.md) _(`index.md`)_ for its file structure.
 
-> [!NOTE]
-> `tree -a -F -L 3 -I '.git|.vscode' --gitignore --dirsfirst .`
+<details>
+<summary><i><b>Project file structure</b> (click to expand) ...</i></summary><br>
+
+> :seedling: `tree -a -F -L 1 -I '.git|.vscode' --gitignore --dirsfirst .`
 
 ```none
-.
-├── .github
-│   ├── workflows
-│   │   ├── pre-commit.yaml         # Runs pre-commit hooks on pull requests
-│   │   ├── publish.yaml            # Creates GitHub release from a tag
-│   │   ├── release.yaml            # Semantic release on push to main
-│   │   └── test.yaml               # Validates dist/ build on pull requests
-│   └── .dependabot.yml
-├── config
-│   ├── config.json                 # Standard config
-│   ├── config.noinit.json          # Minimal config with no template and no auto_init
-│   └── config.default.json         # Sample default config with all options specified
+./
+├── .github/
+├── config/
 ├── dist
 │   ├── index.js                    # Bundled action entrypoint (committed, auto-generated)
 │   └── index.map.js                # Bundled action entrypoint sourcemap (committed, auto-generated)
@@ -40,9 +34,16 @@ Supports blank creation or generation from a template repository.
 │   ├── repo-defaults.ts            # Default repo settings and branch ruleset config
 │   ├── types.ts                    # Shared TypeScript type definitions
 │   └── update-readme.ts            # Updates README heading after template creation
-├── .pre-commit-config.yaml         # Pre-commit configuration
-├── .releaserc                      # Semantic release configuration
-├── action.yaml                     # JavaScript action definition
+├── templates/
+├── .editorconfig
+├── .gitignore
+├── .markdownlint.json
+├── .npmrc
+├── .pre-commit-config.yaml
+├── .prettierignore
+├── .prettierrc
+├── .releaserc
+├── action.yaml
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md
 ├── env.sample
@@ -51,8 +52,11 @@ Supports blank creation or generation from a template repository.
 ├── package-lock.json
 ├── package.json
 ├── README.md
+├── rollup.config.ts
 └── tsconfig.json
 ```
+
+</details>
 
 ## Prerequisites
 
