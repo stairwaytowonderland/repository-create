@@ -1,4 +1,27 @@
 version: 2
+registries:
+  # https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/manage-your-dependency-security/configure-access-to-private-registries#git
+  # github:
+  #   type: git
+  #   url: https://github.com/
+  #   username: x-access-token
+  #   password: ${{ secrets.GH_PAT_DEPENDABOT }}
+
+  # https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/manage-your-dependency-security/configure-access-to-private-registries#npm-registry
+  # npm-github:
+  #   type: npm-registry
+  #   url: https://npm.pkg.github.com
+  #   token: ${{ secrets.GH_PAT_DEPENDABOT }}
+  #   # replaces-base: true
+
+  # For a registry type: npm-registry, Dependabot's strict schema requires either a token or a username/password combination.
+  # It throws a validation error if they are missing, even if the registry is public.
+  # See https://github.com/dependabot/dependabot-core/issues/10258
+  npm-public:
+    type: npm-registry
+    url: https://registry.npmjs.org # Forces Dependabot to use the public registry
+    token: ${{ secrets.GH_PUBLIC_DEPENDABOT_NPM_DUMMY }} # Required for schema validation (for type: npm-registry), but not actually used for public registries
+    replaces-base: true
 updates:
   - package-ecosystem: 'github-actions'
     directory: '/'
@@ -27,3 +50,5 @@ updates:
         applies-to: version-updates
         patterns:
           - '*'
+    registries:
+      - npm-public
