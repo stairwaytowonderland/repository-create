@@ -11,6 +11,9 @@
 		"node": ">=24.0.0"
 	},
 	"scripts": {
+		"clean": "rm -rf node_modules package-lock.json && npm cache clean --force",
+		"install:safe": "npm install --legacy-peer-deps --node-gyp=./node_modules/.bin/node-gyp",
+		"clean-install:safe": "npm run clean && npm run install:safe",
 		"build": "npm run bundle",
 		"bundle": "npm run format:write && npm run package",
 		"format:write": "npx prettier --write \"src/**/*.ts\" ./*.{json,mjs,ts,yaml}",
@@ -61,6 +64,14 @@
 		"typescript": "^6.0.3"
 	},
 	"overrides": {
-		"undici": ">=6.27.0"
+		"node-gyp": {
+			"undici": ">=6.27.0 <7.0.0"
+		},
+		"@actions/http-client": {
+			"undici": ">=6.27.0 <7.0.0"
+		},
+		"@semantic-release/github": {
+			"undici": ">=7.28.0 <8.0.0"
+		}
 	}
 }
