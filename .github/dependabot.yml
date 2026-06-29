@@ -25,10 +25,33 @@ registries:
 updates:
   - package-ecosystem: 'github-actions'
     directory: '/'
+    exclude-paths:
+      - '.github/workflows/*'
+      - '.github/actions/**'
     schedule:
       # interval: "monthly"
       # day: "friday"
-      interval: 'daily'
+      # interval: 'daily'
+      interval: 'weekly'
+    commit-message:
+      prefix: 'build'
+      include: 'scope' # Automatically appends "(deps)" -> build(deps):
+    # labels: ['dependencies', 'github_actions']
+    groups:
+      github-actions:
+        applies-to: version-updates
+        patterns:
+          - '*'
+    assignees: ['andrewhaller']
+  - package-ecosystem: 'github-actions'
+    directories:
+      - '.github/workflows'
+      - '.github/actions/**'
+    schedule:
+      # interval: "monthly"
+      # day: "friday"
+      # interval: 'daily'
+      interval: 'weekly'
     commit-message:
       prefix: 'chore'
       include: 'scope' # Automatically appends "(deps)" -> chore(deps):
@@ -38,6 +61,7 @@ updates:
         applies-to: version-updates
         patterns:
           - '*'
+    assignees: ['andrewhaller']
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
