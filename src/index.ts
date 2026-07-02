@@ -19,89 +19,89 @@
  *   REPO_CONFIG   - Path to a JSON settings/rulesets override file (alternative to --repo-config)
  */
 
-import 'dotenv/config';
-import { readFileSync } from 'node:fs';
-import type { RepoSettings, RulesetConfig } from './types.js';
-import { createGitHubClient } from './github-client.js';
-import { createRepository } from './create-repository.js';
-import { repoDefaults, rulesetDefaults, createOptionsDefaults } from './repo-defaults.js';
+import 'dotenv/config'
+import { readFileSync } from 'node:fs'
+import type { RepoSettings, RulesetConfig } from './types.js'
+import { createGitHubClient } from './github-client.js'
+import { createRepository } from './create-repository.js'
+import { repoDefaults, rulesetDefaults, createOptionsDefaults } from './repo-defaults.js'
 
 /**
  * Parses --key value pairs from process.argv.
  */
 function parseArgs(argv: string[]): Record<string, string | true> {
-	const args: Record<string, string | true> = {};
+	const args: Record<string, string | true> = {}
 	for (let i = 2; i < argv.length; i++) {
 		if (argv[i].startsWith('--')) {
-			const key = argv[i].slice(2);
-			const next = argv[i + 1];
-			args[key] = next && !next.startsWith('--') ? argv[++i] : true;
+			const key = argv[i].slice(2)
+			const next = argv[i + 1]
+			args[key] = next && !next.startsWith('--') ? argv[++i] : true
 		}
 	}
-	return args;
+	return args
 }
 
 /**
  * Loads and parses a JSON config override file.
  */
 function loadConfigFile(configPath: string): { settings?: RepoSettings; rulesets?: RulesetConfig[] } {
-	let raw: string;
+	let raw: string
 	try {
-		raw = readFileSync(configPath, 'utf8');
+		raw = readFileSync(configPath, 'utf8')
 	} catch {
-		throw new Error(`Cannot read config file: "${configPath}"`);
+		throw new Error(`Cannot read config file: "${configPath}"`)
 	}
 	try {
-		return JSON.parse(raw) as { settings?: RepoSettings; rulesets?: RulesetConfig[] };
+		return JSON.parse(raw) as { settings?: RepoSettings; rulesets?: RulesetConfig[] }
 	} catch {
-		throw new Error(`Config file is not valid JSON: "${configPath}"`);
+		throw new Error(`Config file is not valid JSON: "${configPath}"`)
 	}
 }
 
 async function main(): Promise<void> {
-	const args = parseArgs(process.argv);
+	const args = parseArgs(process.argv)
 
-	const org = args.org ?? process.env.GITHUB_ORG;
-	const name = args.name ?? process.env.REPO_NAME;
-	const token = process.env.GITHUB_TOKEN;
+	const org = args.org ?? process.env.GITHUB_ORG
+	const name = args.name ?? process.env.REPO_NAME
+	const token = process.env.GITHUB_TOKEN
 
 	if (!org) {
-		throw new Error('Organization name is required. Use --org <name> or set GITHUB_ORG.');
+		throw new Error('Organization name is required. Use --org <name> or set GITHUB_ORG.')
 	}
 	if (!name) {
-		throw new Error('Repository name is required. Use --name <name> or set REPO_NAME.');
+		throw new Error('Repository name is required. Use --name <name> or set REPO_NAME.')
 	}
 	if (!token) {
-		throw new Error('GitHub token is required. Set the GITHUB_TOKEN environment variable.');
+		throw new Error('GitHub token is required. Set the GITHUB_TOKEN environment variable.')
 	}
 
-	const templateOwner = String(args['template-owner'] ?? process.env.TEMPLATE_OWNER);
-	const templateRepo = String(args['template-repo'] ?? process.env.TEMPLATE_REPO);
-	const includeAllBranches = args['include-all-branches'] === true;
+	const templateOwner = String(args['template-owner'] ?? process.env.TEMPLATE_OWNER)
+	const templateRepo = String(args['template-repo'] ?? process.env.TEMPLATE_REPO)
+	const includeAllBranches = args['include-all-branches'] === true
 	const createFromTemplateRetryDelay = args['create-from-template-retry-delay']
 		? Number(args['create-from-template-retry-delay'])
-		: undefined;
+		: undefined
 	const createFromTemplateMaxRetries = args['create-from-template-max-retries']
 		? Number(args['create-from-template-max-retries'])
-		: undefined;
+		: undefined
 
-	const updateReadme = args['update-readme'] === true;
-	const replaceGitProtocolLinks = args['replace-git-protocol-links'] === true;
-	const createLabels = args['create-labels'] === true;
-	const createIssues = args['create-issues'] === true;
+	const updateReadme = args['update-readme'] === true
+	const replaceGitProtocolLinks = args['replace-git-protocol-links'] === true
+	const createLabels = args['create-labels'] === true
+	const createIssues = args['create-issues'] === true
 
 	// Optional JSON config file to override defaults (flag takes precedence over env var)
-	const configPath = args['repo-config'] ?? process.env.REPO_CONFIG;
-	const overrides = configPath ? loadConfigFile(String(configPath)) : {};
+	const configPath = args['repo-config'] ?? process.env.REPO_CONFIG
+	const overrides = configPath ? loadConfigFile(String(configPath)) : {}
 
-	const settings: RepoSettings = { ...repoDefaults, ...overrides.settings };
-	const rulesets: RulesetConfig[] = overrides.rulesets ?? rulesetDefaults;
-	const createOptions = { ...createOptionsDefaults, updateReadme, replaceGitProtocolLinks, createLabels, createIssues };
+	const settings: RepoSettings = { ...repoDefaults, ...overrides.settings }
+	const rulesets: RulesetConfig[] = overrides.rulesets ?? rulesetDefaults
+	const createOptions = { ...createOptionsDefaults, updateReadme, replaceGitProtocolLinks, createLabels, createIssues }
 
 	// CLI template flags take precedence over config-file template settings
 	if (args['template-owner'] || args['template-repo']) {
 		if (!args['template-owner'] || !args['template-repo']) {
-			throw new Error('Both --template-owner and --template-repo are required when using a template.');
+			throw new Error('Both --template-owner and --template-repo are required when using a template.')
 		}
 		settings.template = {
 			owner: templateOwner,
@@ -109,7 +109,7 @@ async function main(): Promise<void> {
 			includeAllBranches: includeAllBranches,
 			createFromTemplateRetryDelay: createFromTemplateRetryDelay,
 			createFromTemplateMaxRetries: createFromTemplateMaxRetries,
-		};
+		}
 	}
 
 	if (settings.template) {
@@ -117,15 +117,15 @@ async function main(): Promise<void> {
 			...settings.template,
 			createFromTemplateRetryDelay: createFromTemplateRetryDelay,
 			createFromTemplateMaxRetries: createFromTemplateMaxRetries,
-		};
+		}
 	}
 
-	const octokit = createGitHubClient(token);
+	const octokit = createGitHubClient(token)
 
-	await createRepository(octokit, { org: String(org), name: String(name), settings, rulesets, createOptions });
+	await createRepository(octokit, { org: String(org), name: String(name), settings, rulesets, createOptions })
 }
 
 main().catch((err: Error) => {
-	console.error(`\nError: ${err.message}`);
-	process.exit(1);
-});
+	console.error(`\nError: ${err.message}`)
+	process.exit(1)
+})

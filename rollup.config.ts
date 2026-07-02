@@ -1,8 +1,8 @@
 // //@ts-nocheck
 
-import commonjs from '@rollup/plugin-commonjs';
-import nodeResolve from '@rollup/plugin-node-resolve';
-import typescript from '@rollup/plugin-typescript';
+import commonjs from '@rollup/plugin-commonjs'
+import nodeResolve from '@rollup/plugin-node-resolve'
+import typescript from '@rollup/plugin-typescript'
 
 // const IGNORED_CIRCULAR_DEPENDENCY =
 // 	'node_modules/@actions/core/lib/core.js -> node_modules/@actions/core/lib/oidc-utils.js -> node_modules/@actions/core/lib/core.js';
@@ -23,6 +23,6 @@ const config = {
 	// 	warn(warning);
 	// },
 	plugins: [typescript(), nodeResolve({ preferBuiltins: true }), commonjs()],
-};
+}
 
-export default config;
+export default config

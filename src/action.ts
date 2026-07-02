@@ -10,78 +10,76 @@
  *   repo-id   - Numeric ID of the created repository
  */
 
-import * as core from '@actions/core';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import type { RepoSettings, RulesetConfig, CreateOptions } from './types.js';
-import { createGitHubClient } from './github-client.js';
-import { createRepository } from './create-repository.js';
-import { repoDefaults, rulesetDefaults, createOptionsDefaults } from './repo-defaults.js';
+import * as core from '@actions/core'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import type { RepoSettings, RulesetConfig, CreateOptions } from './types.js'
+import { createGitHubClient } from './github-client.js'
+import { createRepository } from './create-repository.js'
+import { repoDefaults, rulesetDefaults, createOptionsDefaults } from './repo-defaults.js'
 
 /**
  * Loads and parses a JSON config override file.
  */
 function loadConfigFile(configPath: string): { settings?: RepoSettings; rulesets?: RulesetConfig[] } {
-	let raw: string;
+	let raw: string
 	try {
-		raw = readFileSync(configPath, 'utf8');
+		raw = readFileSync(configPath, 'utf8')
 	} catch {
-		throw new Error(`Cannot read config file: "${configPath}"`);
+		throw new Error(`Cannot read config file: "${configPath}"`)
 	}
 	try {
-		return JSON.parse(raw) as { settings?: RepoSettings; rulesets?: RulesetConfig[] };
+		return JSON.parse(raw) as { settings?: RepoSettings; rulesets?: RulesetConfig[] }
 	} catch {
-		throw new Error(`Config file is not valid JSON: "${configPath}"`);
+		throw new Error(`Config file is not valid JSON: "${configPath}"`)
 	}
 }
 
 async function run(): Promise<void> {
-	const token = core.getInput('github-token', { required: true });
-	const org = core.getInput('org', { required: true });
-	const name = core.getInput('name', { required: true });
-	const configInput = core.getInput('repo-config');
-	const templateOwner = core.getInput('template-owner');
-	const templateRepo = core.getInput('template-repo');
-	const includeAllBranches = core.getBooleanInput('include-all-branches');
-	const createFromTemplateRetryDelay = core.getInput('create-from-template-retry-delay');
-	const createFromTemplateMaxRetries = core.getInput('create-from-template-max-retries');
-	const replaceGitProtocolLinks = core.getBooleanInput('replace-git-protocol-links');
-	const createLabels = core.getBooleanInput('create-labels');
-	const createIssues = core.getBooleanInput('create-issues');
-	const visibilityInput = core.getInput('visibility') as 'private' | 'internal' | 'public' | '';
-	const jobSummary = core.getBooleanInput('job-summary');
-	const createFromTemplateRetryDelayMs = createFromTemplateRetryDelay
-		? Number(createFromTemplateRetryDelay)
-		: undefined;
+	const token = core.getInput('github-token', { required: true })
+	const org = core.getInput('org', { required: true })
+	const name = core.getInput('name', { required: true })
+	const configInput = core.getInput('repo-config')
+	const templateOwner = core.getInput('template-owner')
+	const templateRepo = core.getInput('template-repo')
+	const includeAllBranches = core.getBooleanInput('include-all-branches')
+	const createFromTemplateRetryDelay = core.getInput('create-from-template-retry-delay')
+	const createFromTemplateMaxRetries = core.getInput('create-from-template-max-retries')
+	const replaceGitProtocolLinks = core.getBooleanInput('replace-git-protocol-links')
+	const createLabels = core.getBooleanInput('create-labels')
+	const createIssues = core.getBooleanInput('create-issues')
+	const visibilityInput = core.getInput('visibility') as 'private' | 'internal' | 'public' | ''
+	const jobSummary = core.getBooleanInput('job-summary')
+	const createFromTemplateRetryDelayMs = createFromTemplateRetryDelay ? Number(createFromTemplateRetryDelay) : undefined
 	const createFromTemplateMaxRetryCount = createFromTemplateMaxRetries
 		? Number(createFromTemplateMaxRetries)
-		: undefined;
+		: undefined
 
 	// Resolve config file path relative to the Actions workspace root
-	const overrides = configInput ? loadConfigFile(resolve(process.env.GITHUB_WORKSPACE ?? '.', configInput)) : {};
+	const overrides = configInput ? loadConfigFile(resolve(process.env.GITHUB_WORKSPACE ?? '.', configInput)) : {}
 
-	const settings: RepoSettings = { ...repoDefaults, ...overrides.settings };
-	const rulesets: RulesetConfig[] = overrides.rulesets ?? rulesetDefaults;
+	const settings: RepoSettings = { ...repoDefaults, ...overrides.settings }
+	const rulesets: RulesetConfig[] = overrides.rulesets ?? rulesetDefaults
 	const createOptions: CreateOptions = {
 		...createOptionsDefaults,
 		replaceGitProtocolLinks,
 		createLabels,
 		createIssues,
-	};
+	}
 
 	// Action inputs take precedence over config-file settings
 	if (visibilityInput) {
-		const allowed = ['private', 'internal', 'public'];
+		const allowed = ['private', 'internal', 'public']
 		if (!allowed.includes(visibilityInput)) {
-			throw new Error(`Invalid visibility "${visibilityInput}". Must be one of: ${allowed.join(', ')}.`);
+			throw new Error(`Invalid visibility "${visibilityInput}". Must be one of: ${allowed.join(', ')}.`)
 		}
-		settings.visibility = visibilityInput;
+		settings.visibility = visibilityInput
 	}
 
 	// Action inputs take precedence over config-file template settings
 	if (templateOwner || templateRepo) {
 		if (!templateOwner || !templateRepo) {
-			throw new Error('Both template-owner and template-repo inputs are required when using a template.');
+			throw new Error('Both template-owner and template-repo inputs are required when using a template.')
 		}
 		settings.template = {
 			owner: templateOwner,
@@ -89,7 +87,7 @@ async function run(): Promise<void> {
 			includeAllBranches: includeAllBranches,
 			createFromTemplateRetryDelay: createFromTemplateRetryDelayMs,
 			createFromTemplateMaxRetries: createFromTemplateMaxRetryCount,
-		};
+		}
 	}
 
 	if (settings.template) {
@@ -97,25 +95,25 @@ async function run(): Promise<void> {
 			...settings.template,
 			createFromTemplateRetryDelay: createFromTemplateRetryDelayMs,
 			createFromTemplateMaxRetries: createFromTemplateMaxRetryCount,
-		};
+		}
 	}
 
-	const octokit = createGitHubClient(token);
+	const octokit = createGitHubClient(token)
 	const repo = (await createRepository(octokit, { org, name, settings, rulesets, createOptions })) as {
-		html_url: string;
-		full_name: string;
-		name: string;
-		owner: { id: number; login: string; html_url: string; type: string };
-		id: number;
-	};
+		html_url: string
+		full_name: string
+		name: string
+		owner: { id: number; login: string; html_url: string; type: string }
+		id: number
+	}
 
-	core.setOutput('repo-id', String(repo.id));
-	core.setOutput('repo-url', repo.html_url);
-	core.setOutput('repo-full-name', repo.full_name);
-	core.setOutput('repo-name', repo.name);
-	core.setOutput('repo-owner-id', String(repo.owner.id));
-	core.setOutput('repo-owner-url', repo.owner.html_url);
-	core.setOutput('repo-owner-name', repo.owner.login);
+	core.setOutput('repo-id', String(repo.id))
+	core.setOutput('repo-url', repo.html_url)
+	core.setOutput('repo-full-name', repo.full_name)
+	core.setOutput('repo-name', repo.name)
+	core.setOutput('repo-owner-id', String(repo.owner.id))
+	core.setOutput('repo-owner-url', repo.owner.html_url)
+	core.setOutput('repo-owner-name', repo.owner.login)
 
 	if (jobSummary) {
 		await core.summary
@@ -125,10 +123,10 @@ async function run(): Promise<void> {
 			.addRaw(`**ID:** ${repo.id}\n\n`)
 			.addRaw(`**Owner:** [${repo.owner.login}](${repo.owner.html_url}) (ID: ${repo.owner.id})\n\n`)
 			.addRaw(`**Triggered by:** @${process.env.GITHUB_ACTOR ?? 'unknown'}`)
-			.write();
+			.write()
 	}
 }
 
 run().catch((err: Error) => {
-	core.setFailed(err.message);
-});
+	core.setFailed(err.message)
+})

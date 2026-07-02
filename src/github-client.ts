@@ -1,4 +1,4 @@
-import { Octokit } from 'octokit';
+import { Octokit } from 'octokit'
 
 /**
  * Returns an authenticated Octokit instance.
@@ -25,7 +25,7 @@ import { Octokit } from 'octokit';
  */
 export function createGitHubClient(token: string): Octokit {
 	if (!token) {
-		throw new Error('GitHub token is required. Set the GITHUB_TOKEN environment variable.');
+		throw new Error('GitHub token is required. Set the GITHUB_TOKEN environment variable.')
 	}
 
 	return new Octokit({
@@ -33,5 +33,5 @@ export function createGitHubClient(token: string): Octokit {
 		headers: {
 			'X-GitHub-Api-Version': '2026-03-10',
 		},
-	});
+	})
 }

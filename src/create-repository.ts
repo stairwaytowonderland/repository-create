@@ -1,10 +1,10 @@
-import type { Octokit } from 'octokit';
-import type { CreateOptions, RepoSettings, RulesetConfig, TemplateConfig } from './types.js';
-import { applySettings } from './apply-settings.js';
-import { createRulesets } from './create-rulesets.js';
-import { updateReadme } from './update-readme.js';
-import { sanitizeRepoName } from './utils.js';
-import * as core from '@actions/core';
+import type { Octokit } from 'octokit'
+import type { CreateOptions, RepoSettings, RulesetConfig, TemplateConfig } from './types.js'
+import { applySettings } from './apply-settings.js'
+import { createRulesets } from './create-rulesets.js'
+import { updateReadme } from './update-readme.js'
+import { sanitizeRepoName } from './utils.js'
+import * as core from '@actions/core'
 
 /**
  * Orchestrates repository creation:
@@ -23,13 +23,13 @@ export async function createRepository(
 	}: { org: string; name: string; settings: RepoSettings; rulesets: RulesetConfig[]; createOptions: CreateOptions }
 ): Promise<object> {
 	// Sanitize repository name for API calls: only [\w.-], others to '-'
-	const nameSanitized: string = sanitizeRepoName(name);
-	core.info(`\nCreating repository "${org}/${name}"...`);
+	const nameSanitized: string = sanitizeRepoName(name)
+	core.info(`\nCreating repository "${org}/${name}"...`)
 
-	let repo: { html_url: string; full_name: string; name: string; owner: object; id: number };
+	let repo: { html_url: string; full_name: string; name: string; owner: object; id: number }
 
 	if (settings.template) {
-		({ data: repo } = await createFromTemplate(octokit, { org, name: nameSanitized, settings }));
+		;({ data: repo } = await createFromTemplate(octokit, { org, name: nameSanitized, settings }))
 		if (createOptions.updateReadme) {
 			// Use unsanitized name for README heading
 			await updateReadme(
@@ -42,26 +42,26 @@ export async function createRepository(
 					createLabels: createOptions.createLabels,
 					createIssues: createOptions.createIssues,
 				}
-			);
+			)
 		}
 	} else {
-		({ data: repo } = await createBlank(octokit, { org, name: nameSanitized, settings }));
+		;({ data: repo } = await createBlank(octokit, { org, name: nameSanitized, settings }))
 	}
 
-	core.info(`\n✓ Repository "${org}/${name}" created: (id: ${repo.id})`);
+	core.info(`\n✓ Repository "${org}/${name}" created: (id: ${repo.id})`)
 
 	// Second-pass settings update (covers fields not available at creation time)
-	await applySettings(octokit, { owner: org, repo: nameSanitized, settings });
+	await applySettings(octokit, { owner: org, repo: nameSanitized, settings })
 
 	// Branch rulesets
 	if (rulesets && rulesets.length > 0) {
-		core.info(`\nCreating branch rulesets...`);
-		await createRulesets(octokit, { owner: org, repo: nameSanitized, rulesets });
+		core.info(`\nCreating branch rulesets...`)
+		await createRulesets(octokit, { owner: org, repo: nameSanitized, rulesets })
 	}
 
-	core.info(`\n✓ Repository "${repo.full_name}" setup complete.`);
-	core.info(`\n🌐 Repository available at: ${repo.html_url}`);
-	return repo;
+	core.info(`\n✓ Repository "${repo.full_name}" setup complete.`)
+	core.info(`\n🌐 Repository available at: ${repo.html_url}`)
+	return repo
 }
 
 /**
@@ -89,7 +89,7 @@ function createBlank(octokit: Octokit, { org, name, settings }: { org: string; n
 		 * auto_init is not needed and is ignored if set.
 		 */
 		auto_init: settings.template ? undefined : settings.auto_init,
-	});
+	})
 }
 
 /**
@@ -103,10 +103,10 @@ function createFromTemplate(
 	octokit: Octokit,
 	{ org, name, settings }: { org: string; name: string; settings: RepoSettings }
 ) {
-	const { owner: templateOwner, repo: templateRepo, includeAllBranches = false } = settings.template as TemplateConfig;
+	const { owner: templateOwner, repo: templateRepo, includeAllBranches = false } = settings.template as TemplateConfig
 
-	core.info(`  Using template: ${templateOwner}/${templateRepo}`);
-	core.info(`  Destination:    ${org}/${name} (visibility: ${settings.visibility})`);
+	core.info(`  Using template: ${templateOwner}/${templateRepo}`)
+	core.info(`  Destination:    ${org}/${name} (visibility: ${settings.visibility})`)
 
 	return octokit.rest.repos
 		.createUsingTemplate({
@@ -127,8 +127,8 @@ function createFromTemplate(
 						`    2. The repository has not been marked as a template\n` +
 						`       (Settings → General → "Template repository" checkbox).\n` +
 						`    3. The token does not have read access to "${templateOwner}/${templateRepo}".`
-				);
+				)
 			}
-			throw err;
-		});
+			throw err
+		})
 }

@@ -1,18 +1,17 @@
 // See: https://eslint.org/docs/latest/use/configure/configuration-files
 
-import { FlatCompat } from '@eslint/eslintrc';
-import js from '@eslint/js';
-import typescriptEslint from '@typescript-eslint/eslint-plugin';
-import tsParser from '@typescript-eslint/parser';
-import jest from 'eslint-plugin-jest';
-import prettier from 'eslint-plugin-prettier';
-import globals from 'globals';
+import { FlatCompat } from '@eslint/eslintrc'
+import js from '@eslint/js'
+import typescriptEslint from '@typescript-eslint/eslint-plugin'
+import tsParser from '@typescript-eslint/parser'
+import prettier from 'eslint-plugin-prettier'
+import globals from 'globals'
 
 const compat = new FlatCompat({
 	baseDirectory: import.meta.dirname,
 	recommendedConfig: js.configs.recommended,
 	allConfig: js.configs.all,
-});
+})
 
 export default [
 	{
@@ -22,12 +21,10 @@ export default [
 		'eslint:recommended',
 		'plugin:@typescript-eslint/eslint-recommended',
 		'plugin:@typescript-eslint/recommended',
-		'plugin:jest/recommended',
 		'plugin:prettier/recommended'
 	),
 	{
 		plugins: {
-			jest,
 			prettier,
 			'@typescript-eslint': typescriptEslint,
 		},
@@ -35,7 +32,6 @@ export default [
 		languageOptions: {
 			globals: {
 				...globals.node,
-				...globals.jest,
 				Atomics: 'readonly',
 				SharedArrayBuffer: 'readonly',
 			},
@@ -46,13 +42,7 @@ export default [
 
 			parserOptions: {
 				projectService: {
-					allowDefaultProject: [
-						'__fixtures__/*.ts',
-						'__tests__/*.ts',
-						'eslint.config.mjs',
-						'jest.config.js',
-						'rollup.config.ts',
-					],
+					allowDefaultProject: ['__fixtures__/*.ts', '__tests__/*.ts', 'eslint.config.mjs', 'rollup.config.ts'],
 				},
 				tsconfigRootDir: import.meta.dirname,
 			},
@@ -80,4 +70,4 @@ export default [
 			'prettier/prettier': 'error',
 		},
 	},
-];
+]
