@@ -34790,11 +34790,11 @@ async function updateReadmeRepoLinks(octokit, repo, options, file) {
     let search;
     if (options?.replaceGitProtocolLinks) {
         // ((?:https://github\\.com/|git@github\\.com:)${repo.owner}/)([^/)?.\`]+)(/[^)\`]+(?:^.*$)?)?
-        search = new RegExp(`((?:https://github\\.com/|git@github\\.com:)${repo.owner}/)(repository-create)(/[^)\`]+(?:^.*$)?)?`, 'g');
+        search = new RegExp(`((?:https://github\\.com/|git@github\\.com:)${repo.template.owner}/)(${repo.template.repo})(/[^)\`]+(?:^.*$)?)?`, 'g');
     }
     else {
         // (https://github\\.com/${repo.owner}/)([^/)?.\`]+)(/[^)\`]+(?:^.*$)?)?
-        search = new RegExp(`(https://github\\.com/${repo.owner}/)(repository-create)(/[^)\`]+(?:^.*$)?)?`, 'g');
+        search = new RegExp(`(https://github\\.com/${repo.template.owner}/)(${repo.template.repo})(/[^)\`]+(?:^.*$)?)?`, 'g');
     }
     const replacement = `$1${repo.repo}$3`;
     try {
@@ -34941,8 +34941,8 @@ async function updateReadmeFirstTasks(octokit, repo, options, file) {
 }
 async function updateReadme(octokit, repo, options) {
     let file = null;
-    file = await updateReadmeHeading(octokit, { owner: repo.owner, repo: repo.repo, template: repo.template }, { retryDelayMs: options?.retryDelayMs, maxRetries: options?.maxRetries }, file);
-    file = await updateReadmeRepoLinks(octokit, { owner: repo.owner, repo: repo.repo }, {
+    file = await updateReadmeHeading(octokit, { owner: repo.owner, repo: repo.repo }, { retryDelayMs: options?.retryDelayMs, maxRetries: options?.maxRetries }, file);
+    file = await updateReadmeRepoLinks(octokit, { owner: repo.owner, repo: repo.repo, template: repo.template }, {
         retryDelayMs: options?.retryDelayMs,
         maxRetries: options?.maxRetries,
         replaceGitProtocolLinks: options?.replaceGitProtocolLinks,
@@ -35036,7 +35036,7 @@ async function createRepository(octokit, { org, name, settings, rulesets, create
         ({ data: repo } = await createFromTemplate(octokit, { org, name: nameSanitized, settings }));
         if (createOptions.updateReadme) {
             // Use unsanitized name for README heading
-            await updateReadme(octokit, { owner: org, repo: name, template: settings.template?.repo }, {
+            await updateReadme(octokit, { owner: org, repo: name, template: { repo: settings.template?.repo, owner: settings.template?.owner } }, {
                 retryDelayMs: settings.template.createFromTemplateRetryDelay,
                 maxRetries: settings.template.createFromTemplateMaxRetries,
                 replaceGitProtocolLinks: createOptions.replaceGitProtocolLinks,

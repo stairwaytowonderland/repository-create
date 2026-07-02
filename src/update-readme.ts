@@ -17,7 +17,7 @@ type ReadmeFileContent = GitHubFileContent & { type: 'file'; content: string }
 
 async function updateReadmeHeading(
 	octokit: Octokit,
-	repo: { owner: string; repo: string; template?: string },
+	repo: { owner: string; repo: string },
 	options?: { retryDelayMs?: number; maxRetries?: number },
 	file?: GitHubFileContent | null
 ): Promise<GitHubFileContent | null> {
@@ -70,7 +70,7 @@ async function updateReadmeHeading(
  */
 async function updateReadmeRepoLinks(
 	octokit: Octokit,
-	repo: { owner: string; repo: string },
+	repo: { owner: string; repo: string; template: { owner: string; repo: string } },
 	options?: { retryDelayMs?: number; maxRetries?: number; replaceGitProtocolLinks?: boolean },
 	file?: GitHubFileContent | null
 ): Promise<GitHubFileContent | null> {
@@ -85,12 +85,15 @@ async function updateReadmeRepoLinks(
 	if (options?.replaceGitProtocolLinks) {
 		// ((?:https://github\\.com/|git@github\\.com:)${repo.owner}/)([^/)?.\`]+)(/[^)\`]+(?:^.*$)?)?
 		search = new RegExp(
-			`((?:https://github\\.com/|git@github\\.com:)${repo.owner}/)(repository-create)(/[^)\`]+(?:^.*$)?)?`,
+			`((?:https://github\\.com/|git@github\\.com:)${repo.template.owner}/)(${repo.template.repo})(/[^)\`]+(?:^.*$)?)?`,
 			'g'
 		)
 	} else {
 		// (https://github\\.com/${repo.owner}/)([^/)?.\`]+)(/[^)\`]+(?:^.*$)?)?
-		search = new RegExp(`(https://github\\.com/${repo.owner}/)(repository-create)(/[^)\`]+(?:^.*$)?)?`, 'g')
+		search = new RegExp(
+			`(https://github\\.com/${repo.template.owner}/)(${repo.template.repo})(/[^)\`]+(?:^.*$)?)?`,
+			'g'
+		)
 	}
 	const replacement = `$1${repo.repo}$3`
 
@@ -278,7 +281,7 @@ async function updateReadmeFirstTasks(
 
 export async function updateReadme(
 	octokit: Octokit,
-	repo: { owner: string; repo: string; template?: string },
+	repo: { owner: string; repo: string; template: { owner: string; repo: string } },
 	options?: {
 		retryDelayMs?: number
 		maxRetries?: number
@@ -291,13 +294,13 @@ export async function updateReadme(
 
 	file = await updateReadmeHeading(
 		octokit,
-		{ owner: repo.owner, repo: repo.repo, template: repo.template },
+		{ owner: repo.owner, repo: repo.repo },
 		{ retryDelayMs: options?.retryDelayMs, maxRetries: options?.maxRetries },
 		file
 	)
 	file = await updateReadmeRepoLinks(
 		octokit,
-		{ owner: repo.owner, repo: repo.repo },
+		{ owner: repo.owner, repo: repo.repo, template: repo.template },
 		{
 			retryDelayMs: options?.retryDelayMs,
 			maxRetries: options?.maxRetries,

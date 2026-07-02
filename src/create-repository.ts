@@ -34,7 +34,7 @@ export async function createRepository(
 			// Use unsanitized name for README heading
 			await updateReadme(
 				octokit,
-				{ owner: org, repo: name, template: settings.template?.repo },
+				{ owner: org, repo: name, template: { repo: settings.template?.repo, owner: settings.template?.owner } },
 				{
 					retryDelayMs: settings.template.createFromTemplateRetryDelay,
 					maxRetries: settings.template.createFromTemplateMaxRetries,
