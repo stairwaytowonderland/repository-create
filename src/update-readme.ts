@@ -342,7 +342,7 @@ export async function updateReadme(
 		owner: repo.owner,
 		repo: sanitizeRepoName(repo.repo),
 		path: file?.path ?? 'README.md',
-		message: `chore(docs): update README.md to match ${repo.repo} [skip ci]`,
+		message: `docs: update README.md to match ${repo.repo} [skip ci]`,
 		content: updatedContent,
 		sha: file?.sha,
 	})
