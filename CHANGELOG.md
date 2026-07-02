@@ -1,3 +1,9 @@
+## [1.73.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.72.0...v1.73.0) (2026-07-02)
+
+### ✨ Features
+
+* updating update-readme ([63f0dca](https://github.com/stairwaytowonderland/repository-create/commit/63f0dca726a0873c59f20a3c517f4b1e17b4b2a7))
+
 ## [1.72.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.71.0...v1.72.0) (2026-07-02)
 
 ### ✨ Features
