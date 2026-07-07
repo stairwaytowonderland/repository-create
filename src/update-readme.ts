@@ -29,10 +29,11 @@ async function updateReadmeHeading(
 	let content: string = targetFile.content
 
 	try {
-		const matches = original.match(/^#\s+(:[^:]+:\\s*)?.*$/m)
-		const originalHeading = matches ? matches[0].replace(/^#\s+(:[^:]+:\\s*)?/, '').trim() : null
+		const matches = original.match(/^#\s+(:[^:]+:\s*)?.*$/m)
 
 		if (matches) {
+			const originalHeading = matches ? matches[0].replace(/^#\s+(:[^:]+:\s*)?/, '').trim() : null
+
 			core.info(
 				`  Updating README heading from "${matches ? matches[0] : ''}" to "${matches && matches[1] ? matches[1] : ''}${repo.repo}" (API repo: "${sanitizedRepo}")...`
 			)
@@ -40,7 +41,7 @@ async function updateReadmeHeading(
 			// Replace only the first H1 line (# Title), robust to spaces and special characters
 
 			const updated = original.replace(
-				new RegExp(`#\\s+(${matches && matches[1] ? matches[1] : ''})${originalHeading}`, 'gm'),
+				new RegExp(`#\\s+(${matches && matches[1] ? matches[1] : ''})?${originalHeading}`, 'gm'),
 				`# $1${repo.repo}`
 			)
 
