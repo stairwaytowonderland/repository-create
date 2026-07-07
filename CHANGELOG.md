@@ -1,3 +1,9 @@
+## [1.75.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.74.0...v1.75.0) (2026-07-07)
+
+### ✨ Features
+
+* updates ([f6373b6](https://github.com/stairwaytowonderland/repository-create/commit/f6373b606b207dcf0ba3532f8cb39a273a00dcc5))
+
 ## [1.74.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.73.0...v1.74.0) (2026-07-02)
 
 ### ✨ Features
