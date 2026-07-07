@@ -40,7 +40,7 @@ async function updateReadmeHeading(
 			// Replace only the first H1 line (# Title), robust to spaces and special characters
 
 			const updated = original.replace(
-				new RegExp(`#\\s+${matches && matches[1] ? matches[1] : ''}${originalHeading}`, 'gm'),
+				new RegExp(`#\\s+(${matches && matches[1] ? matches[1] : ''})${originalHeading}`, 'gm'),
 				`# $1${repo.repo}`
 			)
 
