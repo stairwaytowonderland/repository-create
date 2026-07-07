@@ -24,7 +24,6 @@ jobs:
     if: startsWith(github.ref, 'refs/heads/main')
     uses: ./.github/workflows/release.yaml
     secrets: inherit
-
     with:
       # dispatch-workflow: publish.yaml
       fail-on-no-release: true
