@@ -2,8 +2,15 @@
 	"branches": [
 		"main"
 	],
+	"tagFormat": "v${version}",
 	"plugins": [
 		"semantic-release-export-data",
+		[
+			"@semantic-release/changelog",
+			{
+				"changelogFile": "CHANGELOG.md"
+			}
+		],
 		[
 			"@semantic-release/commit-analyzer",
 			{
@@ -16,11 +23,8 @@
 					},
 					{
 						"type": "chore",
-						"release": false
-					},
-					{
-						"type": "style",
-						"release": false
+						"scope": "deps",
+						"release": "patch"
 					},
 					{
 						"scope": "no-release",
@@ -69,24 +73,24 @@
 						},
 						{
 							"type": "chore",
+							"scope": "release",
 							"hidden": true
+						},
+						{
+							"type": "chore",
+							"section": "🔧 Chores",
+							"hidden": false
+						},
+						{
+							"type": "style",
+							"section": "🎨 Styles"
 						},
 						{
 							"type": "revert",
 							"hidden": true
-						},
-						{
-							"type": "style",
-							"hidden": true
 						}
 					]
 				}
-			}
-		],
-		[
-			"@semantic-release/changelog",
-			{
-				"changelogFile": "CHANGELOG.md"
 			}
 		],
 		[
