@@ -1,3 +1,13 @@
+## [1.80.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.79.0...v1.80.0) (2026-07-07)
+
+### ✨ Features
+
+* update ([09964a7](https://github.com/stairwaytowonderland/repository-create/commit/09964a7b3f98ba87d60fd8c06a2d8edb1adf1853))
+
+### 🔄 CI/CD
+
+* update ([a02e1d7](https://github.com/stairwaytowonderland/repository-create/commit/a02e1d78d4fca115df95d4956ead23fdb41893c9))
+
 ## [1.79.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.78.0...v1.79.0) (2026-07-07)
 
 ### ✨ Features
