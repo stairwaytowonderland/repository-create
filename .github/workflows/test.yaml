@@ -11,6 +11,13 @@ on:
   workflow_dispatch:
 
 jobs:
+  basic-validation:
+    name: Basic Validation
+    uses: actions/reusable-workflows/.github/workflows/basic-validation.yml@main
+    with:
+      operating-systems: '["ubuntu-latest"]'
+      enable-audit: false
+
   build:
     name: Bundle dist/index.js
     runs-on: ubuntu-latest

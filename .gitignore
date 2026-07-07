@@ -87,3 +87,5 @@ venv.bak/
 logs
 *.log
 out/
+*.sarif
+.venv

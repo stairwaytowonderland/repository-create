@@ -18,6 +18,8 @@
 		"bundle": "npm run format:write && npm run package",
 		"format:write": "npx prettier --write \"src/**/*.ts\" ./*.{json,mjs,ts,yaml}",
 		"format:check": "npx prettier --check \"src/**/*.ts\" ./*.{json,mjs,ts,yaml}",
+		"format-write": "npm run format:write",
+		"format-check": "npm run format:check",
 		"format": "npm run format:write",
 		"lint:check": "npx eslint \"src/**/*.ts\"",
 		"lint:fix": "npx eslint \"src/**/*.ts\" --fix",

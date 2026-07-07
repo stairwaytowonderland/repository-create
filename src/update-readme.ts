@@ -37,7 +37,10 @@ async function updateReadmeHeading(
 		// Replace only the first H1 line (# Title), robust to spaces and special characters
 
 		// const updated = original.replace(/^#\s+.*$/m, `# ${repo.repo}`);
-		const updated = original.replace(new RegExp(`#\\s+${originalHeading}`, 'gm'), `# ${repo.repo}`)
+		const updated = original.replace(
+			new RegExp(`#\\s+(\\:[^\\:]+\\:)?\\s*?${originalHeading}`, 'gm'),
+			`# $1 ${repo.repo}`
+		)
 
 		if (updated !== original) {
 			content = base64Encode(updated)

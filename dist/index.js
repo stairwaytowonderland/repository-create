@@ -29507,7 +29507,7 @@ class RequestError extends Error {
 // pkg/dist-src/index.js
 
 // pkg/dist-src/version.js
-var VERSION$7 = "10.0.10";
+var VERSION$7 = "10.0.11";
 
 // pkg/dist-src/defaults.js
 var defaults_default = {
@@ -29657,9 +29657,10 @@ function toErrorMessage(data) {
   if (data instanceof ArrayBuffer) {
     return "Unknown error";
   }
-  if ("message" in data) {
-    const suffix = "documentation_url" in data ? ` - ${data.documentation_url}` : "";
-    return Array.isArray(data.errors) ? `${data.message}: ${data.errors.map((v) => JSON.stringify(v)).join(", ")}${suffix}` : `${data.message}${suffix}`;
+  if (typeof data === "object" && data !== null && "message" in data) {
+    const objectData = data;
+    const suffix = "documentation_url" in objectData ? ` - ${objectData.documentation_url}` : "";
+    return Array.isArray(objectData.errors) ? `${objectData.message}: ${objectData.errors.map((v) => JSON.stringify(v)).join(", ")}${suffix}` : `${objectData.message}${suffix}`;
   }
   return `Unknown error: ${JSON.stringify(data)}`;
 }
@@ -34753,7 +34754,7 @@ async function updateReadmeHeading(octokit, repo, options, file) {
         info(`  Updating README heading from "${originalHeading}" to "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
         // Replace only the first H1 line (# Title), robust to spaces and special characters
         // const updated = original.replace(/^#\s+.*$/m, `# ${repo.repo}`);
-        const updated = original.replace(new RegExp(`#\\s+${originalHeading}`, 'gm'), `# ${repo.repo}`);
+        const updated = original.replace(new RegExp(`#\\s+(\\:[^\\:]+\\:)?\\s*?${originalHeading}`, 'gm'), `# $1 ${repo.repo}`);
         if (updated !== original) {
             content = base64Encode(updated);
         }

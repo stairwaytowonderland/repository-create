@@ -1,0 +1,38 @@
+# https://github.com/actions/starter-workflows/blob/main/code-scanning/codeql.yml
+# https://github.com/actions/reusable-workflows/blob/main/.github/workflows/codeql-analysis.yml
+# This workflow uses the CodeQL Action to analyze code for security vulnerabilities and errors.
+# The file extension must be .yml for CodeQL to recognize it.
+name: Code Quality (CodeQL)
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - 'CHANGELOG.md'
+      - 'package.json'
+      - 'package-lock.json'
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'CHANGELOG.md'
+      - 'package.json'
+      - 'package-lock.json'
+  schedule:
+    # every Tuesday at 7:31 AM America/Chicago
+    - cron: '31 7 * * 2'
+      timezone: America/Chicago
+
+permissions:
+  actions: read
+  # checks: write
+  contents: read
+  security-events: write
+
+jobs:
+  codeql-analysis:
+    uses: actions/reusable-workflows/.github/workflows/codeql-analysis.yml@main
+    with:
+      languages: '["typescript"]'
+      codeql-cfg-path: '.github/codeql/codeql-config.yml'

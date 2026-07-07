@@ -10,17 +10,6 @@ on:
       - 'package.json'
       - 'package-lock.json'
   workflow_dispatch:
-    inputs:
-      fail-on-no-release:
-        description: 'Fail the workflow if no release is published (e.g. if there are no relevant commits).'
-        type: boolean
-        required: false
-        default: true
-      publish:
-        description: 'Whether to run in publish mode.'
-        type: boolean
-        required: false
-        default: false
 
 concurrency:
   group: '${{ github.repository_id }}-${{ github.ref_name }}'
@@ -32,24 +21,27 @@ concurrency:
 jobs:
   release:
     name: Release
-    if: startsWith(github.ref, 'refs/heads/main') && ! inputs.publish
+    if: startsWith(github.ref, 'refs/heads/main')
     uses: ./.github/workflows/release.yaml
     secrets: inherit
     with:
       # dispatch-workflow: publish.yaml
-      fail-on-no-release: ${{ inputs.fail-on-no-release || false }}
+      fail-on-no-release: true
 
   publish:
     name: Publish
-    if: startsWith(github.ref, 'refs/tags/v') || inputs.publish
+    if: startsWith(github.ref, 'refs/tags/v')
     uses: ./.github/workflows/publish.yaml
     secrets: inherit
     with:
       tag: ${{ github.ref_name }}\
 
-  update-majorver:
-    name: Update Major Version Tag
+  normalize-majorver:
+    name: Normalize Major Version Tag
     needs: [publish]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - uses: nowactions/update-majorver@v1
+      - name: Normalize Major Version Tag
+        uses: stairwaytowonderland/normalize-majorver@v1
