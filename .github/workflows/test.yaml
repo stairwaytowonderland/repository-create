@@ -8,6 +8,13 @@ on:
       - 'src/**'
       - 'package*.json'
       - 'action.yaml'
+  push:
+    branches: [main]
+    paths:
+      # - '.github/**'
+      - 'src/**'
+      - 'package*.json'
+      - 'action.yaml'
   workflow_dispatch:
 
 jobs:
