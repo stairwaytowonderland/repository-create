@@ -34749,27 +34749,31 @@ async function updateReadmeHeading(octokit, repo, options, file) {
     const original = base64Decode(targetFile.content);
     let content = targetFile.content;
     try {
-        const matches = original.match(/^#\s+.*$/m);
-        const originalHeading = matches ? matches[0].replace(/^#\s+/, '').trim() : null;
-        info(`  Updating README heading from "${originalHeading}" to "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
-        // Replace only the first H1 line (# Title), robust to spaces and special characters
-        // const updated = original.replace(/^#\s+.*$/m, `# ${repo.repo}`);
-        const updated = original.replace(new RegExp(`#\\s+(\\:[^\\:]+\\:)?\\s*?${originalHeading}`, 'gm'), `# $1 ${repo.repo}`);
-        if (updated !== original) {
-            content = base64Encode(updated);
+        const matches = original.match(/^#\s+(:[^:]+:\\s*)?.*$/m);
+        const originalHeading = matches ? matches[0].replace(/^#\s+(:[^:]+:\\s*)?/, '').trim() : null;
+        if (matches) {
+            info(`  Updating README heading from "${matches ? matches[0] : ''}" to "${matches && matches[1] ? matches[1] : ''}${repo.repo}" (API repo: "${sanitizedRepo}")...`);
+            // Replace only the first H1 line (# Title), robust to spaces and special characters
+            const updated = original.replace(new RegExp(`#\\s+${matches && matches[1] ? matches[1] : ''}${originalHeading}`, 'gm'), `# $1${repo.repo}`);
+            if (updated !== original) {
+                content = base64Encode(updated);
+            }
+            else {
+                warning(`  ⚠ No H1 heading found in README — skipping heading update.`);
+            }
+            // await octokit.rest.repos.createOrUpdateFileContents({
+            // 	owner,
+            // 	repo: sanitizedRepo,
+            // 	path: targetFile.path,
+            // 	message: `chore(docs): rename README.md heading to ${repo} [skip ci]`,
+            // 	content: Buffer.from(updated).toString('base64'),
+            // 	sha: targetFile.sha,
+            // });
+            // core.info(`  ✓ README heading updated.`);
         }
         else {
             warning(`  ⚠ No H1 heading found in README — skipping heading update.`);
         }
-        // await octokit.rest.repos.createOrUpdateFileContents({
-        // 	owner,
-        // 	repo: sanitizedRepo,
-        // 	path: targetFile.path,
-        // 	message: `chore(docs): rename README.md heading to ${repo} [skip ci]`,
-        // 	content: Buffer.from(updated).toString('base64'),
-        // 	sha: targetFile.sha,
-        // });
-        // core.info(`  ✓ README heading updated.`);
     }
     catch (err) {
         warning(`  ⚠ Failed to update README heading: ${err.message}`);
