@@ -1,3 +1,9 @@
+## [1.81.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.80.0...v1.81.0) (2026-07-08)
+
+### ✨ Features
+
+* update workflow permissions ([18ffc9e](https://github.com/stairwaytowonderland/repository-create/commit/18ffc9ee222691513118f68dcd9e3e137dc3c7b9))
+
 ## [1.80.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.79.0...v1.80.0) (2026-07-07)
 
 ### ✨ Features
