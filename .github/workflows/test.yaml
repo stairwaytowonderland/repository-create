@@ -17,6 +17,10 @@ on:
       - 'action.yaml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   basic-validation:
     name: Basic Validation

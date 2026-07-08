@@ -15,6 +15,12 @@ concurrency:
   group: '${{ github.repository_id }}-${{ github.ref_name }}'
   cancel-in-progress: true
 
+permissions:
+  actions: write
+  contents: write
+  issues: write
+  pull-requests: write
+
 # Use PAT instead of GITHUB_TOKEN to cause semantic-release to trigger tag pipeline when tag is created.
 # 'Fine-grained token' repo permissions: Contents
 
@@ -34,14 +40,13 @@ jobs:
     uses: ./.github/workflows/publish.yaml
     secrets: inherit
     with:
-      tag: ${{ github.ref_name }}\
+      tag: ${{ github.ref_name }}
+    permissions:
+      contents: write
 
   normalize-majorver:
     name: Normalize Major Version Tag
     needs: [publish]
-    runs-on: ubuntu-latest
+    uses: stairwaytowonderland/actions/.github/workflows/normalize-majorver.yaml@v1
     permissions:
       contents: write
-    steps:
-      - name: Normalize Major Version Tag
-        uses: stairwaytowonderland/normalize-majorver@v1
