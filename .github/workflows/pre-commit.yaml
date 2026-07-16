@@ -19,6 +19,6 @@ permissions:
 jobs:
   pre-commit:
     name: Run pre-commit
-    uses: stairwaytowonderland/actions/.github/workflows/pre-commit.yaml@v1
+    uses: stairwaytowonderland/.github/.github/workflows/pre-commit.yaml@v1
     with:
       config: ${{ inputs.config }}

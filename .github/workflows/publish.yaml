@@ -18,7 +18,7 @@ permissions:
 jobs:
   publish:
     name: Publish
-    uses: stairwaytowonderland/actions/.github/workflows/publish.yaml@v1
+    uses: stairwaytowonderland/.github/.github/workflows/publish.yaml@v1
     secrets: inherit
     with:
       tag: ${{ github.ref_name || inputs.tag }}

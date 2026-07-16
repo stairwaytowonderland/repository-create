@@ -73,7 +73,7 @@ Supports blank creation or generation from a template repository.
 
 ```yaml
 - name: Create repository
-  uses: stairwaytowonderland/repository-create@main
+  uses: stairwaytowonderland/repository-create@v1
   with:
     github-token: ${{ secrets.PAT }}
     # org: ${{ github.org }}          # optional — github.org is default; input shown for reference

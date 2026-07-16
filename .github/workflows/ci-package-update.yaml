@@ -17,5 +17,5 @@ concurrency:
 jobs:
   package-update:
     name: Update packages
-    uses: stairwaytowonderland/actions/.github/workflows/ci-package-update.yaml@v1
+    uses: stairwaytowonderland/.github/.github/workflows/ci-package-update.yaml@v1
     secrets: inherit

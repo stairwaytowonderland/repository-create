@@ -47,6 +47,6 @@ jobs:
   normalize-majorver:
     name: Normalize Major Version Tag
     needs: [publish]
-    uses: stairwaytowonderland/actions/.github/workflows/normalize-majorver.yaml@v1
+    uses: stairwaytowonderland/.github/.github/workflows/normalize-majorver.yaml@v1
     permissions:
       contents: write

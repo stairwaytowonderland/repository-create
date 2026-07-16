@@ -26,9 +26,9 @@ permissions:
 jobs:
   release:
     name: Release
-    uses: stairwaytowonderland/actions/.github/workflows/release.yaml@v1
+    uses: stairwaytowonderland/.github/.github/workflows/release.yaml@v1
     secrets: inherit
     with:
-      dispatch-workflow: ${{ inputs.dispatch-workflow }}
-      fail-on-no-release: ${{ inputs.fail-on-no-release }}
+      dispatch-workflow: ${{ inputs.dispatch-workflow == true }}
+      fail-on-no-release: ${{ inputs.fail-on-no-release == true }}
       ref: ${{ inputs.ref || github.ref }}
