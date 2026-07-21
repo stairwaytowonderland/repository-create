@@ -1,3 +1,13 @@
+## [1.82.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.81.0...v1.82.0) (2026-07-21)
+
+### ✨ Features
+
+* update LICENSE ([32f6bd1](https://github.com/stairwaytowonderland/repository-create/commit/32f6bd1c5786e5a59a0585e6bb4cfb26a98381ae))
+
+### 🔧 Chores
+
+* update reuseable workflow references ([64c9736](https://github.com/stairwaytowonderland/repository-create/commit/64c9736d342c55442f13dd453cf8de392aaedb93))
+
 ## [1.81.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.80.0...v1.81.0) (2026-07-08)
 
 ### ✨ Features
