@@ -1,3 +1,9 @@
+## [1.83.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.82.0...v1.83.0) (2026-07-21)
+
+### ✨ Features
+
+* update LICENSE ([139fd1b](https://github.com/stairwaytowonderland/repository-create/commit/139fd1b7681962e6a151868cfcb98fbe5b221550))
+
 ## [1.82.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.81.0...v1.82.0) (2026-07-21)
 
 ### ✨ Features
