@@ -1,3 +1,9 @@
+## [1.84.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.83.0...v1.84.0) (2026-08-20)
+
+### ✨ Features
+
+* fix replace pattern in updateReadmeGitHubShieldsBadges ([08e990d](https://github.com/stairwaytowonderland/repository-create/commit/08e990d41c43317dd9f883092419c1849fcd76fd))
+
 ## [1.83.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.82.0...v1.83.0) (2026-07-21)
 
 ### ✨ Features
