@@ -1,3 +1,9 @@
+## [1.86.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.85.0...v1.86.0) (2026-08-20)
+
+### ✨ Features
+
+* make dispatch-workflow input not required ([27b3ed0](https://github.com/stairwaytowonderland/repository-create/commit/27b3ed0da984cbb1e38a4c7a93be1265f2a19ab6))
+
 ## [1.85.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.84.0...v1.85.0) (2026-08-20)
 
 ### ✨ Features
