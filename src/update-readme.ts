@@ -197,7 +197,8 @@ async function updateReadmeGitHubShieldsBadges(
 	const search =
 		/(?:(\[\![^\]]+\]\(https:\/\/img\.shields\.io\/github\/(?:v\/release|last-commit|license)\/[^/]+\/)([^)\?]+)((?:\?[^)]*)?)\)[^:]+\((https:\/\/github\.com\/[^/]+\/)([^/]+)(((\/[^\/]+))+)\))/g
 
-	const replacement = `$1${repo.repo}$3)]($4${repo.owner}/${repo.repo}$6)`
+	// const replacement = `$1${repo.repo}$3)]($4${repo.owner}/${repo.repo}$6)`
+	const replacement = `$1${repo.repo}$3)]($4${repo.repo}$6)`
 
 	try {
 		const updated = original.replace(search, replacement)

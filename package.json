@@ -34,7 +34,7 @@
 		"github",
 		"actions"
 	],
-	"license": "MIT",
+	"license": "GPL-3.0-only",
 	"dependencies": {
 		"@actions/core": "^3.0.0",
 		"octokit": "^5.0.0"
