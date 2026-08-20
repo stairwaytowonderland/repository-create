@@ -31,7 +31,7 @@ jobs:
     uses: ./.github/workflows/release.yaml
     secrets: inherit
     with:
-      dispatch-workflow: publish.yaml
+      # dispatch-workflow: publish.yaml
       fail-on-no-release: true
 
   publish:
