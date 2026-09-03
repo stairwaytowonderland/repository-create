@@ -23,13 +23,14 @@ import { Octokit } from 'octokit'
  * Add @octokit/auth-app to dependencies when making this change.
  * ────────────────────────────────────────────────────────────────────────────
  */
-export function createGitHubClient(token: string): Octokit {
+export function createGitHubClient(token: string, baseUrl: string): Octokit {
 	if (!token) {
 		throw new Error('GitHub token is required. Set the GITHUB_TOKEN environment variable.')
 	}
 
 	return new Octokit({
 		auth: token,
+		baseUrl: baseUrl,
 		headers: {
 			'X-GitHub-Api-Version': '2026-03-10',
 		},

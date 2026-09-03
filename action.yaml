@@ -12,6 +12,12 @@ inputs:
       supply a token with the required scopes.
     default: ${{ github.token }}
 
+  base-url:
+    description: >
+      Base URL for the GitHub API. Defaults to 'https://api.github.com' if not set. Specify a different URL for GiHub Enterprise.
+    required: false
+    default: ''
+
   org:
     description: Target GitHub organization.
     required: true
