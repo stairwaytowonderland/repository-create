@@ -35234,7 +35234,7 @@ async function createActionPolicies(octokit, { owner, repo, actionPolicies }) {
     for (const actionPolicy of actionPolicies) {
         info(`  Creating action policy "${actionPolicy.name}"...`);
         try {
-            const { data } = await octokit.request('POST /repos/{owner}/{repo}/action/policies', {
+            const { data } = await octokit.request('POST /repos/{owner}/{repo}/actions/policies', {
                 owner,
                 repo,
                 name: actionPolicy.name,

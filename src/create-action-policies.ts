@@ -17,7 +17,7 @@ export async function createActionPolicies(
 	for (const actionPolicy of actionPolicies) {
 		core.info(`  Creating action policy "${actionPolicy.name}"...`)
 		try {
-			const { data } = await octokit.request('POST /repos/{owner}/{repo}/action/policies', {
+			const { data } = await octokit.request('POST /repos/{owner}/{repo}/actions/policies', {
 				owner,
 				repo,
 				name: actionPolicy.name,
