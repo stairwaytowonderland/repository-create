@@ -1,3 +1,17 @@
+## [1.90.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.89.0...v1.90.0) (2026-09-25)
+
+### ✨ Features
+
+* setting require_last_push_approval to false in pull_request rules ([545e8c5](https://github.com/stairwaytowonderland/repository-create/commit/545e8c58b6b2b37921a0941aa07d4ecb3f8fb750))
+
+### 📚 Documentation
+
+* update README ([da2b6d2](https://github.com/stairwaytowonderland/repository-create/commit/da2b6d2a96e618562d74019221ede4fc2818c786))
+
+### 🔧 Chores
+
+* incorporating env.sample with .env.example ([d82921a](https://github.com/stairwaytowonderland/repository-create/commit/d82921a8254571825c28900193661062acbf9987))
+
 ## [1.89.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.88.0...v1.89.0) (2026-09-25)
 
 ### ✨ Features
