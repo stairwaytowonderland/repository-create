@@ -32,7 +32,7 @@ jobs:
     secrets: inherit
     with:
       # dispatch-workflow: publish.yaml
-      fail-on-no-release: true
+      fail-on-no-release: false
 
   publish:
     name: Publish
