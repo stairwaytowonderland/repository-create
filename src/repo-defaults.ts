@@ -102,7 +102,7 @@ export const rulesetDefaults: RulesetConfig[] = [
 					required_approving_review_count: 1,
 					dismiss_stale_reviews_on_push: true,
 					require_code_owner_review: false,
-					require_last_push_approval: true,
+					require_last_push_approval: false,
 					required_review_thread_resolution: true,
 				},
 			},

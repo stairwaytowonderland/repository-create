@@ -35133,12 +35133,13 @@ function onSecondaryRateLimit(retryAfter, options, octokit) {
  * Add @octokit/auth-app to dependencies when making this change.
  * ────────────────────────────────────────────────────────────────────────────
  */
-function createGitHubClient(token) {
+function createGitHubClient(token, baseUrl) {
     if (!token) {
         throw new Error('GitHub token is required. Set the GITHUB_TOKEN environment variable.');
     }
     return new Octokit({
         auth: token,
+        baseUrl: baseUrl,
         headers: {
             'X-GitHub-Api-Version': '2026-03-10',
         },
@@ -35781,7 +35782,7 @@ const rulesetDefaults = [
                     required_approving_review_count: 1,
                     dismiss_stale_reviews_on_push: true,
                     require_code_owner_review: false,
-                    require_last_push_approval: true,
+                    require_last_push_approval: false,
                     required_review_thread_resolution: true,
                 },
             },
@@ -35873,6 +35874,7 @@ function loadConfigFile(configPath) {
 }
 async function run() {
     const token = getInput('github-token', { required: true });
+    const baseUrl = getInput('base-url');
     const org = getInput('org', { required: true });
     const name = getInput('name', { required: true });
     const configInput = getInput('repo-config');
@@ -35929,7 +35931,7 @@ async function run() {
             createFromTemplateMaxRetries: createFromTemplateMaxRetryCount,
         };
     }
-    const octokit = createGitHubClient(token);
+    const octokit = createGitHubClient(token, baseUrl);
     const repo = (await createRepository(octokit, { org, name, settings, rulesets, actionPolicies, createOptions }));
     setOutput('repo-id', String(repo.id));
     setOutput('repo-url', repo.html_url);
