@@ -75,6 +75,13 @@ export interface RulesetRule {
 	parameters?: Record<string, unknown>
 }
 
+export interface ActionPolicyRule {
+	/** Rule type (e.g. 'require_approval', 'require_code_owner_review') */
+	type: string
+	/** Rule-specific parameters */
+	parameters?: Record<string, unknown>
+}
+
 export interface RulesetBypassActor {
 	actor_id: number
 	actor_type: string
@@ -94,6 +101,17 @@ export interface RulesetConfig {
 	rules: RulesetRule[]
 	/** Actors that can bypass the ruleset */
 	bypass_actors?: RulesetBypassActor[]
+}
+
+export interface ActionPolicy {
+	/** Action policy name */
+	name: string
+	/** Action policy description */
+	description?: string
+	/** Enforcement level */
+	enforcement: 'active' | 'evaluate' | 'disabled'
+	/** Action policy rules */
+	rules: ActionPolicyRule[]
 }
 
 export interface GitHubFileContent {

@@ -1,7 +1,8 @@
 import type { Octokit } from 'octokit'
-import type { CreateOptions, RepoSettings, RulesetConfig, TemplateConfig } from './types.js'
+import type { CreateOptions, RepoSettings, RulesetConfig, TemplateConfig, ActionPolicy } from './types.js'
 import { applySettings } from './apply-settings.js'
 import { createRulesets } from './create-rulesets.js'
+import { createActionPolicies } from './create-action-policies.js'
 import { updateReadme } from './update-readme.js'
 import { sanitizeRepoName } from './utils.js'
 import * as core from '@actions/core'
@@ -11,6 +12,7 @@ import * as core from '@actions/core'
  *   1. Create the repository in the org (blank or from a template)
  *   2. Apply general settings (second-pass PATCH for settings unavailable at creation)
  *   3. Create branch rulesets
+ *   4. Create action policies
  */
 export async function createRepository(
 	octokit: Octokit,
@@ -19,8 +21,16 @@ export async function createRepository(
 		name,
 		settings,
 		rulesets,
+		actionPolicies,
 		createOptions,
-	}: { org: string; name: string; settings: RepoSettings; rulesets: RulesetConfig[]; createOptions: CreateOptions }
+	}: {
+		org: string
+		name: string
+		settings: RepoSettings
+		rulesets: RulesetConfig[]
+		actionPolicies?: ActionPolicy[]
+		createOptions: CreateOptions
+	}
 ): Promise<object> {
 	// Sanitize repository name for API calls: only [\w.-], others to '-'
 	const nameSanitized: string = sanitizeRepoName(name)
@@ -57,6 +67,12 @@ export async function createRepository(
 	if (rulesets && rulesets.length > 0) {
 		core.info(`\nCreating branch rulesets...`)
 		await createRulesets(octokit, { owner: org, repo: nameSanitized, rulesets })
+	}
+
+	// Action policies
+	if (actionPolicies && actionPolicies.length > 0) {
+		core.info(`\nCreating action policies...`)
+		await createActionPolicies(octokit, { owner: org, repo: nameSanitized, actionPolicies })
 	}
 
 	core.info(`\n✓ Repository "${repo.full_name}" setup complete.`)

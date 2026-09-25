@@ -1,3 +1,15 @@
+## [1.88.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.87.0...v1.88.0) (2026-09-25)
+
+### ✨ Features
+
+* fix action policy endpoint ([3e5037c](https://github.com/stairwaytowonderland/repository-create/commit/3e5037c14764ba8114481545fbc5558c09093e34))
+
+## [1.87.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.86.0...v1.87.0) (2026-09-25)
+
+### ✨ Features
+
+* implement action policy ([9ad92c6](https://github.com/stairwaytowonderland/repository-create/commit/9ad92c6ae76a4225d89c0786bdaa7801fca141fb))
+
 ## [1.86.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.85.0...v1.86.0) (2026-08-20)
 
 ### ✨ Features

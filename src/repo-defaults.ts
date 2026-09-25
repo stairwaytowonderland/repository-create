@@ -1,4 +1,4 @@
-import type { RepoSettings, RulesetConfig, CreateOptions } from './types.js'
+import type { RepoSettings, RulesetConfig, ActionPolicy, CreateOptions } from './types.js'
 
 /**
  * Default repository settings and branch ruleset configuration.
@@ -9,7 +9,8 @@ import type { RepoSettings, RulesetConfig, CreateOptions } from './types.js'
  * Config file shape:
  *   {
  *     "settings": { ...partial overrides... },
- *     "rulesets": [ ...full replacement array... ]
+ *     "rulesets": [ ...full replacement array... ],
+ *     "actionPolicies": [ ...full replacement array... ]
  *   }
  *
  * To create from a template repository, add a "template" block to "settings":
@@ -118,6 +119,42 @@ export const rulesetDefaults: RulesetConfig[] = [
 		 * Leave empty to enforce for all actors including admins.
 		 */
 		bypass_actors: [],
+	},
+]
+
+export const actionPolicyDefaults: ActionPolicy[] = [
+	{
+		name: 'default-action-policy',
+		description: 'Default action policy applied to all repositories.',
+		/**
+		 * 'active' | 'evaluate' | 'disabled'
+		 * Use 'evaluate' to audit without enforcing.
+		 */
+		enforcement: 'active',
+		rules: [
+			// {
+			// 	type: 'restrict_actions_actors',
+			// 	parameters: {
+			// 		allowed_actors: [
+			// 			/** Read: https://github.com/organizations/stairwaytowonderland/settings/roles */
+			// 			// {
+			// 			// 	id: 4,
+			// 			// 	type: 'RepositoryRole',
+			// 			// },
+			// 			/** Write: https://github.com/organizations/stairwaytowonderland/settings/roles */
+			// 			{
+			// 				id: 4,
+			// 				type: 'RepositoryRole',
+			// 			},
+			// 			/** users: https://github.com/orgs/stairwaytowonderland/teams/users */
+			// 			{
+			// 				id: 18093812,
+			// 				type: 'Team',
+			// 			},
+			// 		],
+			// 	},
+			// },
+		],
 	},
 ]
 
