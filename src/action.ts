@@ -13,15 +13,19 @@
 import * as core from '@actions/core'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import type { RepoSettings, RulesetConfig, CreateOptions } from './types.js'
+import type { RepoSettings, RulesetConfig, ActionPolicy, CreateOptions } from './types.js'
 import { createGitHubClient } from './github-client.js'
 import { createRepository } from './create-repository.js'
-import { repoDefaults, rulesetDefaults, createOptionsDefaults } from './repo-defaults.js'
+import { repoDefaults, rulesetDefaults, actionPolicyDefaults, createOptionsDefaults } from './repo-defaults.js'
 
 /**
  * Loads and parses a JSON config override file.
  */
-function loadConfigFile(configPath: string): { settings?: RepoSettings; rulesets?: RulesetConfig[] } {
+function loadConfigFile(configPath: string): {
+	settings?: RepoSettings
+	rulesets?: RulesetConfig[]
+	actionPolicies?: ActionPolicy[]
+} {
 	let raw: string
 	try {
 		raw = readFileSync(configPath, 'utf8')
@@ -29,7 +33,7 @@ function loadConfigFile(configPath: string): { settings?: RepoSettings; rulesets
 		throw new Error(`Cannot read config file: "${configPath}"`)
 	}
 	try {
-		return JSON.parse(raw) as { settings?: RepoSettings; rulesets?: RulesetConfig[] }
+		return JSON.parse(raw) as { settings?: RepoSettings; rulesets?: RulesetConfig[]; actionPolicies?: ActionPolicy[] }
 	} catch {
 		throw new Error(`Config file is not valid JSON: "${configPath}"`)
 	}
@@ -60,6 +64,7 @@ async function run(): Promise<void> {
 
 	const settings: RepoSettings = { ...repoDefaults, ...overrides.settings }
 	const rulesets: RulesetConfig[] = overrides.rulesets ?? rulesetDefaults
+	const actionPolicies: ActionPolicy[] = overrides.actionPolicies ?? actionPolicyDefaults
 	const createOptions: CreateOptions = {
 		...createOptionsDefaults,
 		replaceGitProtocolLinks,
@@ -99,7 +104,7 @@ async function run(): Promise<void> {
 	}
 
 	const octokit = createGitHubClient(token)
-	const repo = (await createRepository(octokit, { org, name, settings, rulesets, createOptions })) as {
+	const repo = (await createRepository(octokit, { org, name, settings, rulesets, actionPolicies, createOptions })) as {
 		html_url: string
 		full_name: string
 		name: string

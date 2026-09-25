@@ -43,5 +43,13 @@
 			],
 			"bypass_actors": []
 		}
+	],
+	"actionPolicies": [
+		{
+			"name": "default-action-policy",
+			"description": "Default action policy applied to all repositories.",
+			"enforcement": "active",
+			"rules": []
+		}
 	]
 }

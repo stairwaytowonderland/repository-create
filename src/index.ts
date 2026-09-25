@@ -21,10 +21,10 @@
 
 import 'dotenv/config'
 import { readFileSync } from 'node:fs'
-import type { RepoSettings, RulesetConfig } from './types.js'
+import type { RepoSettings, RulesetConfig, ActionPolicy } from './types.js'
 import { createGitHubClient } from './github-client.js'
 import { createRepository } from './create-repository.js'
-import { repoDefaults, rulesetDefaults, createOptionsDefaults } from './repo-defaults.js'
+import { repoDefaults, rulesetDefaults, actionPolicyDefaults, createOptionsDefaults } from './repo-defaults.js'
 
 /**
  * Parses --key value pairs from process.argv.
@@ -44,7 +44,11 @@ function parseArgs(argv: string[]): Record<string, string | true> {
 /**
  * Loads and parses a JSON config override file.
  */
-function loadConfigFile(configPath: string): { settings?: RepoSettings; rulesets?: RulesetConfig[] } {
+function loadConfigFile(configPath: string): {
+	settings?: RepoSettings
+	rulesets?: RulesetConfig[]
+	actionPolicies?: ActionPolicy[]
+} {
 	let raw: string
 	try {
 		raw = readFileSync(configPath, 'utf8')
@@ -52,7 +56,7 @@ function loadConfigFile(configPath: string): { settings?: RepoSettings; rulesets
 		throw new Error(`Cannot read config file: "${configPath}"`)
 	}
 	try {
-		return JSON.parse(raw) as { settings?: RepoSettings; rulesets?: RulesetConfig[] }
+		return JSON.parse(raw) as { settings?: RepoSettings; rulesets?: RulesetConfig[]; actionPolicies?: ActionPolicy[] }
 	} catch {
 		throw new Error(`Config file is not valid JSON: "${configPath}"`)
 	}
@@ -96,6 +100,7 @@ async function main(): Promise<void> {
 
 	const settings: RepoSettings = { ...repoDefaults, ...overrides.settings }
 	const rulesets: RulesetConfig[] = overrides.rulesets ?? rulesetDefaults
+	const actionPolicies: ActionPolicy[] = overrides.actionPolicies ?? actionPolicyDefaults
 	const createOptions = { ...createOptionsDefaults, updateReadme, replaceGitProtocolLinks, createLabels, createIssues }
 
 	// CLI template flags take precedence over config-file template settings
@@ -122,7 +127,14 @@ async function main(): Promise<void> {
 
 	const octokit = createGitHubClient(token)
 
-	await createRepository(octokit, { org: String(org), name: String(name), settings, rulesets, createOptions })
+	await createRepository(octokit, {
+		org: String(org),
+		name: String(name),
+		settings,
+		rulesets,
+		actionPolicies,
+		createOptions,
+	})
 }
 
 main().catch((err: Error) => {

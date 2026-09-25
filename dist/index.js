@@ -35224,6 +35224,48 @@ async function createRulesets(octokit, { owner, repo, rulesets }) {
 }
 
 /**
+ * Creates repo action policies on a repository via POST /repos/{owner}/{repo}/action/policies.
+ *
+ * GitHub documentation:
+ * https://docs.github.com/en/rest/actions/policies?apiVersion=2026-03-10#create-a-repository-actions-policy
+ */
+async function createActionPolicies(octokit, { owner, repo, actionPolicies }) {
+    const results = [];
+    for (const actionPolicy of actionPolicies) {
+        info(`  Creating action policy "${actionPolicy.name}"...`);
+        try {
+            const { data } = await octokit.request('POST /repos/{owner}/{repo}/action/policies', {
+                owner,
+                repo,
+                name: actionPolicy.name,
+                description: actionPolicy.description,
+                enforcement: actionPolicy.enforcement,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                rules: actionPolicy.rules,
+            });
+            info(`  ✓ Action policy "${actionPolicy.name}" created (id: ${data.id}).`);
+            results.push(data);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        }
+        catch (err) {
+            // Detect plan limitation error for private repos (403 or 422 with specific message)
+            const msg = err?.message || '';
+            if ((err.status === 403 || err.status === 422) &&
+                /upgrade to GitHub Pro|make this repository public/i.test(msg)) {
+                warning(`  ⚠️  Could not create action policy "${actionPolicy.name}" for private repo: ${msg}`);
+                continue;
+            }
+            else if (err.status === 403 || err.status === 422) {
+                warning(`  ⚠️  Could not create action policy "${actionPolicy.name}": ${msg}`);
+                continue;
+            }
+            throw err;
+        }
+    }
+    return results;
+}
+
+/**
  * Sanitizes a repository name to match GitHub's normalization:
  * Only [A-Za-z0-9_.-] are allowed, everything else becomes '-'.
  */
@@ -35542,8 +35584,9 @@ async function normalizeTargetFile(octokit, sanitized, options, file) {
  *   1. Create the repository in the org (blank or from a template)
  *   2. Apply general settings (second-pass PATCH for settings unavailable at creation)
  *   3. Create branch rulesets
+ *   4. Create action policies
  */
-async function createRepository(octokit, { org, name, settings, rulesets, createOptions, }) {
+async function createRepository(octokit, { org, name, settings, rulesets, actionPolicies, createOptions, }) {
     // Sanitize repository name for API calls: only [\w.-], others to '-'
     const nameSanitized = sanitizeRepoName(name);
     info(`\nCreating repository "${org}/${name}"...`);
@@ -35571,6 +35614,11 @@ async function createRepository(octokit, { org, name, settings, rulesets, create
     if (rulesets && rulesets.length > 0) {
         info(`\nCreating branch rulesets...`);
         await createRulesets(octokit, { owner: org, repo: nameSanitized, rulesets });
+    }
+    // Action policies
+    if (actionPolicies && actionPolicies.length > 0) {
+        info(`\nCreating action policies...`);
+        await createActionPolicies(octokit, { owner: org, repo: nameSanitized, actionPolicies });
     }
     info(`\n✓ Repository "${repo.full_name}" setup complete.`);
     info(`\n🌐 Repository available at: ${repo.html_url}`);
@@ -35646,7 +35694,8 @@ function createFromTemplate(octokit, { org, name, settings }) {
  * Config file shape:
  *   {
  *     "settings": { ...partial overrides... },
- *     "rulesets": [ ...full replacement array... ]
+ *     "rulesets": [ ...full replacement array... ],
+ *     "actionPolicies": [ ...full replacement array... ]
  *   }
  *
  * To create from a template repository, add a "template" block to "settings":
@@ -35751,6 +35800,41 @@ const rulesetDefaults = [
         bypass_actors: [],
     },
 ];
+const actionPolicyDefaults = [
+    {
+        name: 'default-action-policy',
+        description: 'Default action policy applied to all repositories.',
+        /**
+         * 'active' | 'evaluate' | 'disabled'
+         * Use 'evaluate' to audit without enforcing.
+         */
+        enforcement: 'active',
+        rules: [
+        // {
+        // 	type: 'restrict_actions_actors',
+        // 	parameters: {
+        // 		allowed_actors: [
+        // 			/** Read: https://github.com/organizations/stairwaytowonderland/settings/roles */
+        // 			// {
+        // 			// 	id: 4,
+        // 			// 	type: 'RepositoryRole',
+        // 			// },
+        // 			/** Write: https://github.com/organizations/stairwaytowonderland/settings/roles */
+        // 			{
+        // 				id: 4,
+        // 				type: 'RepositoryRole',
+        // 			},
+        // 			/** users: https://github.com/orgs/stairwaytowonderland/teams/users */
+        // 			{
+        // 				id: 18093812,
+        // 				type: 'Team',
+        // 			},
+        // 		],
+        // 	},
+        // },
+        ],
+    },
+];
 const createOptionsDefaults = {
     updateReadme: true,
     replaceGitProtocolLinks: false,
@@ -35810,6 +35894,7 @@ async function run() {
     const overrides = configInput ? loadConfigFile(resolve(process.env.GITHUB_WORKSPACE ?? '.', configInput)) : {};
     const settings = { ...repoDefaults, ...overrides.settings };
     const rulesets = overrides.rulesets ?? rulesetDefaults;
+    const actionPolicies = overrides.actionPolicies ?? actionPolicyDefaults;
     const createOptions = {
         ...createOptionsDefaults,
         replaceGitProtocolLinks,
@@ -35845,7 +35930,7 @@ async function run() {
         };
     }
     const octokit = createGitHubClient(token);
-    const repo = (await createRepository(octokit, { org, name, settings, rulesets, createOptions }));
+    const repo = (await createRepository(octokit, { org, name, settings, rulesets, actionPolicies, createOptions }));
     setOutput('repo-id', String(repo.id));
     setOutput('repo-url', repo.html_url);
     setOutput('repo-full-name', repo.full_name);
