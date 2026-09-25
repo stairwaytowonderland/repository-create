@@ -1,3 +1,9 @@
+## [1.89.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.88.0...v1.89.0) (2026-09-25)
+
+### ✨ Features
+
+* New attribute for specifying GitHub Base URL (necessary for GHE… ([#28](https://github.com/stairwaytowonderland/repository-create/issues/28)) ([df47e02](https://github.com/stairwaytowonderland/repository-create/commit/df47e0294c8ea0137303e693a3f7f7a4a9f132be))
+
 ## [1.88.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.87.0...v1.88.0) (2026-09-25)
 
 ### ✨ Features
