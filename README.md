@@ -178,7 +178,7 @@ these values at runtime by passing a JSON config file.
                         "required_approving_review_count": 1,
                         "dismiss_stale_reviews_on_push": true,
                         "require_code_owner_review": false,
-                        "require_last_push_approval": true,
+                        "require_last_push_approval": false,
                         "required_review_thread_resolution": true
                     }
                 },
@@ -187,6 +187,14 @@ these values at runtime by passing a JSON config file.
                 { "type": "non_fast_forward" }
             ],
             "bypass_actors": []
+        }
+    ],
+    "actionPolicies": [
+        {
+            "name": "default-action-policy",
+            "description": "Default action policy applied to all repositories.",
+            "enforcement": "active",
+            "rules": []
         }
     ]
 }
