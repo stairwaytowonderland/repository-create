@@ -8,17 +8,13 @@ on:
   pull_request:
     branches:
       - main
-    paths-ignore:
-      - 'CHANGELOG.md'
-      - 'package.json'
-      - 'package-lock.json'
+    paths:
+      - 'src/**'
   push:
     branches:
       - main
-    paths-ignore:
-      - 'CHANGELOG.md'
-      - 'package.json'
-      - 'package-lock.json'
+    paths:
+      - 'src/**'
   schedule:
     # every Tuesday at 7:31 AM America/Chicago
     - cron: '31 7 * * 2'
