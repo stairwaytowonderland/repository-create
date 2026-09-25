@@ -13,10 +13,11 @@
  *   --include-all-branches     Copy all template branches (default: main only)
  *
  * Environment variables (see env.sample):
- *   GITHUB_TOKEN  - Personal Access Token with repo + admin:org scopes
- *   GITHUB_ORG    - Target organization (fallback when --org is not provided)
- *   REPO_NAME     - Repository name (fallback when --name is not provided)
- *   REPO_CONFIG   - Path to a JSON settings/rulesets override file (alternative to --repo-config)
+ *   GITHUB_TOKEN    - Personal Access Token with repo + admin:org scopes
+ *   GITHUB_BASE_URL - GitHub Base URL
+ *   GITHUB_ORG      - Target organization (fallback when --org is not provided)
+ *   REPO_NAME       - Repository name (fallback when --name is not provided)
+ *   REPO_CONFIG     - Path to a JSON settings/rulesets override file (alternative to --repo-config)
  */
 
 import 'dotenv/config'
@@ -68,6 +69,7 @@ async function main(): Promise<void> {
 	const org = args.org ?? process.env.GITHUB_ORG
 	const name = args.name ?? process.env.REPO_NAME
 	const token = process.env.GITHUB_TOKEN
+	const baseUrl = process.env.GITHUB_BASE_URL ?? 'https://api.github.com'
 
 	if (!org) {
 		throw new Error('Organization name is required. Use --org <name> or set GITHUB_ORG.')
@@ -125,7 +127,7 @@ async function main(): Promise<void> {
 		}
 	}
 
-	const octokit = createGitHubClient(token)
+	const octokit = createGitHubClient(token, baseUrl)
 
 	await createRepository(octokit, {
 		org: String(org),

@@ -41,6 +41,7 @@ function loadConfigFile(configPath: string): {
 
 async function run(): Promise<void> {
 	const token = core.getInput('github-token', { required: true })
+	const baseUrl = core.getInput('base-url')
 	const org = core.getInput('org', { required: true })
 	const name = core.getInput('name', { required: true })
 	const configInput = core.getInput('repo-config')
@@ -103,7 +104,7 @@ async function run(): Promise<void> {
 		}
 	}
 
-	const octokit = createGitHubClient(token)
+	const octokit = createGitHubClient(token, baseUrl)
 	const repo = (await createRepository(octokit, { org, name, settings, rulesets, actionPolicies, createOptions })) as {
 		html_url: string
 		full_name: string
