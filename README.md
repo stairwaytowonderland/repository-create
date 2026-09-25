@@ -10,7 +10,7 @@ Supports blank creation or generation from a template repository.
 > Access Token (PAT) to a GitHub App — see [`src/github-client.ts`](src/github-client.ts).
 
 > [!TIP]
-> See the [`.github` folder's _"Readme"_](./.github/index.md) _(`index.md`)_ for its file structure.
+> > See the [`.github` folder's _"Readme"_](./.github/index.md) _(`index.md`)_ for its file structure.
 
 <details>
 <summary><i><b>Project file structure</b> (click to expand) ...</i></summary><br>
@@ -27,15 +27,17 @@ Supports blank creation or generation from a template repository.
 ├── src
 │   ├── action.ts                   # GitHub Actions entrypoint (uses @actions/core)
 │   ├── apply-settings.ts           # PATCH general repo settings after creation
+│   ├── create-action-policies.ts   # POST action policies
 │   ├── create-repository.ts        # Orchestrator: create → settings → rulesets
 │   ├── create-rulesets.ts          # POST branch rulesets
 │   ├── github-client.ts            # Octokit client factory (PAT today, App-ready)
 │   ├── index.ts                    # CLI entry point
 │   ├── repo-defaults.ts            # Default repo settings and branch ruleset config
 │   ├── types.ts                    # Shared TypeScript type definitions
-│   └── update-readme.ts            # Updates README heading after template creation
-├── templates/
+│   ├── update-readme.ts            # Updates README heading after template creation
+│   └── utils.ts                    # Utility functions used across the project
 ├── .editorconfig
+├── .env.example
 ├── .gitignore
 ├── .markdownlint.json
 ├── .npmrc
@@ -46,7 +48,6 @@ Supports blank creation or generation from a template repository.
 ├── action.yaml
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md
-├── env.sample
 ├── eslint.config.mjs
 ├── LICENSE
 ├── package-lock.json
@@ -208,15 +209,17 @@ these values at runtime by passing a JSON config file.
 npm install
 ```
 
-| Variable       | Description                                                   |
-| -------------- | ------------------------------------------------------------- |
-| `GITHUB_TOKEN` | Personal Access Token (see Prerequisites above)               |
-| `GITHUB_ORG`   | Target GitHub organization                                    |
-| `REPO_NAME`    | Repository name to create (optional fallback)                 |
-| `REPO_CONFIG`  | Path to a JSON override file (alternative to `--repo-config`) |
+| Variable          | Description                                                     |
+| ----------------- | --------------------------------------------------------------- |
+| `GITHUB_BASE_URL` | Base URL for the GitHub API (default: `https://api.github.com`) |
+| `GITHUB_TOKEN`    | Personal Access Token (see Prerequisites above)                 |
+| `GITHUB_ORG`      | Target GitHub organization                                      |
+| `REPO_NAME`       | Repository name to create (optional fallback)                   |
+| `REPO_CONFIG`     | Path to a JSON override file (alternative to `--repo-config`)   |
 
 > [!NOTE]
-> **Local development**
+
+>> **Local development**
 >
 > Copy `env.sample` to `.env` and fill in your values:
 >
@@ -319,7 +322,7 @@ flowchart TD
     F -- "&nbsp;No&nbsp;" --> K[POST create<br>blank repo<br>auto_init: true]
     K --> J
 
-    J --> L{Rulesets<br>defined?}
+    J --> L{Branch&nbsp;Rulesets / ActionPolicies<br>defined?}
     L -- "&nbsp;Yes&nbsp;" --> M[POST each ruleset<br>create-rulesets.js]
     L -- "&nbsp;No&nbsp;" --> N
     M --> N([Done ✓])
