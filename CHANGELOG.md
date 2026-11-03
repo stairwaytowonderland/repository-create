@@ -1,3 +1,16 @@
+## [1.91.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.90.0...v1.91.0) (2026-11-03)
+
+### ✨ Features
+
+* fix refactor and updates ([c18f552](https://github.com/stairwaytowonderland/repository-create/commit/c18f5524f263bc852b6fc92a97661989f1d53f8d))
+* refactor and updates ([76e08d3](https://github.com/stairwaytowonderland/repository-create/commit/76e08d388ad978ba9b52738d4978c6dc9851fea6))
+
+### 🔧 Chores
+
+* only targeting src for codeql analysis workflow ([8bb9579](https://github.com/stairwaytowonderland/repository-create/commit/8bb9579b61b993eec94c75d32bfc1e3c84f8a542))
+* reorder vars in env file; remove old 'templates' folder; update README ([7f3069a](https://github.com/stairwaytowonderland/repository-create/commit/7f3069a9972dc70382b492a7735e3627f887f5ce))
+* update ci workflow, setting fail-on-no-release to false ([ea24ba7](https://github.com/stairwaytowonderland/repository-create/commit/ea24ba77f70a6ba97ec221b0ec929b86e4f8fbae))
+
 ## [1.90.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.89.0...v1.90.0) (2026-09-25)
 
 ### ✨ Features
