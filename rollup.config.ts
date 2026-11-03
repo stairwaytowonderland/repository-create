@@ -60,7 +60,6 @@ export default defineConfig({
 	},
 	plugins: [
 		typescript({
-			cacheDir: './node_modules/.cache/rollup-typescript',
 			compilerOptions: {
 				sourceMap: true, // Forces the plugin to feed raw mappings to Rollup
 				declaration: false, // Generate .d.ts files for every TypeScript or JavaScript file inside your project.
