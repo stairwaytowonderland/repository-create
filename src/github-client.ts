@@ -1,4 +1,6 @@
-import { Octokit } from 'octokit'
+import { getOctokit } from '@actions/github'
+
+export type Octokit = ReturnType<typeof getOctokit>
 
 /**
  * Returns an authenticated Octokit instance.
@@ -28,7 +30,7 @@ export function createGitHubClient(token: string, baseUrl: string): Octokit {
 		throw new Error('GitHub token is required. Set the GITHUB_TOKEN environment variable.')
 	}
 
-	return new Octokit({
+	return getOctokit(token, {
 		auth: token,
 		baseUrl: baseUrl,
 		headers: {

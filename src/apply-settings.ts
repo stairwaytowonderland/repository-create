@@ -1,6 +1,6 @@
-import type { Octokit } from 'octokit'
-import type { RepoSettings } from './types.js'
 import * as core from '@actions/core'
+import type { RepoSettings } from './types.js'
+import type { Octokit } from './github-client.js'
 
 /**
  * Applies general repository settings via PATCH /repos/{owner}/{repo}.

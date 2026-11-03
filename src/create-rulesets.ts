@@ -1,6 +1,6 @@
-import type { Octokit } from 'octokit'
-import type { RulesetConfig } from './types.js'
 import * as core from '@actions/core'
+import type { RulesetConfig } from './types.js'
+import type { Octokit } from './github-client.js'
 
 /**
  * Creates branch rulesets on a repository via POST /repos/{owner}/{repo}/rulesets.

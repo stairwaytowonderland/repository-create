@@ -1,11 +1,11 @@
-import type { Octokit } from 'octokit'
+import * as core from '@actions/core'
 import type { CreateOptions, RepoSettings, RulesetConfig, TemplateConfig, ActionPolicy } from './types.js'
+import type { Octokit } from './github-client.js'
 import { applySettings } from './apply-settings.js'
 import { createRulesets } from './create-rulesets.js'
 import { createActionPolicies } from './create-action-policies.js'
 import { updateReadme } from './update-readme.js'
 import { sanitizeRepoName } from './utils.js'
-import * as core from '@actions/core'
 
 /**
  * Orchestrates repository creation:

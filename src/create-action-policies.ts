@@ -1,6 +1,6 @@
-import type { Octokit } from 'octokit'
-import type { ActionPolicy } from './types.js'
 import * as core from '@actions/core'
+import type { ActionPolicy } from './types.js'
+import type { Octokit } from './github-client.js'
 
 /**
  * Creates repo action policies on a repository via POST /repos/{owner}/{repo}/action/policies.

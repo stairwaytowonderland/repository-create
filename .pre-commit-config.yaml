@@ -12,9 +12,10 @@ repos:
         exclude: ^dist/index\.c?js$
       - id: mixed-line-ending
       - id: end-of-file-fixer
+        exclude: ^(dist\/index\.[cm]?(?:js|ts)(?:\.map)?|(dist\/licenses\.txt)|.*\.csv|badges\/.*\.svg)|(package-lock\.json)$
       - id: check-added-large-files
-        args: [--maxkb=3000]
-        exclude: ^dist/index\.c?js$ # Exclude a specific file
+        args: ['--maxkb=1000']
+        exclude: ^(dist\/index\.[cm]?(?:js|ts)(?:\.map)?|(dist\/licenses\.txt)|.*\.csv|badges\/.*\.svg)$
       - id: check-ast
       - id: check-json
         exclude: ^(\.vscode\/.*\.json|\.?devcontainer(?:\/.*)?\.json)$

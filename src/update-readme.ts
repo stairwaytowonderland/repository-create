@@ -1,6 +1,6 @@
-import type { Octokit } from 'octokit'
-import type { GitHubFileContent } from './types.js'
 import * as core from '@actions/core'
+import type { GitHubFileContent } from './types.js'
+import type { Octokit } from './github-client.js'
 import { base64Decode, base64Encode, sanitizeRepoName } from './utils.js'
 
 type ReadmeFileContent = GitHubFileContent & { type: 'file'; content: string }
