@@ -31,7 +31,6 @@ export function createGitHubClient(token: string, baseUrl: string): Octokit {
 	}
 
 	return getOctokit(token, {
-		auth: token,
 		baseUrl: baseUrl,
 		headers: {
 			'X-GitHub-Api-Version': '2026-03-10',

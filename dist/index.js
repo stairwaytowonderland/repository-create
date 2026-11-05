@@ -73532,7 +73532,6 @@ function createGitHubClient(token, baseUrl) {
         throw new Error('GitHub token is required. Set the GITHUB_TOKEN environment variable.');
     }
     return getOctokit(token, {
-        auth: token,
         baseUrl: baseUrl,
         headers: {
             'X-GitHub-Api-Version': '2026-03-10',
