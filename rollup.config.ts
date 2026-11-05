@@ -50,14 +50,17 @@ export default defineConfig({
 				if (warning.message?.includes(IGNORED_CIRCULAR_DEPENDENCY)) {
 					return
 				}
+				break
 			case 'THIS_IS_UNDEFINED':
 				if (warning.message?.includes(IGNORED_THIS_IS_UNDEFINED)) {
 					return
 				}
+				break
 		}
 
 		warn(warning)
 	},
+	external: ['node:sqlite'], // Mark 'node:sqlite' as external to prevent bundling it (coming from undici)
 	plugins: [
 		typescript({
 			compilerOptions: {

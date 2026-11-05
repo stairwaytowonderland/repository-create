@@ -12,17 +12,13 @@
 		"npm": ">=8.0.0"
 	},
 	"scripts": {
-		"clean": "rm -rf node_modules dist package-lock.json",
+		"clean": "rm -rf node_modules dist",
 		"clean-cache": "npm cache clean --force",
-		"install:safe": "npm install --legacy-peer-deps --node-gyp=./node_modules/.bin/node-gyp",
-		"package-lock:fix": "node -e \"const fs = require('fs'); const f = 'package-lock.json'; const c = fs.readFileSync(f, 'utf8').trimEnd(); fs.writeFileSync(f, c + '\\n');\"",
 		"postinstall": "npm run package-lock:fix && printf '\\033[1;32m%s:\\033[0m\\033[0;32m %s\\033[0m\n' 'Installation complete' 'Run `npm run build` to build the project.'",
-		"force-resolutions": "printf '\\033[1;32m%s\\033[0m\n' 'Forcing npm resolutions...' && npx npm-force-resolutions",
 		"build": "tsc --showConfig",
 		"bundle": "npm run check && npm run build && npm run package",
 		"format:write": "prettier --write \"src/**/*.ts\" ./*.{json,mjs,ts,yaml}",
 		"format:check": "prettier --check \"src/**/*.ts\" ./*.{json,mjs,ts,yaml}",
-		"format-write": "npm run format:write",
 		"format-check": "npm run format:check",
 		"format": "npm run format:write",
 		"prettier": "npm run format:check",
@@ -32,12 +28,14 @@
 		"package": "rimraf ./dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
 		"package:watch": "npm run package -- --watch",
 		"typecheck": "tsc --noEmit",
+		"package-lock:install": "npm install --package-lock-only --ignore-scripts",
+		"package-lock:fix": "node -e \"const fs = require('fs'); const f = 'package-lock.json'; const c = fs.readFileSync(f, 'utf8').trimEnd(); fs.writeFileSync(f, c + '\\n');\"",
+		"install:clean": "npm run clean && rm -f package-lock.json && npm run package-lock:install && npm install",
 		"fix": "npm run format:write && npm run lint:fix",
 		"check": "npm run typecheck && npm run lint && npm run prettier",
 		"test": "printf 'No tests defined\n'",
-		"reset": "npm run clean && npm install",
 		"prep": "npm run fix && npm run bundle",
-		"all": "npm run reset && npm run prep"
+		"all": "npm run install:clean && npm run fix && npm test && npm run bundle"
 	},
 	"keywords": [
 		"github",
@@ -47,7 +45,7 @@
 	"dependencies": {},
 	"devDependencies": {
 		"@actions/core": "^3.0.0",
-		"@actions/github": "^6.0.0",
+		"@actions/github": "^9.0.0",
 		"@eslint/compat": "^2.0.2",
 		"@eslint/eslintrc": "^3.3.3",
 		"@eslint/js": "^10.0.1",
