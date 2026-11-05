@@ -1,3 +1,9 @@
+## [1.93.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.92.0...v1.93.0) (2026-11-05)
+
+### ✨ Features
+
+* fix auth and token issue ([2709997](https://github.com/stairwaytowonderland/repository-create/commit/2709997b2694a8833e7737932fc01642de0b9b37))
+
 ## [1.92.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.91.0...v1.92.0) (2026-11-05)
 
 ### ✨ Features
