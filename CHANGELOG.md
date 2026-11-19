@@ -1,3 +1,10 @@
+## [1.93.1](https://github.com/stairwaytowonderland/repository-create/compare/v1.93.0...v1.93.1) (2026-11-19)
+
+### 🔧 Chores
+
+* **deps:** bump actions/checkout from 6 to 7 in /.github/workflows in the github-actions group across 1 directory ([#15](https://github.com/stairwaytowonderland/repository-create/issues/15)) ([4d0dc5a](https://github.com/stairwaytowonderland/repository-create/commit/4d0dc5a659c3d7c9e8b398c9a07a6c8ab6d693cb))
+* package updates ([81798cd](https://github.com/stairwaytowonderland/repository-create/commit/81798cd89bc4873a20e6bf7c5d3a8a87ed6de94b))
+
 ## [1.93.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.92.0...v1.93.0) (2026-11-05)
 
 ### ✨ Features
