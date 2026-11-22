@@ -1,3 +1,9 @@
+## [1.95.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.94.0...v1.95.0) (2026-11-22)
+
+### ✨ Features
+
+* implementing 'enable-pages' ([7447b46](https://github.com/stairwaytowonderland/repository-create/commit/7447b4601d88e7a065ce959512eb6751418b3ae0))
+
 ## [1.94.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.93.1...v1.94.0) (2026-11-22)
 
 ### ✨ Features
