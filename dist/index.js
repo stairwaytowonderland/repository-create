@@ -40051,6 +40051,13 @@ function setFailed(message) {
     error(message);
 }
 /**
+ * Writes debug message to user log
+ * @param message debug message
+ */
+function debug(message) {
+    issueCommand('debug', {}, message);
+}
+/**
  * Adds an error issue
  * @param message error issue message. Errors will be converted to string via toString()
  * @param properties optional properties to add to the annotation.
@@ -73984,6 +73991,7 @@ async function createRepository(octokit, { org, name, settings, rulesets, action
     // Sanitize repository name for API calls: only [\w.-], others to '-'
     const nameSanitized = sanitizeRepoName(name);
     info(`\nCreating repository "${org}/${name}"...`);
+    debug(`Create options: ${JSON.stringify(createOptions, null, 2)}`);
     // let repo: { html_url: string; full_name: string; name: string; owner: { login: string }; id: number }
     let repo;
     // let repo
@@ -74009,6 +74017,7 @@ async function createRepository(octokit, { org, name, settings, rulesets, action
     }
     if (createOptions.enablePages) {
         info(`\nEnabling GitHub Pages for "${org}/${name}"...`);
+        // https://docs.github.com/en/rest/pages/pages?apiVersion=2026-03-10#create-a-github-pages-site
         const { data: pages } = await octokit.rest.repos.createPagesSite({
             owner: repo.owner.login,
             repo: repo.name,
@@ -74296,6 +74305,7 @@ async function run() {
     const replaceGitProtocolLinks = getBooleanInput('replace-git-protocol-links');
     const createLabels = getBooleanInput('create-labels');
     const createIssues = getBooleanInput('create-issues');
+    const enablePages = getBooleanInput('enable-pages');
     const visibilityInput = getInput('visibility');
     const jobSummary = getBooleanInput('job-summary');
     const createFromTemplateRetryDelayMs = createFromTemplateRetryDelay ? Number(createFromTemplateRetryDelay) : undefined;
@@ -74312,6 +74322,7 @@ async function run() {
         replaceGitProtocolLinks,
         createLabels,
         createIssues,
+        enablePages,
     };
     // Action inputs take precedence over config-file settings
     if (visibilityInput) {

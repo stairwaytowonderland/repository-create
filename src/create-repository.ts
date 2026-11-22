@@ -39,6 +39,8 @@ export async function createRepository(
 	const nameSanitized: string = sanitizeRepoName(name)
 	core.info(`\nCreating repository "${org}/${name}"...`)
 
+	core.debug(`Create options: ${JSON.stringify(createOptions, null, 2)}`)
+
 	// let repo: { html_url: string; full_name: string; name: string; owner: { login: string }; id: number }
 	let repo: TemplateRepo | OrgRepo | undefined
 	// let repo

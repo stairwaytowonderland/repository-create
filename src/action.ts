@@ -53,6 +53,7 @@ async function run(): Promise<void> {
 	const replaceGitProtocolLinks = core.getBooleanInput('replace-git-protocol-links')
 	const createLabels = core.getBooleanInput('create-labels')
 	const createIssues = core.getBooleanInput('create-issues')
+	const enablePages = core.getBooleanInput('enable-pages')
 	const visibilityInput = core.getInput('visibility') as 'private' | 'internal' | 'public' | ''
 	const jobSummary = core.getBooleanInput('job-summary')
 	const createFromTemplateRetryDelayMs = createFromTemplateRetryDelay ? Number(createFromTemplateRetryDelay) : undefined
@@ -71,6 +72,7 @@ async function run(): Promise<void> {
 		replaceGitProtocolLinks,
 		createLabels,
 		createIssues,
+		enablePages,
 	}
 
 	// Action inputs take precedence over config-file settings

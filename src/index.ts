@@ -95,6 +95,7 @@ async function main(): Promise<void> {
 	const replaceGitProtocolLinks = args['replace-git-protocol-links'] === true
 	const createLabels = args['create-labels'] === true
 	const createIssues = args['create-issues'] === true
+	const enablePages = args['enable-pages'] === true
 
 	// Optional JSON config file to override defaults (flag takes precedence over env var)
 	const configPath = args['repo-config'] ?? process.env.REPO_CONFIG
@@ -103,7 +104,14 @@ async function main(): Promise<void> {
 	const settings: RepoSettings = { ...repoDefaults, ...overrides.settings }
 	const rulesets: RulesetConfig[] = overrides.rulesets ?? rulesetDefaults
 	const actionPolicies: ActionPolicy[] = overrides.actionPolicies ?? actionPolicyDefaults
-	const createOptions = { ...createOptionsDefaults, updateReadme, replaceGitProtocolLinks, createLabels, createIssues }
+	const createOptions = {
+		...createOptionsDefaults,
+		updateReadme,
+		replaceGitProtocolLinks,
+		createLabels,
+		createIssues,
+		enablePages,
+	}
 
 	// CLI template flags take precedence over config-file template settings
 	if (args['template-owner'] || args['template-repo']) {
