@@ -101,6 +101,12 @@ inputs:
     required: false
     default: ''
 
+  enable-pages:
+    description: >
+      Optional flag to enable GitHub Pages for the new repository.
+    required: false
+    default: ''
+
 outputs:
   repo-id:
     description: Numeric ID of the created repository.

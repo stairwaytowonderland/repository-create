@@ -7,6 +7,9 @@ import { createActionPolicies } from './create-action-policies.js'
 import { updateReadme } from './update-readme.js'
 import { sanitizeRepoName } from './utils.js'
 
+type TemplateRepo = Awaited<ReturnType<Octokit['rest']['repos']['createUsingTemplate']>>['data']
+type OrgRepo = Awaited<ReturnType<Octokit['rest']['repos']['createInOrg']>>['data']
+
 /**
  * Orchestrates repository creation:
  *   1. Create the repository in the org (blank or from a template)
@@ -36,10 +39,14 @@ export async function createRepository(
 	const nameSanitized: string = sanitizeRepoName(name)
 	core.info(`\nCreating repository "${org}/${name}"...`)
 
-	let repo: { html_url: string; full_name: string; name: string; owner: object; id: number }
+	// let repo: { html_url: string; full_name: string; name: string; owner: { login: string }; id: number }
+	let repo: TemplateRepo | OrgRepo | undefined
+	// let repo
 
 	if (settings.template) {
-		;({ data: repo } = await createFromTemplate(octokit, { org, name: nameSanitized, settings }))
+		// ;({ data: repo } = await createFromTemplate(octokit, { org, name: nameSanitized, settings }))
+		const { data } = await createFromTemplate(octokit, { org, name: nameSanitized, settings })
+		repo = data
 		if (createOptions.updateReadme) {
 			// Use unsanitized name for README heading
 			await updateReadme(
@@ -55,7 +62,24 @@ export async function createRepository(
 			)
 		}
 	} else {
-		;({ data: repo } = await createBlank(octokit, { org, name: nameSanitized, settings }))
+		// ;({ data: repo } = await createBlank(octokit, { org, name: nameSanitized, settings }))
+		const { data } = await createBlank(octokit, { org, name: nameSanitized, settings })
+		repo = data
+	}
+
+	if (createOptions.enablePages) {
+		core.info(`\nEnabling GitHub Pages for "${org}/${name}"...`)
+
+		// https://docs.github.com/en/rest/pages/pages?apiVersion=2026-03-10#create-a-github-pages-site
+		const { data: pages } = await octokit.rest.repos.createPagesSite({
+			owner: repo.owner.login,
+			repo: repo.name,
+			build_type: 'workflow', // Use 'legacy' if deploying from a branch
+			// If using 'legacy', include source:
+			// source: { branch: repo.default_branch, path: '/' },
+		})
+
+		core.info(`GitHub Pages enabled at: ${pages.html_url}`)
 	}
 
 	core.info(`\n✓ Repository "${org}/${name}" created: (id: ${repo.id})`)
@@ -115,7 +139,7 @@ function createBlank(octokit: Octokit, { org, name, settings }: { org: string; n
  * Note: visibility, has_issues, has_projects, and has_wiki cannot be set at
  * generation time — they are applied by the subsequent applySettings call.
  */
-function createFromTemplate(
+async function createFromTemplate(
 	octokit: Octokit,
 	{ org, name, settings }: { org: string; name: string; settings: RepoSettings }
 ) {

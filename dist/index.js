@@ -73984,9 +73984,13 @@ async function createRepository(octokit, { org, name, settings, rulesets, action
     // Sanitize repository name for API calls: only [\w.-], others to '-'
     const nameSanitized = sanitizeRepoName(name);
     info(`\nCreating repository "${org}/${name}"...`);
+    // let repo: { html_url: string; full_name: string; name: string; owner: { login: string }; id: number }
     let repo;
+    // let repo
     if (settings.template) {
-        ({ data: repo } = await createFromTemplate(octokit, { org, name: nameSanitized, settings }));
+        // ;({ data: repo } = await createFromTemplate(octokit, { org, name: nameSanitized, settings }))
+        const { data } = await createFromTemplate(octokit, { org, name: nameSanitized, settings });
+        repo = data;
         if (createOptions.updateReadme) {
             // Use unsanitized name for README heading
             await updateReadme(octokit, { owner: org, repo: name, template: { repo: settings.template?.repo, owner: settings.template?.owner } }, {
@@ -73999,7 +74003,20 @@ async function createRepository(octokit, { org, name, settings, rulesets, action
         }
     }
     else {
-        ({ data: repo } = await createBlank(octokit, { org, name: nameSanitized, settings }));
+        // ;({ data: repo } = await createBlank(octokit, { org, name: nameSanitized, settings }))
+        const { data } = await createBlank(octokit, { org, name: nameSanitized, settings });
+        repo = data;
+    }
+    if (createOptions.enablePages) {
+        info(`\nEnabling GitHub Pages for "${org}/${name}"...`);
+        const { data: pages } = await octokit.rest.repos.createPagesSite({
+            owner: repo.owner.login,
+            repo: repo.name,
+            build_type: 'workflow', // Use 'legacy' if deploying from a branch
+            // If using 'legacy', include source:
+            // source: { branch: repo.default_branch, path: '/' },
+        });
+        info(`GitHub Pages enabled at: ${pages.html_url}`);
     }
     info(`\n✓ Repository "${org}/${name}" created: (id: ${repo.id})`);
     // Second-pass settings update (covers fields not available at creation time)
@@ -74052,7 +74069,7 @@ function createBlank(octokit, { org, name, settings }) {
  * Note: visibility, has_issues, has_projects, and has_wiki cannot be set at
  * generation time — they are applied by the subsequent applySettings call.
  */
-function createFromTemplate(octokit, { org, name, settings }) {
+async function createFromTemplate(octokit, { org, name, settings }) {
     const { owner: templateOwner, repo: templateRepo, includeAllBranches = false } = settings.template;
     info(`  Using template: ${templateOwner}/${templateRepo}`);
     info(`  Destination:    ${org}/${name} (visibility: ${settings.visibility})`);

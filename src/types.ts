@@ -24,6 +24,16 @@ export interface CreateOptions {
 	createLabels?: boolean
 	/** Create default issues */
 	createIssues?: boolean
+	/** Enable GitHub Pages */
+	enablePages?: boolean
+	// pages?: {
+	// 	/** Enable GitHub Pages */
+	// 	enabled: boolean
+	// 	/** Source branch for GitHub Pages */
+	// 	sourceBranch?: string
+	// 	/** Source folder for GitHub Pages */
+	// 	sourceFolder?: string
+	// }
 }
 
 export interface RepoSettings {

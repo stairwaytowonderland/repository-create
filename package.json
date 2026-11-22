@@ -31,6 +31,7 @@
 		"package-lock:install": "npm install --package-lock-only --ignore-scripts",
 		"package-lock:fix": "node -e \"const fs = require('fs'); const f = 'package-lock.json'; const c = fs.readFileSync(f, 'utf8').trimEnd(); fs.writeFileSync(f, c + '\\n');\"",
 		"install:clean": "npm run clean && rm -f package-lock.json && npm run package-lock:install && npm install",
+		"clean-install": "rm -rf node_modules && npm ci",
 		"fix": "npm run format:write && npm run lint:fix",
 		"check": "npm run typecheck && npm run lint && npm run prettier",
 		"test": "printf 'No tests defined\n'",
