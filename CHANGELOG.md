@@ -1,3 +1,9 @@
+## [1.97.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.96.0...v1.97.0) (2026-11-23)
+
+### ✨ Features
+
+* fix update-typedoc ([7dd0fb0](https://github.com/stairwaytowonderland/repository-create/commit/7dd0fb04a63a8f9ef03c8c85229200ccda2c0100))
+
 ## [1.96.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.95.0...v1.96.0) (2026-11-23)
 
 ### ✨ Features
