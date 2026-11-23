@@ -1,3 +1,9 @@
+## [1.100.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.99.0...v1.100.0) (2026-11-23)
+
+### ✨ Features
+
+* change enablePages to pagesWorkflow ([4a1609a](https://github.com/stairwaytowonderland/repository-create/commit/4a1609a8a2c7218ba41e3ba743361b9a98663816))
+
 ## [1.99.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.98.0...v1.99.0) (2026-11-23)
 
 ### ✨ Features
