@@ -101,12 +101,6 @@ inputs:
     required: false
     default: ''
 
-  enable-pages:
-    description: >
-      Optional flag to enable GitHub Pages for the new repository.
-    required: false
-    default: ''
-
   pages-workflow:
     description: >
       Optional flag to trigger the GitHub Pages workflow after enabling Pages.
