@@ -107,6 +107,13 @@ inputs:
     required: false
     default: ''
 
+  pages-workflow:
+    description: >
+      Optional flag to trigger the GitHub Pages workflow after enabling Pages.
+      Should be set to the workflow file name (e.g., 'docs.yaml').
+    required: false
+    default: 'docs.yaml'
+
 outputs:
   repo-id:
     description: Numeric ID of the created repository.

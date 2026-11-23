@@ -19,3 +19,8 @@ export function base64Encode(content: string): string {
 export function base64Decode(encoded: string): string {
 	return Buffer.from(encoded, 'base64').toString('utf8')
 }
+
+/**
+ * Sleeps for the specified number of milliseconds.
+ */
+export const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))

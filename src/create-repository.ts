@@ -1,4 +1,4 @@
-// import { inspect } from 'node:util'
+import { inspect } from 'node:util'
 import * as core from '@actions/core'
 import type { CreateOptions, RepoSettings, RulesetConfig, TemplateConfig, ActionPolicy } from './types.js'
 import type { Octokit } from './github-client.js'
@@ -7,7 +7,7 @@ import { createRulesets } from './create-rulesets.js'
 import { createActionPolicies } from './create-action-policies.js'
 import { updateReadme } from './update-readme.js'
 import { updateTypedocConfig } from './update-typedoc.js'
-import { sanitizeRepoName } from './utils.js'
+import { sanitizeRepoName, sleep } from './utils.js'
 
 type TemplateRepo = Awaited<ReturnType<Octokit['rest']['repos']['createUsingTemplate']>>['data']
 type OrgRepo = Awaited<ReturnType<Octokit['rest']['repos']['createInOrg']>>['data']
@@ -41,7 +41,7 @@ export async function createRepository(
 	const nameSanitized: string = sanitizeRepoName(name)
 	core.info(`\nCreating repository "${org}/${name}"...`)
 
-	// core.info(`Create options:\n${inspect(createOptions, { depth: null, colors: true, compact: false })}`)
+	core.info(`Create options:\n${inspect(createOptions, { depth: null, colors: true, compact: false })}`)
 
 	// let repo: { html_url: string; full_name: string; name: string; owner: { login: string }; id: number }
 	let repo: TemplateRepo | OrgRepo | undefined
@@ -66,21 +66,32 @@ export async function createRepository(
 			)
 		}
 
-		await updateTypedocConfig(
-			octokit,
-			{ owner: org, repo: nameSanitized },
-			{
-				retryDelayMs: settings.template.createFromTemplateRetryDelay,
-				maxRetries: settings.template.createFromTemplateMaxRetries,
-			}
-		)
+		if (createOptions.pagesWorkflow) {
+			await updateTypedocConfig(
+				octokit,
+				{ owner: org, repo: nameSanitized },
+				{
+					retryDelayMs: settings.template.createFromTemplateRetryDelay,
+					maxRetries: settings.template.createFromTemplateMaxRetries,
+				}
+			)
+
+			await sleep(10000) // Wait for 10 seconds to avoid race conditions with the commit timing
+
+			await octokit.rest.actions.createWorkflowDispatch({
+				owner: org,
+				repo: nameSanitized,
+				workflow_id: createOptions.pagesWorkflow,
+				ref: repo.default_branch,
+			})
+		}
 	} else {
 		// ;({ data: repo } = await createBlank(octokit, { org, name: nameSanitized, settings }))
 		const { data } = await createBlank(octokit, { org, name: nameSanitized, settings })
 		repo = data
 	}
 
-	if (createOptions.enablePages) {
+	if (createOptions.pagesWorkflow) {
 		core.info(`\nEnabling GitHub Pages for "${org}/${name}"...`)
 
 		// https://docs.github.com/en/rest/pages/pages?apiVersion=2026-03-10#create-a-github-pages-site

@@ -91,11 +91,12 @@ async function main(): Promise<void> {
 		? Number(args['create-from-template-max-retries'])
 		: undefined
 
+	const pagesWorkflow = args['pages-workflow'] ? String(args['pages-workflow']) : undefined
+
 	const updateReadme = args['update-readme'] === true
 	const replaceGitProtocolLinks = args['replace-git-protocol-links'] === true
 	const createLabels = args['create-labels'] === true
 	const createIssues = args['create-issues'] === true
-	const enablePages = args['enable-pages'] === true
 
 	// Optional JSON config file to override defaults (flag takes precedence over env var)
 	const configPath = args['repo-config'] ?? process.env.REPO_CONFIG
@@ -110,7 +111,7 @@ async function main(): Promise<void> {
 		replaceGitProtocolLinks,
 		createLabels,
 		createIssues,
-		enablePages,
+		pagesWorkflow,
 	}
 
 	// CLI template flags take precedence over config-file template settings

@@ -24,8 +24,9 @@ export interface CreateOptions {
 	createLabels?: boolean
 	/** Create default issues */
 	createIssues?: boolean
-	/** Enable GitHub Pages */
-	enablePages?: boolean
+	/** GitHub Pages workflow file name (e.g., 'docs.yaml') */
+	pagesWorkflow?: string | undefined
+
 	// pages?: {
 	// 	/** Enable GitHub Pages */
 	// 	enabled: boolean

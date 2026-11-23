@@ -22,7 +22,7 @@ import require$$0$2 from 'node:stream';
 import require$$5 from 'node:querystring';
 import require$$0 from 'node:events';
 import require$$0$4 from 'node:diagnostics_channel';
-import require$$3 from 'node:util';
+import require$$3, { inspect } from 'node:util';
 import require$$0$5 from 'node:buffer';
 import require$$4 from 'node:tls';
 import require$$3$1 from 'node:zlib';
@@ -73678,6 +73678,10 @@ function base64Encode(content) {
 function base64Decode(encoded) {
     return Buffer.from(encoded, 'base64').toString('utf8');
 }
+/**
+ * Sleeps for the specified number of milliseconds.
+ */
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * Updates the all occurrences of H1 heading in the README that match the template name.
@@ -73980,6 +73984,7 @@ async function normalizeTargetFile$1(octokit, sanitized, options, file) {
  *
  * FIXME: docs still needs to be manually dispatched even after updating the Typedoc configuration.
  * The deploy itself works, but for some reason a "redeploy" is necessary for the pages site after initial repo creation.
+ * SOLVED: The reason is because the default happens at initial commit, but the typedoc config is only updated after the initial commit, and does not trigger a redeploy automatically.
  */
 // import { inspect } from 'node:util'
 async function updateTypedocConfig(octokit, repo, options) {
@@ -74042,7 +74047,6 @@ async function normalizeTargetFile(octokit, sanitized, options, file) {
     return targetFile;
 }
 
-// import { inspect } from 'node:util'
 /**
  * Orchestrates repository creation:
  *   1. Create the repository in the org (blank or from a template)
@@ -74054,7 +74058,7 @@ async function createRepository(octokit, { org, name, settings, rulesets, action
     // Sanitize repository name for API calls: only [\w.-], others to '-'
     const nameSanitized = sanitizeRepoName(name);
     info(`\nCreating repository "${org}/${name}"...`);
-    // core.info(`Create options:\n${inspect(createOptions, { depth: null, colors: true, compact: false })}`)
+    info(`Create options:\n${inspect(createOptions, { depth: null, colors: true, compact: false })}`);
     // let repo: { html_url: string; full_name: string; name: string; owner: { login: string }; id: number }
     let repo;
     // let repo
@@ -74072,17 +74076,26 @@ async function createRepository(octokit, { org, name, settings, rulesets, action
                 createIssues: createOptions.createIssues,
             });
         }
-        await updateTypedocConfig(octokit, { owner: org, repo: nameSanitized }, {
-            retryDelayMs: settings.template.createFromTemplateRetryDelay,
-            maxRetries: settings.template.createFromTemplateMaxRetries,
-        });
+        if (createOptions.pagesWorkflow) {
+            await updateTypedocConfig(octokit, { owner: org, repo: nameSanitized }, {
+                retryDelayMs: settings.template.createFromTemplateRetryDelay,
+                maxRetries: settings.template.createFromTemplateMaxRetries,
+            });
+            await sleep(10000); // Wait for 10 seconds to avoid race conditions with the commit timing
+            await octokit.rest.actions.createWorkflowDispatch({
+                owner: org,
+                repo: nameSanitized,
+                workflow_id: createOptions.pagesWorkflow,
+                ref: repo.default_branch,
+            });
+        }
     }
     else {
         // ;({ data: repo } = await createBlank(octokit, { org, name: nameSanitized, settings }))
         const { data } = await createBlank(octokit, { org, name: nameSanitized, settings });
         repo = data;
     }
-    if (createOptions.enablePages) {
+    if (createOptions.pagesWorkflow) {
         info(`\nEnabling GitHub Pages for "${org}/${name}"...`);
         // https://docs.github.com/en/rest/pages/pages?apiVersion=2026-03-10#create-a-github-pages-site
         const { data: pages } = await octokit.rest.repos.createPagesSite({
@@ -74372,7 +74385,7 @@ async function run() {
     const replaceGitProtocolLinks = getBooleanInput('replace-git-protocol-links');
     const createLabels = getBooleanInput('create-labels');
     const createIssues = getBooleanInput('create-issues');
-    const enablePages = getBooleanInput('enable-pages');
+    const pagesWorkflow = getInput('pages-workflow');
     const visibilityInput = getInput('visibility');
     const jobSummary = getBooleanInput('job-summary');
     const createFromTemplateRetryDelayMs = createFromTemplateRetryDelay ? Number(createFromTemplateRetryDelay) : undefined;
@@ -74389,7 +74402,7 @@ async function run() {
         replaceGitProtocolLinks,
         createLabels,
         createIssues,
-        enablePages,
+        pagesWorkflow,
     };
     // Action inputs take precedence over config-file settings
     if (visibilityInput) {

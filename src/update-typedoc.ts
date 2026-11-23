@@ -5,6 +5,7 @@
  *
  * FIXME: docs still needs to be manually dispatched even after updating the Typedoc configuration.
  * The deploy itself works, but for some reason a "redeploy" is necessary for the pages site after initial repo creation.
+ * SOLVED: The reason is because the default happens at initial commit, but the typedoc config is only updated after the initial commit, and does not trigger a redeploy automatically.
  */
 
 // import { inspect } from 'node:util'
