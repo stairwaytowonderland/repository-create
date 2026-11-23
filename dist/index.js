@@ -73698,7 +73698,7 @@ function base64Decode(encoded) {
 async function updateReadmeHeading(octokit, repo, options, file) {
     const sanitizedRepo = sanitizeRepoName(repo.repo);
     info(`  Updating README heading to match repo name "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
-    const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
+    const targetFile = await normalizeTargetFile$1(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
     const original = base64Decode(targetFile.content);
     let content = targetFile.content;
     try {
@@ -73742,7 +73742,7 @@ async function updateReadmeHeading(octokit, repo, options, file) {
 async function updateReadmeRepoLinks(octokit, repo, options, file) {
     const sanitizedRepo = sanitizeRepoName(repo.repo);
     info(`  Updating README repository links to match repo name "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
-    const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
+    const targetFile = await normalizeTargetFile$1(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
     const original = base64Decode(targetFile.content);
     let content = targetFile.content;
     let search;
@@ -73825,7 +73825,7 @@ async function updateReadmeRepoLinks(octokit, repo, options, file) {
 async function updateReadmeGitHubShieldsBadges(octokit, repo, options, file) {
     const sanitizedRepo = sanitizeRepoName(repo.repo);
     info(`  Updating README badges to match repo name "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
-    const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
+    const targetFile = await normalizeTargetFile$1(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
     const original = base64Decode(targetFile.content);
     let content = targetFile.content;
     const search = /(?:(\[\![^\]]+\]\(https:\/\/img\.shields\.io\/github\/(?:v\/release|last-commit|license)\/[^/]+\/)([^)\?]+)((?:\?[^)]*)?)\)[^:]+\((https:\/\/github\.com\/[^/]+\/)([^/]+)(((\/[^\/]+))+)\))/g;
@@ -73865,7 +73865,7 @@ async function updateReadmeGitHubShieldsBadges(octokit, repo, options, file) {
 async function updateReadmeFirstTasks(octokit, repo, options, file) {
     const sanitizedRepo = sanitizeRepoName(repo.repo);
     info(`  Updating README first tasks checkboxes to checked for repo "${repo.repo}" (API repo: "${sanitizedRepo}")...`);
-    const targetFile = await normalizeTargetFile(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
+    const targetFile = await normalizeTargetFile$1(octokit, { owner: repo.owner, repo: sanitizedRepo }, options, file);
     const original = base64Decode(targetFile.content);
     let content = targetFile.content;
     const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -73967,7 +73967,7 @@ async function fetchReadmeWithRetry(octokit, { owner, repo }, options) {
  * If the file is not provided, it will attempt to fetch it with retries.
  * Throws an error if the README is not found or is not a regular file.
  */
-async function normalizeTargetFile(octokit, sanitized, options, file) {
+async function normalizeTargetFile$1(octokit, sanitized, options, file) {
     const targetFile = file ?? (await fetchReadmeWithRetry(octokit, { owner: sanitized.owner, repo: sanitized.repo }, options));
     if (!targetFile) {
         warning(`  ⚠ No README found after retries — skipping heading update.`);
@@ -73976,6 +73976,61 @@ async function normalizeTargetFile(octokit, sanitized, options, file) {
     if (targetFile.type !== 'file' || !targetFile.content) {
         warning(`  ⚠ README is not a regular file — skipping heading update.`);
         throw new Error('README file is not a regular file');
+    }
+    return targetFile;
+}
+
+/**
+ * Update the Typedoc configuration for the project.
+ *
+ * Replace all the links in the Typedoc configuration with the appropriate project-specific URLs.
+ */
+async function updateTypedocConfig(octokit, repo, options) {
+    const file = await normalizeTargetFile(octokit, { owner: repo.owner, repo: repo.repo }, options);
+    const config = JSON.parse(file.content);
+    // Update the links in the configuration
+    config.cleanJsdocTheme.siteUrl = `https://${repo.owner}.github.io/${repo.repo}`;
+    config.cleanJsdocTheme.basePath = `/${repo.repo}`;
+    config.cleanJsdocTheme.menu[1].link = `https://github.com/${repo.owner}/${repo.repo}`;
+    await octokit.rest.repos.createOrUpdateFileContents({
+        owner: repo.owner,
+        repo: repo.repo,
+        path: file.path,
+        message: `docs: update Typedoc configuration to match ${repo.repo} [skip ci]`,
+        content: Buffer.from(JSON.stringify(config, null, 2)).toString('base64'),
+        sha: file.sha,
+    });
+}
+async function fetchTypedocWithRetry(octokit, { owner, repo }, options) {
+    const candidates = ['typedoc.json', 'typedoc.config.json', 'typedoc.site.json'];
+    const retryDelayMs = options?.retryDelayMs ?? 1000;
+    const maxRetries = options?.maxRetries ?? 3;
+    const sanitizedRepo = sanitizeRepoName(repo);
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        for (const filePath of candidates) {
+            try {
+                const { data } = await octokit.rest.repos.getContent({ owner, repo: sanitizedRepo, path: filePath });
+                return data;
+            }
+            catch (err) {
+                if (err.status !== 404)
+                    throw err;
+            }
+            if (attempt === maxRetries)
+                throw new Error(`Failed to fetch Typedoc configuration from ${filePath}`);
+            await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+        }
+    }
+}
+async function normalizeTargetFile(octokit, sanitized, options, file) {
+    const targetFile = file ?? (await fetchTypedocWithRetry(octokit, { owner: sanitized.owner, repo: sanitized.repo }, options));
+    if (!targetFile) {
+        warning(`  ⚠ No Typedoc configuration found after retries — skipping heading update.`);
+        throw new Error('Typedoc configuration file not found');
+    }
+    if (targetFile.type !== 'file' || !targetFile.content) {
+        warning(`  ⚠ Typedoc configuration is not a regular file — skipping heading update.`);
+        throw new Error('Typedoc configuration file is not a regular file');
     }
     return targetFile;
 }
@@ -74009,6 +74064,10 @@ async function createRepository(octokit, { org, name, settings, rulesets, action
                 createIssues: createOptions.createIssues,
             });
         }
+        await updateTypedocConfig(octokit, { owner: org, repo: nameSanitized }, {
+            retryDelayMs: settings.template.createFromTemplateRetryDelay,
+            maxRetries: settings.template.createFromTemplateMaxRetries,
+        });
     }
     else {
         // ;({ data: repo } = await createBlank(octokit, { org, name: nameSanitized, settings }))

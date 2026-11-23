@@ -5,6 +5,7 @@ import { applySettings } from './apply-settings.js'
 import { createRulesets } from './create-rulesets.js'
 import { createActionPolicies } from './create-action-policies.js'
 import { updateReadme } from './update-readme.js'
+import { updateTypedocConfig } from './update-typedoc.js'
 import { sanitizeRepoName } from './utils.js'
 
 type TemplateRepo = Awaited<ReturnType<Octokit['rest']['repos']['createUsingTemplate']>>['data']
@@ -63,6 +64,15 @@ export async function createRepository(
 				}
 			)
 		}
+
+		await updateTypedocConfig(
+			octokit,
+			{ owner: org, repo: nameSanitized },
+			{
+				retryDelayMs: settings.template.createFromTemplateRetryDelay,
+				maxRetries: settings.template.createFromTemplateMaxRetries,
+			}
+		)
 	} else {
 		// ;({ data: repo } = await createBlank(octokit, { org, name: nameSanitized, settings }))
 		const { data } = await createBlank(octokit, { org, name: nameSanitized, settings })

@@ -35,6 +35,7 @@ Supports blank creation or generation from a template repository.
 │   ├── repo-defaults.ts            # Default repo settings and branch ruleset config
 │   ├── types.ts                    # Shared TypeScript type definitions
 │   ├── update-readme.ts            # Updates README heading after template creation
+│   ├── update-typedoc.ts           # Updates Typedoc configuration after template creation
 │   └── utils.ts                    # Utility functions used across the project
 ├── .editorconfig
 ├── .env.example
