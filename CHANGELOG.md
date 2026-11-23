@@ -1,3 +1,9 @@
+## [1.101.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.100.0...v1.101.0) (2026-11-23)
+
+### ✨ Features
+
+* enabling pages before file edits ([fa198af](https://github.com/stairwaytowonderland/repository-create/commit/fa198af96e3755bbf26518e7f3782f92f218c3f2))
+
 ## [1.100.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.99.0...v1.100.0) (2026-11-23)
 
 ### ✨ Features
