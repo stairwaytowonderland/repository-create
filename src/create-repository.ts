@@ -101,6 +101,19 @@ export async function createRepository(
 	}
 
 	if (createOptions.pagesWorkflow) {
+		const { data: listed } = await octokit.rest.actions.listRepoWorkflows({
+			owner: org,
+			repo: nameSanitized,
+		})
+		core.info(`\n===\nlistRepoWorkflows (${listed.total_count}): ${JSON.stringify(listed.workflows)}\n---`)
+
+		const { data: contents } = await octokit.rest.repos.getContent({
+			owner: org,
+			repo: nameSanitized,
+			path: '.github/workflows',
+		})
+		core.info(`---\n.github/workflows contents: ${JSON.stringify(contents)}\n===`)
+
 		core.info(`\nChecking if workflow "${createOptions.pagesWorkflow}" is active...`)
 		for (let attempt = 1; attempt <= maxRetries; attempt++) {
 			try {
@@ -132,7 +145,7 @@ export async function createRepository(
 	if (createOptions.pagesWorkflow) {
 		await octokit.rest.actions.createWorkflowDispatch({
 			owner: org,
-			repo: name,
+			repo: nameSanitized,
 			workflow_id: createOptions.pagesWorkflow,
 			ref: repo.default_branch,
 		})
