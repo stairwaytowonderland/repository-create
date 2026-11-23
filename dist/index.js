@@ -73997,12 +73997,12 @@ async function updateTypedocConfig(octokit, repo, options) {
         repo: repo.repo,
         path: file.path,
         message: `docs: update Typedoc configuration to match ${repo.repo} [skip ci]`,
-        content: Buffer.from(JSON.stringify(config, null, 2)).toString('base64'),
+        content: Buffer.from(JSON.stringify(config)).toString('base64'),
         sha: file.sha,
     });
 }
 async function fetchTypedocWithRetry(octokit, { owner, repo }, options) {
-    const candidates = ['typedoc.json', 'typedoc.config.json', 'typedoc.site.json'];
+    const candidates = ['typedoc.site.json', 'typedoc.json', 'typedoc.config.json'];
     const retryDelayMs = options?.retryDelayMs ?? 1000;
     const maxRetries = options?.maxRetries ?? 3;
     const sanitizedRepo = sanitizeRepoName(repo);
