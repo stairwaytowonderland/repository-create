@@ -15,9 +15,11 @@ type OrgRepo = Awaited<ReturnType<Octokit['rest']['repos']['createInOrg']>>['dat
 /**
  * Orchestrates repository creation:
  *   1. Create the repository in the org (blank or from a template)
- *   2. Apply general settings (second-pass PATCH for settings unavailable at creation)
- *   3. Create branch rulesets
- *   4. Create action policies
+ *   2. Configure GitHub Pages (if applicable)
+ *   3. Update README (if applicable)
+ *   4. Apply general settings (second-pass PATCH for settings unavailable at creation)
+ *   5. Create branch rulesets
+ *   6. Create action policies
  */
 export async function createRepository(
 	octokit: Octokit,
@@ -45,12 +47,20 @@ export async function createRepository(
 
 	// let repo: { html_url: string; full_name: string; name: string; owner: { login: string }; id: number }
 	let repo: TemplateRepo | OrgRepo | undefined
-	// let repo
 
 	if (settings.template) {
 		// ;({ data: repo } = await createFromTemplate(octokit, { org, name: nameSanitized, settings }))
-		const { data } = await createFromTemplate(octokit, { org, name: nameSanitized, settings })
-		repo = data
+		repo = (await createFromTemplate(octokit, { org, name: nameSanitized, settings })).data
+
+		await handlePages(
+			octokit,
+			{ org, name: nameSanitized, branch: repo.default_branch, pagesWorkflow: createOptions.pagesWorkflow },
+			{
+				retryDelayMs: settings.template.createFromTemplateRetryDelay,
+				maxRetries: settings.template.createFromTemplateMaxRetries,
+			}
+		)
+
 		if (createOptions.updateReadme) {
 			// Use unsanitized name for README heading
 			await updateReadme(
@@ -65,45 +75,9 @@ export async function createRepository(
 				}
 			)
 		}
-
-		if (createOptions.pagesWorkflow) {
-			await updateTypedocConfig(
-				octokit,
-				{ owner: org, repo: nameSanitized },
-				{
-					retryDelayMs: settings.template.createFromTemplateRetryDelay,
-					maxRetries: settings.template.createFromTemplateMaxRetries,
-				}
-			)
-
-			await sleep(10000) // Wait for 10 seconds to avoid race conditions with the commit timing
-
-			await octokit.rest.actions.createWorkflowDispatch({
-				owner: org,
-				repo: nameSanitized,
-				workflow_id: createOptions.pagesWorkflow,
-				ref: repo.default_branch,
-			})
-		}
 	} else {
 		// ;({ data: repo } = await createBlank(octokit, { org, name: nameSanitized, settings }))
-		const { data } = await createBlank(octokit, { org, name: nameSanitized, settings })
-		repo = data
-	}
-
-	if (createOptions.pagesWorkflow) {
-		core.info(`\nEnabling GitHub Pages for "${org}/${name}"...`)
-
-		// https://docs.github.com/en/rest/pages/pages?apiVersion=2026-03-10#create-a-github-pages-site
-		const { data: pages } = await octokit.rest.repos.createPagesSite({
-			owner: repo.owner.login,
-			repo: repo.name,
-			build_type: 'workflow', // Use 'legacy' if deploying from a branch
-			// If using 'legacy', include source:
-			// source: { branch: repo.default_branch, path: '/' },
-		})
-
-		core.info(`GitHub Pages enabled at: ${pages.html_url}`)
+		repo = (await createBlank(octokit, { org, name: nameSanitized, settings })).data
 	}
 
 	core.info(`\n✓ Repository "${org}/${name}" created: (id: ${repo.id})`)
@@ -126,6 +100,48 @@ export async function createRepository(
 	core.info(`\n✓ Repository "${repo.full_name}" setup complete.`)
 	core.info(`\n🌐 Repository available at: ${repo.html_url}`)
 	return repo
+}
+
+async function handlePages(
+	octokit: Octokit,
+	{ org, name, branch, pagesWorkflow }: { org: string; name: string; branch: string; pagesWorkflow?: string },
+	options?: { retryDelayMs?: number; maxRetries?: number }
+): Promise<void> {
+	if (!pagesWorkflow) {
+		core.info(`\nNo GitHub Pages workflow specified for "${org}/${name}". Skipping Pages setup.`)
+		return
+	}
+
+	core.info(`\nEnabling GitHub Pages for "${org}/${name}"...`)
+
+	// https://docs.github.com/en/rest/pages/pages?apiVersion=2026-03-10#create-a-github-pages-site
+	const { data: pages } = await octokit.rest.repos.createPagesSite({
+		owner: org,
+		repo: name,
+		build_type: 'workflow', // Use 'legacy' if deploying from a branch
+		// If using 'legacy', include source:
+		// source: { branch: 'main', path: '/' },
+	})
+
+	core.info(`GitHub Pages enabled at: ${pages.html_url}`)
+
+	await updateTypedocConfig(
+		octokit,
+		{ owner: org, repo: name },
+		{
+			retryDelayMs: options?.retryDelayMs,
+			maxRetries: options?.maxRetries,
+		}
+	)
+
+	await sleep(10000) // Wait for 10 seconds to avoid race conditions with the commit timing
+
+	await octokit.rest.actions.createWorkflowDispatch({
+		owner: org,
+		repo: name,
+		workflow_id: pagesWorkflow,
+		ref: branch,
+	})
 }
 
 /**

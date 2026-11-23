@@ -105,6 +105,7 @@ inputs:
     description: >
       Optional flag to trigger the GitHub Pages workflow after enabling Pages.
       Should be set to the workflow file name (e.g., 'docs.yaml').
+      Not applicable for blank repositories (i.e., when not using a template).
     required: false
     default: 'docs.yaml'
 

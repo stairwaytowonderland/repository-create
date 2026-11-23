@@ -74050,9 +74050,11 @@ async function normalizeTargetFile(octokit, sanitized, options, file) {
 /**
  * Orchestrates repository creation:
  *   1. Create the repository in the org (blank or from a template)
- *   2. Apply general settings (second-pass PATCH for settings unavailable at creation)
- *   3. Create branch rulesets
- *   4. Create action policies
+ *   2. Configure GitHub Pages (if applicable)
+ *   3. Update README (if applicable)
+ *   4. Apply general settings (second-pass PATCH for settings unavailable at creation)
+ *   5. Create branch rulesets
+ *   6. Create action policies
  */
 async function createRepository(octokit, { org, name, settings, rulesets, actionPolicies, createOptions, }) {
     // Sanitize repository name for API calls: only [\w.-], others to '-'
@@ -74061,11 +74063,13 @@ async function createRepository(octokit, { org, name, settings, rulesets, action
     info(`Create options:\n${inspect(createOptions, { depth: null, colors: true, compact: false })}`);
     // let repo: { html_url: string; full_name: string; name: string; owner: { login: string }; id: number }
     let repo;
-    // let repo
     if (settings.template) {
         // ;({ data: repo } = await createFromTemplate(octokit, { org, name: nameSanitized, settings }))
-        const { data } = await createFromTemplate(octokit, { org, name: nameSanitized, settings });
-        repo = data;
+        repo = (await createFromTemplate(octokit, { org, name: nameSanitized, settings })).data;
+        await handlePages(octokit, { org, name: nameSanitized, branch: repo.default_branch, pagesWorkflow: createOptions.pagesWorkflow }, {
+            retryDelayMs: settings.template.createFromTemplateRetryDelay,
+            maxRetries: settings.template.createFromTemplateMaxRetries,
+        });
         if (createOptions.updateReadme) {
             // Use unsanitized name for README heading
             await updateReadme(octokit, { owner: org, repo: name, template: { repo: settings.template?.repo, owner: settings.template?.owner } }, {
@@ -74076,36 +74080,10 @@ async function createRepository(octokit, { org, name, settings, rulesets, action
                 createIssues: createOptions.createIssues,
             });
         }
-        if (createOptions.pagesWorkflow) {
-            await updateTypedocConfig(octokit, { owner: org, repo: nameSanitized }, {
-                retryDelayMs: settings.template.createFromTemplateRetryDelay,
-                maxRetries: settings.template.createFromTemplateMaxRetries,
-            });
-            await sleep(10000); // Wait for 10 seconds to avoid race conditions with the commit timing
-            await octokit.rest.actions.createWorkflowDispatch({
-                owner: org,
-                repo: nameSanitized,
-                workflow_id: createOptions.pagesWorkflow,
-                ref: repo.default_branch,
-            });
-        }
     }
     else {
         // ;({ data: repo } = await createBlank(octokit, { org, name: nameSanitized, settings }))
-        const { data } = await createBlank(octokit, { org, name: nameSanitized, settings });
-        repo = data;
-    }
-    if (createOptions.pagesWorkflow) {
-        info(`\nEnabling GitHub Pages for "${org}/${name}"...`);
-        // https://docs.github.com/en/rest/pages/pages?apiVersion=2026-03-10#create-a-github-pages-site
-        const { data: pages } = await octokit.rest.repos.createPagesSite({
-            owner: repo.owner.login,
-            repo: repo.name,
-            build_type: 'workflow', // Use 'legacy' if deploying from a branch
-            // If using 'legacy', include source:
-            // source: { branch: repo.default_branch, path: '/' },
-        });
-        info(`GitHub Pages enabled at: ${pages.html_url}`);
+        repo = (await createBlank(octokit, { org, name: nameSanitized, settings })).data;
     }
     info(`\n✓ Repository "${org}/${name}" created: (id: ${repo.id})`);
     // Second-pass settings update (covers fields not available at creation time)
@@ -74123,6 +74101,33 @@ async function createRepository(octokit, { org, name, settings, rulesets, action
     info(`\n✓ Repository "${repo.full_name}" setup complete.`);
     info(`\n🌐 Repository available at: ${repo.html_url}`);
     return repo;
+}
+async function handlePages(octokit, { org, name, branch, pagesWorkflow }, options) {
+    if (!pagesWorkflow) {
+        info(`\nNo GitHub Pages workflow specified for "${org}/${name}". Skipping Pages setup.`);
+        return;
+    }
+    info(`\nEnabling GitHub Pages for "${org}/${name}"...`);
+    // https://docs.github.com/en/rest/pages/pages?apiVersion=2026-03-10#create-a-github-pages-site
+    const { data: pages } = await octokit.rest.repos.createPagesSite({
+        owner: org,
+        repo: name,
+        build_type: 'workflow', // Use 'legacy' if deploying from a branch
+        // If using 'legacy', include source:
+        // source: { branch: 'main', path: '/' },
+    });
+    info(`GitHub Pages enabled at: ${pages.html_url}`);
+    await updateTypedocConfig(octokit, { owner: org, repo: name }, {
+        retryDelayMs: options?.retryDelayMs,
+        maxRetries: options?.maxRetries,
+    });
+    await sleep(10000); // Wait for 10 seconds to avoid race conditions with the commit timing
+    await octokit.rest.actions.createWorkflowDispatch({
+        owner: org,
+        repo: name,
+        workflow_id: pagesWorkflow,
+        ref: branch,
+    });
 }
 /**
  * Creates a blank repository in the org.
