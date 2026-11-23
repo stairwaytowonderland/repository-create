@@ -293,8 +293,8 @@ export async function updateReadme(
 	octokit: Octokit,
 	repo: { owner: string; repo: string; template: { owner: string; repo: string } },
 	options?: {
-		retryDelayMs?: number
-		maxRetries?: number
+		retryDelayMs: number
+		maxRetries: number
 		replaceGitProtocolLinks?: boolean
 		createLabels?: boolean
 		createIssues?: boolean

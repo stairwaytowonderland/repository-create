@@ -39,6 +39,8 @@ export async function updateTypedocConfig(
 		content: base64Encode(`${JSON.stringify(config, null, '\t')}\n`),
 		sha: file.sha,
 	})
+
+	core.info(`  ✓ Typedoc configuration updated for ${repo.owner}/${repo.repo}`)
 }
 
 async function fetchTypedocWithRetry(
@@ -49,12 +51,14 @@ async function fetchTypedocWithRetry(
 	const candidates = ['typedoc.site.json', 'typedoc.json', 'typedoc.config.json']
 	const maxRetries = options?.maxRetries ?? 10
 	const retryDelayMs = options?.retryDelayMs ?? 3000
+
+	// Always sanitize repo name for API calls
 	const sanitizedRepo = sanitizeRepoName(repo)
 
 	for (const path of candidates) {
+		core.info(`\nUpdating ${path} ...`)
 		for (let attempt = 1; attempt <= maxRetries; attempt++) {
 			try {
-				core.info(`Attempting to fetch ${path} from ${owner}/${sanitizedRepo}`)
 				const { data } = await octokit.rest.repos.getContent({ owner, repo: sanitizedRepo, path })
 				return data as GitHubFileContent
 			} catch (err) {

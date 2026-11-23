@@ -74003,16 +74003,18 @@ async function updateTypedocConfig(octokit, repo, options) {
         content: base64Encode(`${JSON.stringify(config, null, '\t')}\n`),
         sha: file.sha,
     });
+    info(`  ✓ Typedoc configuration updated for ${repo.owner}/${repo.repo}`);
 }
 async function fetchTypedocWithRetry(octokit, { owner, repo }, options) {
     const candidates = ['typedoc.site.json', 'typedoc.json', 'typedoc.config.json'];
     const maxRetries = options?.maxRetries ?? 10;
     const retryDelayMs = options?.retryDelayMs ?? 3000;
+    // Always sanitize repo name for API calls
     const sanitizedRepo = sanitizeRepoName(repo);
     for (const path of candidates) {
+        info(`\nUpdating ${path} ...`);
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                info(`Attempting to fetch ${path} from ${owner}/${sanitizedRepo}`);
                 const { data } = await octokit.rest.repos.getContent({ owner, repo: sanitizedRepo, path });
                 return data;
             }
@@ -74061,20 +74063,18 @@ async function createRepository(octokit, { org, name, settings, rulesets, action
     const nameSanitized = sanitizeRepoName(name);
     info(`\nCreating repository "${org}/${name}"...`);
     info(`Create options:\n${inspect(createOptions, { depth: null, colors: true, compact: false })}`);
+    const maxRetries = settings.template?.createFromTemplateMaxRetries ?? 5;
+    const retryDelayMs = settings.template?.createFromTemplateRetryDelay ?? 3000;
     // let repo: { html_url: string; full_name: string; name: string; owner: { login: string }; id: number }
     let repo;
     if (settings.template) {
         // ;({ data: repo } = await createFromTemplate(octokit, { org, name: nameSanitized, settings }))
         repo = (await createFromTemplate(octokit, { org, name: nameSanitized, settings })).data;
-        await handlePages(octokit, { org, name: nameSanitized, branch: repo.default_branch, pagesWorkflow: createOptions.pagesWorkflow }, {
-            retryDelayMs: settings.template.createFromTemplateRetryDelay,
-            maxRetries: settings.template.createFromTemplateMaxRetries,
-        });
         if (createOptions.updateReadme) {
             // Use unsanitized name for README heading
             await updateReadme(octokit, { owner: org, repo: name, template: { repo: settings.template?.repo, owner: settings.template?.owner } }, {
-                retryDelayMs: settings.template.createFromTemplateRetryDelay,
-                maxRetries: settings.template.createFromTemplateMaxRetries,
+                retryDelayMs,
+                maxRetries,
                 replaceGitProtocolLinks: createOptions.replaceGitProtocolLinks,
                 createLabels: createOptions.createLabels,
                 createIssues: createOptions.createIssues,
@@ -74088,6 +74088,10 @@ async function createRepository(octokit, { org, name, settings, rulesets, action
     info(`\n✓ Repository "${org}/${name}" created: (id: ${repo.id})`);
     // Second-pass settings update (covers fields not available at creation time)
     await applySettings(octokit, { owner: org, repo: nameSanitized, settings });
+    await handlePages(octokit, { org, name: nameSanitized, pagesWorkflow: createOptions.pagesWorkflow }, {
+        retryDelayMs,
+        maxRetries,
+    });
     // Branch rulesets
     if (rulesets && rulesets.length > 0) {
         info(`\nCreating branch rulesets...`);
@@ -74098,11 +74102,45 @@ async function createRepository(octokit, { org, name, settings, rulesets, action
         info(`\nCreating action policies...`);
         await createActionPolicies(octokit, { owner: org, repo: nameSanitized, actionPolicies });
     }
+    if (createOptions.pagesWorkflow) {
+        info(`\nChecking if workflow "${createOptions.pagesWorkflow}" is active...`);
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                const { data: workflow } = await octokit.rest.actions.getWorkflow({
+                    owner: org,
+                    repo: nameSanitized,
+                    workflow_id: createOptions.pagesWorkflow,
+                });
+                if (workflow.state === 'active') {
+                    break;
+                }
+            }
+            catch (err) {
+                const status = err.status;
+                if (status !== 404 || attempt === maxRetries) {
+                    throw err;
+                }
+            }
+            if (attempt < maxRetries) {
+                info(`  Waiting for workflow "${createOptions.pagesWorkflow}" to become active (attempt ${attempt}/${maxRetries})...`);
+                await sleep(retryDelayMs);
+            }
+        }
+        info(`  ✓ Workflow "${createOptions.pagesWorkflow}" is active.`);
+    }
+    if (createOptions.pagesWorkflow) {
+        await octokit.rest.actions.createWorkflowDispatch({
+            owner: org,
+            repo: name,
+            workflow_id: createOptions.pagesWorkflow,
+            ref: repo.default_branch,
+        });
+    }
     info(`\n✓ Repository "${repo.full_name}" setup complete.`);
     info(`\n🌐 Repository available at: ${repo.html_url}`);
     return repo;
 }
-async function handlePages(octokit, { org, name, branch, pagesWorkflow }, options) {
+async function handlePages(octokit, { org, name, pagesWorkflow }, options) {
     if (!pagesWorkflow) {
         info(`\nNo GitHub Pages workflow specified for "${org}/${name}". Skipping Pages setup.`);
         return;
@@ -74116,41 +74154,10 @@ async function handlePages(octokit, { org, name, branch, pagesWorkflow }, option
         // If using 'legacy', include source:
         // source: { branch: 'main', path: '/' },
     });
-    const maxRetries = options?.maxRetries ?? 5;
-    const retryDelayMs = options?.retryDelayMs ?? 3000;
-    info(`GitHub Pages enabled at: ${pages.html_url}`);
+    info(`  ✓ GitHub Pages enabled at: ${pages.html_url}`);
     await updateTypedocConfig(octokit, { owner: org, repo: name }, {
-        retryDelayMs,
-        maxRetries,
-    });
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-            info(`Checking if workflow "${pagesWorkflow}" is active (attempt ${attempt}/${maxRetries})...`);
-            const { data: workflow } = await octokit.rest.actions.getWorkflow({
-                owner: org,
-                repo: name,
-                workflow_id: pagesWorkflow,
-            });
-            if (workflow.state === 'active') {
-                break;
-            }
-        }
-        catch (err) {
-            const status = err.status;
-            if (status !== 404 || attempt === maxRetries) {
-                throw err;
-            }
-        }
-        if (attempt < maxRetries) {
-            info(`Waiting for workflow "${pagesWorkflow}" to become active (attempt ${attempt}/${maxRetries})...`);
-            await sleep(retryDelayMs);
-        }
-    }
-    await octokit.rest.actions.createWorkflowDispatch({
-        owner: org,
-        repo: name,
-        workflow_id: pagesWorkflow,
-        ref: branch,
+        retryDelayMs: options.retryDelayMs,
+        maxRetries: options.maxRetries,
     });
 }
 /**
