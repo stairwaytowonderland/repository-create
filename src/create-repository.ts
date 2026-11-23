@@ -1,3 +1,4 @@
+// import { inspect } from 'node:util'
 import * as core from '@actions/core'
 import type { CreateOptions, RepoSettings, RulesetConfig, TemplateConfig, ActionPolicy } from './types.js'
 import type { Octokit } from './github-client.js'
@@ -40,7 +41,7 @@ export async function createRepository(
 	const nameSanitized: string = sanitizeRepoName(name)
 	core.info(`\nCreating repository "${org}/${name}"...`)
 
-	core.debug(`Create options: ${JSON.stringify(createOptions, null, 2)}`)
+	// core.info(`Create options:\n${inspect(createOptions, { depth: null, colors: true, compact: false })}`)
 
 	// let repo: { html_url: string; full_name: string; name: string; owner: { login: string }; id: number }
 	let repo: TemplateRepo | OrgRepo | undefined

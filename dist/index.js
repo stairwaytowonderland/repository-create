@@ -40051,13 +40051,6 @@ function setFailed(message) {
     error(message);
 }
 /**
- * Writes debug message to user log
- * @param message debug message
- */
-function debug(message) {
-    issueCommand('debug', {}, message);
-}
-/**
  * Adds an error issue
  * @param message error issue message. Errors will be converted to string via toString()
  * @param properties optional properties to add to the annotation.
@@ -73984,41 +73977,55 @@ async function normalizeTargetFile$1(octokit, sanitized, options, file) {
  * Update the Typedoc configuration for the project.
  *
  * Replace all the links in the Typedoc configuration with the appropriate project-specific URLs.
+ *
+ * FIXME: docs still needs to be manually dispatched even after updating the Typedoc configuration.
+ * The deploy itself works, but for some reason a "redeploy" is necessary for the pages site after initial repo creation.
  */
+// import { inspect } from 'node:util'
 async function updateTypedocConfig(octokit, repo, options) {
     const file = await normalizeTargetFile(octokit, { owner: repo.owner, repo: repo.repo }, options);
-    const config = JSON.parse(file.content);
+    const config = JSON.parse(base64Decode(file.content));
     // Update the links in the configuration
     config.cleanJsdocTheme.siteUrl = `https://${repo.owner}.github.io/${repo.repo}`;
     config.cleanJsdocTheme.basePath = `/${repo.repo}`;
     config.cleanJsdocTheme.menu[1].link = `https://github.com/${repo.owner}/${repo.repo}`;
+    // core.info(`Updated Typedoc configuration:\n${inspect(config, { depth: null, colors: true })}`)
     await octokit.rest.repos.createOrUpdateFileContents({
         owner: repo.owner,
         repo: repo.repo,
         path: file.path,
         message: `docs: update Typedoc configuration to match ${repo.repo} [skip ci]`,
-        content: Buffer.from(JSON.stringify(config)).toString('base64'),
+        content: base64Encode(`${JSON.stringify(config, null, '\t')}\n`),
         sha: file.sha,
     });
 }
 async function fetchTypedocWithRetry(octokit, { owner, repo }, options) {
     const candidates = ['typedoc.site.json', 'typedoc.json', 'typedoc.config.json'];
-    const retryDelayMs = options?.retryDelayMs ?? 1000;
-    const maxRetries = options?.maxRetries ?? 3;
+    const maxRetries = options?.maxRetries ?? 10;
+    const retryDelayMs = options?.retryDelayMs ?? 3000;
     const sanitizedRepo = sanitizeRepoName(repo);
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        for (const filePath of candidates) {
+    for (const path of candidates) {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                const { data } = await octokit.rest.repos.getContent({ owner, repo: sanitizedRepo, path: filePath });
+                info(`Attempting to fetch ${path} from ${owner}/${sanitizedRepo}`);
+                const { data } = await octokit.rest.repos.getContent({ owner, repo: sanitizedRepo, path });
                 return data;
             }
             catch (err) {
+                const isNotReady = err.status === 409 ||
+                    (err.status === 404 &&
+                        err.message?.includes('This repository is empty'));
+                if (!isNotReady)
+                    throw err;
                 if (err.status !== 404)
                     throw err;
             }
-            if (attempt === maxRetries)
-                throw new Error(`Failed to fetch Typedoc configuration from ${filePath}`);
-            await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+            // if (attempt === maxRetries) throw new Error(`Failed to fetch Typedoc configuration from ${path}`)
+            // await new Promise((resolve) => setTimeout(resolve, retryDelayMs))
+            if (attempt < maxRetries) {
+                info(`  Waiting for template contents to be ready (attempt ${attempt}/${maxRetries})...`);
+                await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+            }
         }
     }
 }
@@ -74035,6 +74042,7 @@ async function normalizeTargetFile(octokit, sanitized, options, file) {
     return targetFile;
 }
 
+// import { inspect } from 'node:util'
 /**
  * Orchestrates repository creation:
  *   1. Create the repository in the org (blank or from a template)
@@ -74046,7 +74054,7 @@ async function createRepository(octokit, { org, name, settings, rulesets, action
     // Sanitize repository name for API calls: only [\w.-], others to '-'
     const nameSanitized = sanitizeRepoName(name);
     info(`\nCreating repository "${org}/${name}"...`);
-    debug(`Create options: ${JSON.stringify(createOptions, null, 2)}`);
+    // core.info(`Create options:\n${inspect(createOptions, { depth: null, colors: true, compact: false })}`)
     // let repo: { html_url: string; full_name: string; name: string; owner: { login: string }; id: number }
     let repo;
     // let repo
