@@ -15,11 +15,11 @@ type OrgRepo = Awaited<ReturnType<Octokit['rest']['repos']['createInOrg']>>['dat
 /**
  * Orchestrates repository creation:
  *   1. Create the repository in the org (blank or from a template)
- *   2. Configure GitHub Pages (if applicable)
- *   3. Update README (if applicable)
- *   4. Apply general settings (second-pass PATCH for settings unavailable at creation)
- *   5. Create branch rulesets
- *   6. Create action policies
+ *   1a. Configure GitHub Pages (if applicable)
+ *   1b. Update README (if applicable)
+ *   2. Apply general settings (second-pass PATCH for settings unavailable at creation)
+ *   3. Create branch rulesets
+ *   4. Create action policies
  */
 export async function createRepository(
 	octokit: Octokit,
@@ -123,18 +123,43 @@ async function handlePages(
 		// source: { branch: 'main', path: '/' },
 	})
 
+	const maxRetries = options?.maxRetries ?? 5
+	const retryDelayMs = options?.retryDelayMs ?? 3000
+
 	core.info(`GitHub Pages enabled at: ${pages.html_url}`)
 
 	await updateTypedocConfig(
 		octokit,
 		{ owner: org, repo: name },
 		{
-			retryDelayMs: options?.retryDelayMs,
-			maxRetries: options?.maxRetries,
+			retryDelayMs,
+			maxRetries,
 		}
 	)
 
-	await sleep(10000) // Wait for 10 seconds to avoid race conditions with the commit timing
+	for (let attempt = 1; attempt <= maxRetries; attempt++) {
+		try {
+			core.info(`Checking if workflow "${pagesWorkflow}" is active (attempt ${attempt}/${maxRetries})...`)
+			const { data: workflow } = await octokit.rest.actions.getWorkflow({
+				owner: org,
+				repo: name,
+				workflow_id: pagesWorkflow,
+			})
+			if (workflow.state === 'active') {
+				break
+			}
+		} catch (err: unknown) {
+			const status = (err as { status?: number }).status
+			if (status !== 404 || attempt === maxRetries) {
+				throw err
+			}
+		}
+
+		if (attempt < maxRetries) {
+			core.info(`Waiting for workflow "${pagesWorkflow}" to become active (attempt ${attempt}/${maxRetries})...`)
+			await sleep(retryDelayMs)
+		}
+	}
 
 	await octokit.rest.actions.createWorkflowDispatch({
 		owner: org,
