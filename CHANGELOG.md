@@ -1,3 +1,9 @@
+## [1.103.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.102.0...v1.103.0) (2026-11-23)
+
+### ✨ Features
+
+* fix pages and typedoc handling ([b39e173](https://github.com/stairwaytowonderland/repository-create/commit/b39e173faaec357d7478dcf0767abb07f8e884e5))
+
 ## [1.102.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.101.0...v1.102.0) (2026-11-23)
 
 ### ✨ Features
