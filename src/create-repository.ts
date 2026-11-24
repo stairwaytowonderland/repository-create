@@ -133,6 +133,9 @@ export async function createRepository(
 			repo: nameSanitized,
 			workflow_id: createOptions.pagesWorkflow,
 			ref: repo.default_branch,
+			headers: {
+				'X-GitHub-Api-Version': '2026-03-10',
+			},
 		})
 	}
 

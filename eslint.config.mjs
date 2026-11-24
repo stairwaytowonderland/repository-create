@@ -66,6 +66,7 @@ export default [
 			'no-console': 'off',
 			'no-shadow': 'off',
 			'no-unused-vars': 'off',
+			'@typescript-eslint/no-unused-vars': 'off',
 			'no-useless-escape': 'off',
 			'prettier/prettier': 'error',
 		},

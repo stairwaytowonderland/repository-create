@@ -43,6 +43,7 @@ export default defineConfig({
 		file: 'dist/index.js',
 		format: 'es',
 		sourcemap: true,
+		inlineDynamicImports: true,
 	},
 	onwarn(warning, warn) {
 		switch (warning.code) {

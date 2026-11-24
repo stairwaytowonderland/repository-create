@@ -2,19 +2,29 @@
  * Update the Typedoc configuration for the project.
  *
  * Replace all the links in the Typedoc configuration with the appropriate project-specific URLs.
- *
- * FIXME: docs still needs to be manually dispatched even after updating the Typedoc configuration.
- * The deploy itself works, but for some reason a "redeploy" is necessary for the pages site after initial repo creation.
- * SOLVED: The reason is because the default happens at initial commit, but the typedoc config is only updated after the initial commit, and does not trigger a redeploy automatically.
  */
 
-// import { inspect } from 'node:util'
+import * as fs from 'node:fs/promises'
+import path from 'node:path'
+import { inspect } from 'node:util'
+
+// Using prettier/standalone lowers the overhead of importing the full prettier package in a Node.js environment.
+// Also Fixes: [!] RollupError: Invalid value for option "output.file" - when building multiple chunks, the "output.dir" option must be used, not "output.file". To inline dynamic imports, set the "inlineDynamicImports" option.
+import type { Options as PrettierOptions } from 'prettier'
+import * as prettier from 'prettier/standalone'
+import * as prettierPluginBabel from 'prettier/plugins/babel'
+import * as prettierPluginEstree from 'prettier/plugins/estree'
+
 import * as core from '@actions/core'
 import type { GitHubFileContent } from './types.js'
 import type { Octokit } from './github-client.js'
 import { base64Decode, base64Encode, sanitizeRepoName } from './utils.js'
 
 type TypedocFileContent = GitHubFileContent & { type: 'file'; content: string }
+
+interface FileLocation {
+	path: string
+}
 
 export async function updateTypedocConfig(
 	octokit: Octokit,
@@ -24,6 +34,19 @@ export async function updateTypedocConfig(
 	const file = await normalizeTargetFile(octokit, { owner: repo.owner, repo: repo.repo }, options)
 	const config = JSON.parse(base64Decode(file.content))
 
+	const prettierOptions = await fetchPrettierConfig(octokit, [
+		{
+			path: './config/.prettierrc.json',
+		},
+		{
+			path: './config/.prettierrc',
+		},
+	])
+
+	// const prettierOptions = await prettier.resolveConfig(file.path, {
+	// 	config: './config/.prettierrc.json',
+	// })
+
 	// Update the links in the configuration
 	config.cleanJsdocTheme.siteUrl = `https://${repo.owner}.github.io/${repo.repo}`
 	config.cleanJsdocTheme.basePath = `/${repo.repo}`
@@ -31,16 +54,70 @@ export async function updateTypedocConfig(
 
 	// core.info(`Updated Typedoc configuration:\n${inspect(config, { depth: null, colors: true })}`)
 
+	core.info(
+		`\nFormatting Typedoc configuration with Prettier options:\n${inspect(prettierOptions, { depth: null, colors: true })}`
+	)
+	const formattedJson = await prettier.format(JSON.stringify(config, null, 2), {
+		...prettierOptions,
+		parser: 'json',
+		plugins: [prettierPluginBabel, prettierPluginEstree],
+	})
+
 	await octokit.rest.repos.createOrUpdateFileContents({
 		owner: repo.owner,
 		repo: repo.repo,
 		path: file.path,
 		message: `docs: update Typedoc configuration to match ${repo.repo} [skip ci]`,
-		content: base64Encode(`${JSON.stringify(config, null, '\t')}\n`),
+		content: base64Encode(formattedJson),
 		sha: file.sha,
 	})
 
 	core.info(`  ✓ Typedoc configuration updated for ${repo.owner}/${repo.repo}`)
+}
+
+interface RepoFileLocation extends FileLocation {
+	owner: string
+	repo: string
+	ref?: string
+}
+
+async function fetchPrettierConfig(
+	octokit: Octokit,
+	location: (FileLocation | RepoFileLocation)[]
+): Promise<PrettierOptions> {
+	if (location.length === 0) {
+		throw new Error(`No locations provided for Prettier configuration`)
+	}
+
+	for (const loc of location) {
+		core.info(`\nRetrieving Prettier configuration from: ${JSON.stringify(loc)}`)
+		if ('owner' in loc && 'repo' in loc) {
+			const { owner, repo, path, ref } = loc
+			const { data } = await octokit.rest.repos.getContent({
+				owner,
+				repo,
+				path,
+				...(ref ? { ref } : {}),
+			})
+
+			if (!('content' in data) || Array.isArray(data)) {
+				throw new Error(`Expected ${path} to be a file in ${owner}/${repo}`)
+			}
+			core.info(`  ✓ Prettier configuration retrieved from: ${path}`)
+			return JSON.parse(base64Decode(data.content)) as PrettierOptions
+		} else {
+			try {
+				const filePath = path.resolve(loc.path)
+				const rawConfig = await fs.readFile(filePath, 'utf8')
+				core.info(`  ✓ Prettier configuration retrieved from local path: ${filePath}`)
+				return JSON.parse(rawConfig) as PrettierOptions
+			} catch {
+				core.warning(`  ⚠ Failed to read Prettier configuration from local path: ${loc.path}`)
+			}
+		}
+	}
+
+	throw new Error(`Prettier configuration not found in any of the specified locations`)
 }
 
 async function fetchTypedocWithRetry(
@@ -56,10 +133,11 @@ async function fetchTypedocWithRetry(
 	const sanitizedRepo = sanitizeRepoName(repo)
 
 	for (const path of candidates) {
-		core.info(`\nUpdating ${path} ...`)
+		core.info(`\nFetching ${path} ...`)
 		for (let attempt = 1; attempt <= maxRetries; attempt++) {
 			try {
 				const { data } = await octokit.rest.repos.getContent({ owner, repo: sanitizedRepo, path })
+				core.info(`  ✓ Fetched ${path} successfully`)
 				return data as GitHubFileContent
 			} catch (err) {
 				const isNotReady =
