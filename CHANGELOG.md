@@ -1,3 +1,9 @@
+## [1.106.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.105.0...v1.106.0) (2026-11-25)
+
+### ✨ Features
+
+* using prettier/standalone ([5d1f306](https://github.com/stairwaytowonderland/repository-create/commit/5d1f3060c630e76eb6997fc9064a992c0cb52c20))
+
 ## [1.105.0](https://github.com/stairwaytowonderland/repository-create/compare/v1.104.0...v1.105.0) (2026-11-23)
 
 ### ✨ Features
